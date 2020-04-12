@@ -1,0 +1,69 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div class="jumbotron" style="padding-left:10%">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="embed-responsive embed-responsive-4by3">
+                <img class="embed-responsive-item rounded" src="{% if rushee.profile_picture %}{{ rushee.profile_picture.url }}{% endif %}" style="background-color: grey; text-align: center" alt="No profile picture.">
+            </div>
+        </div>
+        <div class="col-md-8">
+            <h1 class="display-4">{{ rushee.name }}</h1>
+            {% if user.is_superuser %}
+            <br>
+            <br>
+            <a href="/votepage{{ rushee.id }}"><button class="btn btn-primary" style="width: 183px">Re-Open Voting</button></a><br><br>
+            <a href="/rushee{{ rushee.id }}/push"><button class="btn btn-success">Send Through</button></a>
+            <a href="/rushee{{ rushee.id }}/cut"><button class="btn btn-danger">Cut</button></a><br><br>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <h2>Results:</h2>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <td><b>Vote</b></td>
+            <td><b>Count</b></td>
+        </tr>
+        </thead>
+        <tbody>
+            <tr class="table-success">
+                <td>Yes</td>
+                <td name="yes">{{ rushee.y }}</td>
+            </tr>
+            <tr class="table-danger">
+                <td>No</td>
+                <td name="no">{{ rushee.n }}</td>
+            </tr>
+            <tr class="table-primary">
+                <td>Abstain</td>
+                <td name="abstain">{{ rushee.a }}</td>
+            </tr>
+            <tr class="table-warning">
+                <td>Blackball</td>
+                <td name="blackball">{{ rushee.b }}</td>
+            </tr>
+        </tbody>
+    </table>
+    {% if rushee.blackball_list.all %}
+    <h2>Blackballs</h2>
+    {% for user in rushee.blackball_list.all %}
+    <table class="table table-hover">
+        <tbody>
+        <tr>
+            <td name="blackball_list">{{ user.first_name }} {{ user.last_name }}</td>
+        </tr>
+        </tbody>
+
+    </table>
+    {% endfor %}
+    {% endif %}
+    {% if user.is_superuser %}
+    <a href="/voting/reset{{ rushee.id }}"><button class="btn btn-danger">Reset votes</button></a>
+    {% endif %}
+
+</div>
+{% endblock %}

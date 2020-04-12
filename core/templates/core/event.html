@@ -1,0 +1,44 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<br>
+
+<div class="container" style="margin-left: 5%">
+    <h1 style="display: inline">{{ event.name }}&nbsp;&nbsp;&nbsp;<span class="badge badge-info">Round {{ event.round }}</span></h1>
+    <h3>{{ event.date }}, {{ event.time }}</h3>
+    <h3>{{ event.location }}</h3>
+    <br>
+    <h2>Attendance ({{ event.attendance.count }})</h2>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <td>ID</td>
+            <td>Name</td>
+            {% if not request.user_agent.is_mobile %}
+            <td>Email</td>
+            <td>Year</td>
+            <td>Major</td>
+            <td>Hometown</td>
+            {% endif %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for rushee in event.attendance.all %}
+
+            <tr onclick="window.location='/rushee{{ rushee.id }}';">
+                <td>{{ rushee.id }}</td>
+                <td>{{ rushee.name }}</td>
+                {% if not request.user_agent.is_mobile %}
+                <td>{{ rushee.email }}</td>
+                <td>{{ rushee.year }}</td>
+                <td>{{ rushee.major }}</td>
+                <td>{{ rushee.hometown }}</td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+<br>
+{% endblock %}

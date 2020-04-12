@@ -1,0 +1,155 @@
+{% extends 'core/base.html' %}
+{% block content %}
+
+{% if not settings.rush_signin_active %}
+<h1>Rush signin is not active.  Must be enabled by admin.</h1>
+{% else %}
+
+<br>
+
+<div class="dropdown" style="margin-left: 5%">
+    <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Change event
+    </button>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenu">
+        {% for dropdown_event in events %}
+            <a class="dropdown-item" href="signin{{ dropdown_event.id }}">{{ dropdown_event.name }}</a>
+        {% endfor %}
+    </div>
+</div>
+<br>
+
+
+<h1 style="margin-left: 5%">{{ event.name }}&nbsp;&nbsp;&nbsp;<span class="badge badge-info">Round {{ event.round }}</span></h1>
+{% if event.new_rushees_allowed %}
+{% load crispy_forms_tags %}
+<form style="margin-left: 10%; margin-right:10%" method="post" action="register{{ event.id }}">
+    {% csrf_token %}
+    {{ form.name|as_crispy_field }}
+    {{ form.email|as_crispy_field }}
+    <div class="row">
+        <div class="col-sm-4">
+            {{ form.year|as_crispy_field }}
+        </div>
+        <div class="col-sm-8">
+            {{ form.major|as_crispy_field }}
+        </div>
+    </div>
+    {{ form.hometown|as_crispy_field }}
+    {{ form.address|as_crispy_field }}
+<!--    {{ form|crispy }}-->
+    <input type="hidden" id="profile_picture_data" name="profile_picture_data">
+
+<div class="container" style="margin-left: 10%; margin-right: 10%">
+    <div class="row">
+        <div class="col">
+            <div class="embed-responsive embed-responsive-4by3">
+                <video class="embed-responsive-item rounded border" autoplay id="screenshotVideo"></video>
+            </div>
+        </div>
+        <div class="col">
+            <div class="embed-responsive embed-responsive-4by3">
+                <img class="embed-responsive-item rounded" src="" style="background-color: grey; text-align: center" alt='Click "Take Photo"'  id="screenshotImg">
+                <canvas class="embed-responsive-item"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <button type="button" class="btn btn-primary" id="screenshotButton">Take Photo</button>
+        </div>
+    </div>
+</div>
+    <br>
+
+     <button type="submit" class="btn btn-success">Sign In</button>
+</form>
+
+
+
+
+    <script>
+        function hasGetUserMedia() {
+            return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+        }
+
+        if (hasGetUserMedia()) {
+          // Good to go!
+        } else {
+          alert('getUserMedia() is not supported by your browser');
+        }
+        console.log('hasGetUserMedia passed');
+
+        const constraints = {
+            video: {width: 400, height: 300}
+        };
+
+        const video = document.querySelector('#screenshotVideo');
+        const captureVideoButton = document.querySelector('#recordButton');
+        const screenShotButton = document.querySelector('#screenshotButton')
+        const img = document.querySelector('#screenshotImg');
+        const input = document.querySelector('#profile_picture_data');
+
+        const canvas = document.createElement('canvas');
+
+        console.log('video, captureVideoButton, screenShotButton, img set');
+
+        navigator.mediaDevices.getUserMedia(constraints).then(handleSuccess).catch(handleError);
+
+
+        screenshotButton.onclick = video.onclick = function() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            img.src = canvas.toDataURL('image/png');
+            input.value = canvas.toDataURL('image/png');
+        };
+
+        function handleSuccess(stream) {
+            screenshotButton.disabled = false;
+            video.srcObject = stream;
+        }
+
+        function handleError(){
+            alert('Error:  screenshot not captured');
+        }
+
+        console.log('End of script reached');
+
+    </script>
+</div>
+
+
+{% else %}
+<div class="container-fluid" style="width: 90%">
+    <div class="alert alert-success" role="alert">
+        Click on your name to sign in.
+    </div>
+    <h2>Current Rushees</h2>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <td>Name</td>
+            <td>Email</td>
+            <td>Year</td>
+            <td>Major</td>
+            <td>Hometown</td>
+        </tr>
+        </thead>
+        <tbody>
+        {% for object in objects %}
+
+            <tr onclick="window.location='/attendance{{ object.id }}/{{ event.id }}';">
+                <td>{{ object.name }}</td>
+                <td>{{ object.email }}</td>
+                <td>{{ object.year }}</td>
+                <td>{{ object.major }}</td>
+                <td>{{ object.hometown }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

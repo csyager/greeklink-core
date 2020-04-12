@@ -1,0 +1,16 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<br>
+<div class="container" style="text-align: center">
+    <h2>Thank you for signing up for GreekLink!</h2>
+    <p><b>A link has been sent to your email, please click on it to confirm your address.</b></p><br>
+    <div class="border border-primary rounded">
+        <p><b>Once you have confirmed your account, click here to login:</b></p>
+        <a href="/login"><button class="btn btn-primary" type="submit">Login</button></a><br>
+        <p><b>If you haven't received an email, click here to resend:</b></p>
+        <!-- TODO: implement this feature -->
+        <button class="btn btn-secondary" type="submit">Send another email</button><br>
+    </div>
+</div>
+
+{% endblock %}

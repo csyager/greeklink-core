@@ -1,0 +1,45 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<br>
+
+<div class="container">
+    <h2>Search Results</h2>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <td>ID</td>
+            <td>Name</td>
+            {% if not request.user_agent.is_mobile %}
+            <td>Email</td>
+            <td>Year</td>
+            <td>Major</td>
+            <td>Hometown</td>
+            {% endif %}
+            <td></td>
+        </tr>
+        </thead>
+        <tbody>
+        {% for object in result_list %}
+
+            <tr onclick="window.location='/rushee{{ object.id }}';" class="{% if object.cut != 0 %}table-danger{% endif %}">
+                <td>{{ object.id }}</td>
+                <td>{{ object.name }}</td>
+                {% if not request.user_agent.is_mobile %}
+                <td>{{ object.email }}</td>
+                <td>{{ object.year }}</td>
+                <td>{{ object.major }}</td>
+                <td>{{ object.hometown }}</td>
+                {% endif %}
+                {% if user in object.endorsements.all %}
+                <td><img src="{{ MEDIA_URL }}icons/thumbs_up.png" height="30px" width="30px"></td>
+                {% endif %}
+                {% if user in object.oppositions.all %}
+                <td><img src="{{ MEDIA_URL }}icons/thumbs_down.png" height="30px" width="30px"></td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

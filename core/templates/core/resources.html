@@ -1,0 +1,182 @@
+{% extends 'core/base.html' %}
+{% block content %}
+{% load static %}
+<br>
+{% if calendar_embed == "" and user.is_superuser %}
+<div class="alert alert-warning" role="alert">
+    <a data-toggle="modal" data-target="#calModal">No Google Calendar loaded!  Click here to add one!</a>
+</div>
+<div class="modal fade" id="calModal" tabindex="-1" role="dialog" aria-labelledby="calModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="calModalLabel">Embed Google Calendar</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form style="margin-left: 20%; margin-right:20%" method="post" action="addCal">
+                    {% csrf_token %}
+                    {% load crispy_forms_tags %}
+                    <div class="form-group">
+                        <label for="cal_embed_link" class="requiredField">Google Calendar Embed Link</label>
+                        <input id="cal_embed_link" type="url" class="rounded" name="cal_embed_link" required="required">
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Save changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% elif calendar_embed != "" %}
+<div class="container embed-responsive embed-responsive-4by3">
+    <iframe class="embed-responsive-item" src="{{ calendar_embed }}" style="border: 0" width="800" height="600" frameborder="0" scrolling="no"></iframe>
+</div>
+<br>
+{% if user.is_superuser %}
+<div class="container">
+    <a href="removeCal"><button class="btn btn-danger">Remove Calendar</button></a>
+</div>
+<br>
+{% endif %}
+{% endif %}
+
+<div class="container">
+    <h2>Files</h2>
+    <div class="row">
+        {% for file in files %}
+            <div class="col-md-3">
+                <div class="card">
+                    {% if not request.user_agent.is_mobile %}
+                    <img class="card-img-top"
+                         {% if file.extension == "txt" %}src="{% static 'core/icons/text_doc_icon.png' %}"
+                         {% elif file.extension == "doc" or file.extension == "docx" %}src="{% static 'core/icons/word_icon.jpg' %}"
+                         {% elif file.extension == "pdf" %}src="{% static 'core/icons/pdf_icon.png' %}"
+                         {% else %}src="{% static 'core/icons/file_icon.png' %}"{% endif %}
+                         alt="No document icon">
+                    {% endif %}
+                    <div class="card-body">
+                        <h4 class="card-title">{{ file.name }}</h4>
+                        <p class="card-text">{{ file.description }}</p>
+                        <a href="{{ file.file.url }}" class="btn btn-primary" target="_blank">Open File</a>
+                        {% if user.is_superuser %}
+                        <br>
+                        <br>
+                        <a href="removeFile{{ file.id }}" class="btn btn-danger">Remove File</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        {% if user.is_superuser %}
+            <div class="col-md-3">
+                <div class="card">
+                    {% if not request.user_agent.is_mobile %}
+                    <img class="card-img-top" src = "{% static 'core/icons/add_file_icon.png' %}" alt="Add file">
+                    {% endif %}
+                    <div class="card-body">
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#fileModal">
+                            Upload File
+                        </button>
+                        <!-- Modal -->
+                        <div class="modal fade" id="fileModal" tabindex="-1" role="dialog" aria-labelledby="fileModal" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h4 class="modal-title" id="fileModalLabel">Upload File</h4>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form style="margin-left: 20%; margin-right:20%" method="post" action="uploadfile" enctype="multipart/form-data">
+                                            {% csrf_token %}
+                                            {% load crispy_forms_tags %}
+                                            <div class="form-group">
+                                                {{ form.name|as_crispy_field }}
+                                                {{ form.file|as_crispy_field }}
+                                                {{ form.description|as_crispy_field }}
+                                            </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                        <button type="submit" class="btn btn-primary">Save changes</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div><br>
+<div class="container">
+    <h2>Links</h2>
+    <div class="row">
+        {% for link in links %}
+            <div class="col-md-3">
+                <div class="card">
+                    {% if not request.user_agent.is_mobile %}
+                    <img class="card-img-top" src="{% static 'core/icons/url_icon.png' %}" alt="No link icon">
+                    {% endif %}
+                    <div class="card-body">
+                        <h4 class="card-title">{{ link.name }}</h4>
+                        <p class="card-text">{{ link.description }}</p>
+                        <a href="{{ link.url }}" class="btn btn-primary" target="_blank">Open Link</a>
+                        {% if user.is_superuser %}
+                        <br>
+                        <br>
+                        <a href="removeLink{{ link.id }}" class="btn btn-danger">Remove Link</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        {% if user.is_superuser %}
+            <div class="col-md-3">
+                <div class="card">
+                    {% if not request.user_agent.is_mobile %}
+                    <img class="card-img-top" src = "{% static 'core/icons/add_file_icon.png' %}" alt="Add link">
+                    {% endif %}
+                    <div class="card-body">
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#linkModal">
+                            Add link
+                        </button>
+                        <!-- Modal -->
+                        <div class="modal fade" id="linkModal" tabindex="-1" role="dialog" aria-labelledby="linkModal" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h4 class="modal-title" id="linkModalLabel">Add Link</h4>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form style="margin-left: 20%; margin-right:20%" method="post" action="addLink" enctype="multipart/form-data">
+                                            {% csrf_token %}
+                                            {{ linkForm.name|as_crispy_field }}
+                                            {{ linkForm.url|as_crispy_field }}
+                                            {{ linkForm.description|as_crispy_field }}
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                        <button type="submit" class="btn btn-primary">Save changes</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

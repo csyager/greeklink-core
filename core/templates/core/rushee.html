@@ -1,0 +1,321 @@
+{% extends 'core/base.html' %}
+{% block content %}
+{% load static %}
+{% if not request.user_agent.is_mobile %}
+<div class="jumbotron" style="padding-left: 10%">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="embed-responsive embed-responsive-4by3">
+                <img class="embed-responsive-item rounded" src="{% if rushee.profile_picture %}{{ rushee.profile_picture.url }}{% endif %}" style="background-color: grey; text-align: center" alt="No profile picture.">
+            </div>
+
+        </div>
+        <div class="col-md-4">
+            <h1 class="display-4">{{ rushee.name }}</h1>
+            <br>
+            <br>
+            {% if user.is_superuser %}
+
+            <a href="/votepage{{ rushee.id }}"><button class="btn btn-primary" style="width: 183">Open Voting</button></a><br><br>
+            <a href="/rushee{{ rushee.id }}/push"><button class="btn btn-success">Send Through</button></a>
+            <a href="/rushee{{ rushee.id }}/cut"><button class="btn btn-danger">Cut</button></a><br><br>
+            <a href="/endorse{{ rushee.id }}"><button class="btn btn-success">I endorse this rushee</button></a>
+            <a href="/oppose{{ rushee.id }}"><button class="btn btn-danger">I oppose this rushee</button></a><br><br>
+            <a href="/clear_endorsement{{ rushee.id }}"><button class="btn btn-primary">Reset</button></a>
+            {% else %}
+            <a href="/endorse{{ rushee.id }}"><button class="btn btn-success">I endorse this rushee</button></a>
+            <a href="/oppose{{ rushee.id }}"><button class="btn btn-danger">I oppose this rushee</button></a>
+            <a href="/clear_endorsement{{ rushee.id }}"><button class="btn btn-primary">Reset</button></a>
+            <br>
+            <br>
+            <i>Note that votes cast will only count when voting is open.</i><br>
+            <a href="/vote{{ rushee.id }}/y"><button class="btn btn-success" style="width: 183px">Yes</button></a>&nbsp;
+            <a href="/vote{{ rushee.id }}/n"><button class="btn btn-danger" style="width: 183px">No</button></a><br><br>
+            <a href="/vote{{ rushee.id }}/a"><button class="btn btn-primary" style="width: 183px">Abstain</button></a>&nbsp;
+            <a href="/vote{{ rushee.id }}/b"><button class="btn" style="width: 183px">Blackball</button></a>
+            {% endif %}
+        </div>
+        <div class="col-md-4">
+            {% if from_voting %}
+            <a href="{{ next_url }}"><button class="btn btn-success">Next rushee </button></a>
+            {% endif %}
+            <br>
+            <br>
+            <br>
+            <br>
+            <h2>Endorsements:  {{ rushee.endorsements.count }}</h2>
+            <h2>Opposition:  {{ rushee.oppositions.count }}</h2>
+            <h2>Comments:  {{ comments.count }}</h2>
+        </div>
+    </div>
+</div>
+
+<div class="container table-responsive">
+    {% if user in rushee.endorsements.all %}
+    <div class="alert alert-success">
+        You have <b>endorsed</b> this rushee.
+    </div>
+    {% elif user in rushee.oppositions.all %}
+    <div class="alert alert-success">
+        You have <b>opposed</b> this rushee.
+    </div>
+    {% endif %}
+    {% if rushee.cut != 0 %}
+    <div class="alert alert-danger">
+        This rushee has been cut!
+    </div>
+    {% endif %}
+    <h2>Personal Information</h2>
+    <table class="table table-hover">
+            <tr>
+                <td>Name</td>
+                <td>{{ rushee.name }}</td>
+            </tr>
+            <tr>
+                <td>Email</td>
+                <td>{{ rushee.email }}</td>
+            </tr>
+            <tr>
+                <td>Year</td>
+                <td>{{ rushee.year }}</td>
+            </tr>
+            <tr>
+                <td>Major</td>
+                <td>{{ rushee.major }}</td>
+            </tr>
+            <tr>
+                <td>Hometown</td>
+                <td>{{ rushee.hometown }}</td>
+            </tr>
+            <tr>
+                <td>Address</td>
+                <td>{{ rushee.address }}</td>
+            </tr>
+            <tr>
+                <td>Phone Number</td>
+                <td>{{ rushee.phone_number }}</td>
+            </tr>
+    </table>
+</div>
+
+<!-- endorsement and opposition tables -->
+<div class="container">
+    <div class="row">
+        <div class="col-sm-6">
+            <h2>Endorsements</h2>
+            <table class="table table-hover">
+                {% for endorsement in rushee.endorsements.all %}
+                <tr><td>{{ endorsement.first_name }} {{ endorsement.last_name }}</td></tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="col-sm-6">
+            <h2>Opposition</h2>
+            <table class="table table-hover">
+                {% for opposition in rushee.oppositions.all %}
+                <tr><td>{{ opposition.first_name }} {{ opposition.last_name }}</td></tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+<br>
+
+<div class="container table-responsive">
+    <h2>Attendance</h2>
+    <table class="table table-responsive" style="width:auto">
+        <tr>
+            {% for event in events %}
+            <td>{{ event.name }}</td>
+            {% endfor %}
+        </tr>
+        <tr>
+            {% for event in events %}
+                {% if rushee in event.attendance.all %}
+                <td style="text-align: center"><img src="{{ MEDIA_URL }}icons/check.png" style="height: 50px; width: 50px"></td>
+                {% else %}
+                <td style="text-align: center"><img src="{{ MEDIA_URL }}icons/x.png" style="height: 50px; width: 50px"></td>
+                {% endif %}
+            {% endfor %}
+        </tr>
+    </table>
+</div>
+
+<form style="margin-left: 20%; margin-right:20%" method="post" action="comment">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="body">Comment</label>
+        <textarea class="form-control" name="body" id="body" rows="4" cols="100"></textarea>
+    </div>
+    <button type="submit" class="btn btn-success">Submit</button>
+</form>
+<br>
+
+
+<div class="container">
+    <h2>Comments</h2>
+    <ul class="list-group">
+        {% for comment in comments %}
+        <li class="list-group-item">
+            <b>{{ comment.name }}{% if user.is_superuser %}</b> (<a href="/remove_comment{{ comment.id }}">remove comment</a>){% endif %}<br>
+            {{ comment.body }}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- mobile body -->
+{% else %}
+
+<style>
+.carousel-control-prev-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23343a40' viewBox='0 0 8 8'%3E%3Cpath d='M5.25 0l-4 4 4 4 1.5-1.5-2.5-2.5 2.5-2.5-1.5-1.5z'/%3E%3C/svg%3E");
+}
+
+.carousel-control-next-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23343a40' viewBox='0 0 8 8'%3E%3Cpath d='M2.75 0l-1.5 1.5 2.5 2.5-2.5 2.5 1.5 1.5 4-4-4-4z'/%3E%3C/svg%3E");
+}
+</style>
+
+<div class="jumbotron" style="padding-left: 10%">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="embed-responsive embed-responsive-4by3">
+                <img class="embed-responsive-item rounded" src="{% if rushee.profile_picture %}{{ rushee.profile_picture.url }}{% endif %}" style="background-color: grey; text-align: center" alt="No profile picture.">
+            </div>
+
+        </div>
+        <div class="col-md-4">
+            <h1 class="display-4">{{ rushee.name }}</h1>
+            {% if user.is_superuser %}
+            <br>
+            <br>
+            <a href="/votepage{{ rushee.id }}"><button class="btn btn-primary" style="width: 183">Open Voting</button></a><br><br>
+            <a href="/rushee{{ rushee.id }}/push"><button class="btn btn-success">Send Through</button></a>
+            <a href="/rushee{{ rushee.id }}/cut"><button class="btn btn-danger">Cut</button></a><br><br>
+            {% endif %}
+            <a href="/endorse{{ rushee.id }}"><button class="btn btn-success">Endorse</button></a>&nbsp;&nbsp;
+            <a href="/oppose{{ rushee.id }}"><button class="btn btn-danger">Oppose</button></a><br><br>
+            <a href="/clear_endorsement{{ rushee.id }}"><button class="btn btn-primary">Reset</button></a>
+        </div>
+        <div class="col-md-4">
+            {% if from_voting %}
+            <a href="{{ next_url }}"><button class="btn btn-success">Next rushee </button></a>
+            {% endif %}
+            <br>
+            <br>
+            <br>
+            <br>
+            <h2>Endorsements:  {{ rushee.endorsements.count }}</h2>
+            <h2>Opposition:  {{ rushee.oppositions.count }}</h2>
+            <h2>Comments:  {{ comments.count }}</h2>
+        </div>
+    </div>
+</div>
+{% if user in rushee.endorsements.all %}
+    <div class="alert alert-success">
+        You have <b>endorsed</b> this rushee.
+    </div>
+    {% elif user in rushee.oppositions.all %}
+    <div class="alert alert-success">
+        You have <b>opposed</b> this rushee.
+    </div>
+{% endif %}
+<div id="rusheeCarousel" class="carousel slide" data-ride="carousel" data-interval="false">
+  <div class="carousel-inner">
+    <div class="carousel-item active">
+      <div class="container">
+          <div class="row">
+              <div class="col col-md-6">
+                  <a href="/vote{{ rushee.id }}/y"><button class="btn btn-success btn-block"><br><br><br><h1><b>Yes</b></h1><br><br><br></button></a>
+              </div>
+              <div class="col col-md-6">
+                  <a href="/vote{{ rushee.id }}/n"><button class="btn btn-danger btn-block"><br><br><br><h1><b>No</b></h1><br><br><br></button></a>
+              </div>
+          </div>
+          <br>
+          <br>
+          <div class="row">
+              <div class="col col-md-6" style="width: 42vw">
+                  <a href="/vote{{ rushee.id }}/a"><button class="btn btn-primary btn-block"><br><br><br><h1 style="font-size: 8vw"><b>Abstain</b></h1><br><br><br></button></a>
+              </div>
+              <div class="col col-md-6" style="width: 45vw">
+                  <a href="/vote{{ rushee.id }}/b"><button class="btn btn-warning btn-block"><br><br><br><h1 style="font-size: 8vw"><b>Blackball</b></h1><br><br><br></button></a>
+              </div>
+          </div>
+      </div>
+    </div>
+    <div class="carousel-item">
+        <h2 style="margin: 10%">Personal Information</h2>
+        <table class="table table-hover" style="margin: 10%">
+            <tr>
+                <td>Name</td>
+                <td>{{ rushee.name }}</td>
+            </tr>
+            <tr>
+                <td>Email</td>
+                <td>{{ rushee.email }}</td>
+            </tr>
+            <tr>
+                <td>Year</td>
+                <td>{{ rushee.year }}</td>
+            </tr>
+            <tr>
+                <td>Major</td>
+                <td>{{ rushee.major }}</td>
+            </tr>
+            <tr>
+                <td>Hometown</td>
+                <td>{{ rushee.hometown }}</td>
+            </tr>
+            <tr>
+                <td>Address</td>
+                <td>{{ rushee.address }}</td>
+            </tr>
+            <tr>
+                <td>Phone</td>
+                <td>{{ rushee.phone_number }}</td>
+            </tr>
+        </table>
+    </div>
+    <div class="carousel-item">
+        <form style="margin-left: 20%; margin-right:20%" method="post" action="comment">
+        {% csrf_token %}
+            <div class="form-group">
+                <label for="body">Comment</label>
+                <textarea class="form-control" name="body" id="body" rows="4" cols="100"></textarea>
+            </div>
+            <button type="submit" class="btn btn-success">Submit</button>
+        </form>
+
+    <br>
+
+
+        <div class="container">
+            <h2>Comments</h2>
+            <ul class="list-group">
+                {% for comment in comments %}
+                <li class="list-group-item">
+                    <b>{{ comment.name }}</b><br>
+                    {{ comment.body }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+  </div>
+  <a class="carousel-control-prev" href="#rusheeCarouselIndicators" role="button" data-slide="prev" onclick="$('#rusheeCarousel').carousel('prev')">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="sr-only">Previous</span>
+  </a>
+  <a class="carousel-control-next" href="#rusheeCarouselIndicators" role="button" data-slide="next" onclick="$('#rusheeCarousel').carousel('next')">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="sr-only">Next</span>
+  </a>
+</div>
+
+
+
+{% endif %}
+
+{% endblock %}

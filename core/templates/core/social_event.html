@@ -1,0 +1,81 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<br>
+<script>
+    function multipleNames() {
+        if (document.getElementById("single_name").hidden==false){
+            document.getElementById("single_name").hidden=true;
+            document.getElementById("multiple_names").hidden=false;
+            document.getElementById("toggle").innerHTML="<u>Click here to add individual names</u>";
+        } else {
+            document.getElementById("single_name").hidden=false;
+            document.getElementById("multiple_names").hidden=true;
+            document.getElementById("toggle").innerHTML="<u>Click here to add multiple names</u>";
+        }
+    }
+</script>
+
+
+
+
+<div class="container" style="margin-left: 5%">
+    <h1 style="display: inline">{{ event.name }}</h1>
+    <h3>{{ event.date }}, {{ event.time }}</h3>
+    <h3>{{ event.location }}</h3>
+    <br>
+    <!-- text input to add names to the list -->
+    <form class="form-inline my-2 my-lg-0" id="listform" action="/add_to_list{{ event.id }}" method="post" accept-charset="utf-8">
+        {% csrf_token %}
+          <input class="form-control mr-sm-2" id="single_name" name="name" type="search" placeholder="Type Full Name Here" aria-label="add" style="width: 80%">
+          <textarea class="form-control mr-sm-2" style="width:100%" rows="5" id="multiple_names" name="multiple_names" placeholder="Separate names by a newline" hidden></textarea><br>
+          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Add to list</button>
+    </form>
+    <br>
+    <a onclick="multipleNames()" id="toggle" style="color: blue"><u>Click here to add multiple names</u></a>
+    <br><br>
+    <h2>List ({{ event.list.count }}) </h2>
+    <br>
+    {% if user.is_superuser %}
+    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#clear_modal">
+      Clear list
+    </button>
+    <a href="export_xls{{ event.id }}"><button type="button" class="btn btn-primary">Export Spreadsheet</button></a><br><br>
+    {% endif %}
+    <table class="table table-hover">
+
+        <tbody>
+        {% for attendee in event.list.all %}
+
+            <tr>
+                <td>{{ attendee.name }}</td>
+                <td>{{ attendee.user }}</td>
+                <td style="text-align: right"><a href="/remove_from_list{{ event.id }}/{{ attendee.id }}"><button type="button" class="btn btn-danger">Remove from list</button></a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+<div class="modal fade" id="clear_modal" tabindex="-1" role="dialog" aria-labelledby="clear_modal_label" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="clear_modal_label">Warning!</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+        <div class="modal-body">
+            <p>Are you sure that you want to clear the list?  This change cannot be reversed!</p>
+        </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <a href="clear_list{{ event.id }}"><button type="button" class="btn btn-danger">Clear list</button></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<br>
+{% endblock %}
