@@ -15,11 +15,11 @@
         <a class="nav-link" href="/resources">Resources</a>
       </li>
     </ul>
-    <form class="form-inline my-2 my-lg-0" id="searchform" action="/search" method="get" accept-charset="utf-8">
-      <input class="form-control mr-sm-2" name="query" type="search" placeholder="Search" aria-label="Search">
-      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-    </form>
     <ul class="navbar-nav ml-auto">
+      <form class="form-inline my-2 my-lg-0" id="searchform" action="/search" method="get" accept-charset="utf-8">
+        <input class="form-control mr-md-2" style='width: 300px' name="query" type="search" placeholder="Search" aria-label="Search">
+        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+      </form>
       {% if user.is_superuser and not request.user_agent.is_mobile %}
       <li class="{{ settings_page }} nav-item">
         <a class="nav-link" href="/admin">Site Settings</a>

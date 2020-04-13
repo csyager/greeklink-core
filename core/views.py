@@ -40,7 +40,7 @@ def getSettings():
     settings = settings[0]
     return settings
 
-# index page.  Shows current rushees
+# index page
 @login_required
 def index(request):
     template = loader.get_template('core/index.html')
@@ -119,21 +119,15 @@ def activate(request, uidb64, token):
 
 
 # logs brothers out of the system
-def logout(request):
-    auth_logout(request)
+def brother_logout(request):
+    logout(request)
     return HttpResponseRedirect('/login')
 
+# TODO: needs to be implemented
 def search(request):
     query = request.GET.get('query')
-    if query:
-        name_result = Rushee.objects.filter(name__icontains=query)
-        hometown_result = Rushee.objects.filter(hometown__icontains=query)
-        major_result = Rushee.objects.filter(major__icontains=query)
-        result = sorted(
-            chain(name_result, hometown_result, major_result),
-            key=attrgetter('name'))
     context = {
-        "result_list": result,
+        "result_list": [],
         'settings': getSettings()
     }
     template = loader.get_template('core/search.html')
