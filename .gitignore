@@ -1,0 +1,21 @@
+# ignore coverage app and related directories
+.coverage
+htmlcov
+
+# ignore VSCode files
+.vscode
+
+# ignore Django binaries
+__pycache__/
+
+# ignore virtual env
+env/
+
+# ingore environment variables file
+.env
+
+# ignore migrations, static, and media directories
+# (static is recollected in start-up.sh)
+*/migrations
+media
+/static
