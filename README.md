@@ -8,7 +8,7 @@ To download our product, run the following code from your command line interface
 git clone https://github.com/csyager/greeklink-core.git
 cd greeklink-core
 ```
-For some functionality, as well as to protect secret keys, we use a .env file.  This file is stored in the greeklink_core directory.  Use a text editor to open the .env-template file.  Change the line that starts with `DJANGO_SECRET_KEY=` to store a 50-key secret key for your app.  When this is done, change the name of the file from .env-template to .env, navigate back to the main directory, and run:
+For some functionality, as well as to protect secret keys, we use a .env file.  This file is stored in the greeklink_core directory.  Use a text editor to open the .env-template file (note that the file may be hidden).  Change the line that starts with `DJANGO_SECRET_KEY=` to store a 50-character secret key for your app.  When this is done, change the name of the file from .env-template to .env, navigate back to the main directory, and run:
 
 ```
 ./start-up.sh
