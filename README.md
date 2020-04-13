@@ -6,8 +6,11 @@ To download our product, run the following code from your command line interface
 ```
 git clone https://github.com/csyager/greeklink-core.git
 cd greeklink-core
-./start-up
 ```
+For some functionality, as well as to protect secret keys, we use a .env file.  This file is stored in the greeklink_core directory.  Use a text editor to open the .env-template file.  Change the line that starts with `DJANGO_SECRET_KEY=` to store a 50-key secret key for your app.  When this is done, change the name of the file from .env-template to .env, navigate back to the main directory, and run:
+
+`./start-up.sh`
+
 This will clone this repository, then run our start-up.sh script.  This script will create a virtual environment to run our code in, install our requirements (listed in requirements.txt), reinstantiate the database and remove lingering migrations, then make migrations and migrate based on the current status of the models.py file.  It then collects static files and loads the default admin account into the database.
 
 ## Contributing
