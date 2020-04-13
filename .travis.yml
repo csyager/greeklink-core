@@ -2,7 +2,7 @@ language: python
 python:
   - "3.6"
 # command to install dependencies
-  - pip install -r requirements-travis.txt
+  - pip install -r requirements.txt
 # environment variables
 env:
   - ENV='testing' DJANGO_SECRET_KEY='1g5rtg0b+nk3axel583k$2gvfq-9zf-80dg_vuy#=zr$-byem^'
