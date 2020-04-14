@@ -3,6 +3,7 @@
 # erase existing coverage report
 coverage erase
 # run new coverage report
-coverage run --source='.' manage.py test core
+coverage run manage.py test core
+coverage html
 # open results in web browser
 python -m webbrowser htmlcov/index.html

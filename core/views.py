@@ -178,25 +178,17 @@ def remove_file(request, file_id):
 
 @staff_member_required
 def addCal(request):
-    settings = SiteSettings.objects.all()
-    if len(settings) == 0:
-        newsettings = SiteSettings()
-        newsettings.save()
-        settings = SiteSettings.objects.all()
-    settings[0].calendar_embed = request.POST['cal_embed_link']
-    settings[0].save()
+    settings = getSettings()
+    settings.calendar_embed = request.POST['cal_embed_link']
+    settings.save()
     return HttpResponseRedirect('resources')
 
 
 @staff_member_required
 def removeCal(request):
-    settings = SiteSettings.objects.all()
-    if len(settings) == 0:
-        newsettings = SiteSettings()
-        newsettings.save()
-        settings = SiteSettings.objects.all()
-    settings[0].calendar_embed = ""
-    settings[0].save()
+    settings = getSettings()
+    settings.calendar_embed = ""
+    settings.save()
     return HttpResponseRedirect('resources')
 
 
