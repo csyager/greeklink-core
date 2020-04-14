@@ -43,26 +43,27 @@ def getSettings():
 # index page
 @login_required
 def index(request):
-    template = loader.get_template('core/index.html')
-    date_in_two_weeks = timezone.now() + timedelta(days=14)
-    date_one_day_ago = timezone.now() - timedelta(days=1)
-    date_two_weeks_ago = timezone.now() - timedelta(days=14)
-    social_events = SocialEvent.objects.filter(date__range=[date_one_day_ago, date_in_two_weeks])
-    events = sorted(
-        chain(social_events),
-        key=lambda event: event.date)
-    activity = Activity.objects.filter(user=request.user, date__range=[date_two_weeks_ago, timezone.now()]).order_by('date').reverse()[0:5]
-    announcements = Announcement.objects.order_by('date').reverse()[0:5]
-    announcement_form = AnnouncementForm()
-    context = {
-        "home_page": "active",
-        'settings': getSettings(),
-        "events": events,
-        "activity": activity,
-        "announcements": announcements,
-        "announcement_form": announcement_form,
-    }
-    return HttpResponse(template.render(context, request))
+    # template = loader.get_template('core/index.html')
+    # date_in_two_weeks = timezone.now() + timedelta(days=14)
+    # date_one_day_ago = timezone.now() - timedelta(days=1)
+    # date_two_weeks_ago = timezone.now() - timedelta(days=14)
+    # social_events = SocialEvent.objects.filter(date__range=[date_one_day_ago, date_in_two_weeks])
+    # events = sorted(
+    #     chain(social_events),
+    #     key=lambda event: event.date)
+    # activity = Activity.objects.filter(user=request.user, date__range=[date_two_weeks_ago, timezone.now()]).order_by('date').reverse()[0:5]
+    # announcements = Announcement.objects.order_by('date').reverse()[0:5]
+    # announcement_form = AnnouncementForm()
+    # context = {
+    #     "home_page": "active",
+    #     'settings': getSettings(),
+    #     "events": events,
+    #     "activity": activity,
+    #     "announcements": announcements,
+    #     "announcement_form": announcement_form,
+    # }
+    # return HttpResponse(template.render(context, request))
+    return HttpResponse("Hi my name jeff")
 
 # users signing up for site
 def signup(request):
