@@ -18,6 +18,8 @@
 
     <!-- favicon -->
     <link rel="shortcut icon" href="{{ MEDIA_URL }}icons/favicon.ico">
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'core/css/style.css' %}">
 </head>
 <body>
     {% include 'core/navigation.html' %}
