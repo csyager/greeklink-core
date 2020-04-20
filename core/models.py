@@ -11,7 +11,7 @@ class SiteSettings(models.Model):
     class Meta:
         verbose_name_plural = "Site Settings"
     site_title = models.CharField(max_length=100, default="test")
-    primary_color_theme = models.CharField(max_length=7, default="#343a40")
+    primary_color_theme = models.CharField(max_length=7, default="#209CEE")
     calendar_embed = models.URLField(blank=True)
     verification_key = models.CharField(max_length=50, default="9999")
     organization_name = models.CharField(max_length=50, default="test")
