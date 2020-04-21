@@ -225,7 +225,7 @@ def social_event(request, event_id):
         'settings': getSettings(),
         'social_page': "active",
     }
-    template = loader.get_template('deltasigrush/social_event.html')
+    template = loader.get_template('core/social_event.html')
     return HttpResponse(template.render(context, request))
 
 
