@@ -193,8 +193,8 @@ def removeCal(request):
 
 
 @login_required
-def social_events(request):
-    template = loader.get_template('core/social_events.html')
+def social(request):
+    template = loader.get_template('core/social.html')
     events = SocialEvent.objects.all().order_by('date')
     context = {
         'settings': getSettings(),

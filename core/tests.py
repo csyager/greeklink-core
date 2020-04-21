@@ -165,3 +165,32 @@ class AnnouncementsTestCase(TestCase):
         form_data = {}
         form = AnnouncementForm(data=form_data)
         self.assertFalse(form.is_valid())
+
+
+class SocialTestCase(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create(username="admin", is_staff=True, is_superuser=True)
+        self.client.force_login(self.admin)
+        SocialEvent.objects.create()
+        
+    def test_social_home_template(self):
+        path = reverse('social')
+        response = self.client.post(path)
+        self.assertContains(response, "<h1>Social</h1>")
+
+    def test_event_on_home_page(self):
+        path = reverse('social')
+        response = self.client.post(path)
+        self.assertContains(response, '<a href="social_event1"')
+    
+    def test_create_event(self):
+        path = reverse('create_social_event')
+        post_dict = {'name': 'test_name', 'date': '2001-01-01', 'time': '12:00', 'location': ""}
+        response = self.client.post(path, post_dict, HTTP_REFERER=reverse('social'), follow=True)
+        self.assertContains(response, 'test_name -- Jan. 1, 2001, noon')
+
+    def test_social_event_page_exists(self):
+        path = reverse('social_event', kwargs=dict(event_id=1))
+        response = self.client.post(path)
+        self.assertEqual(response.status_code, 200)
+        
