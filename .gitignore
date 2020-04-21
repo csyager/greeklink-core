@@ -22,3 +22,4 @@ env/
 */migrations
 media
 /static
+db.sqlite3
