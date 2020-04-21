@@ -264,11 +264,6 @@ def remove_from_list(request, event_id, attendee_id):
     event = SocialEvent.objects.get(id=event_id)
     attendee = Attendee.objects.get(id=attendee_id)
     event.list.remove(attendee)
-    activity = Activity()
-    activity.action = "Removed " + attendee.name + " from list for " + event.name
-    activity.user = request.user
-    activity.target = reverse("social_event", kwargs={"event_id": event.id})
-    activity.save()
     attendee.delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
