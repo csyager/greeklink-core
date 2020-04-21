@@ -5,6 +5,9 @@ htmlcov
 # ignore VSCode files
 .vscode
 
+# ignore Pycharm files
+.idea
+
 # ignore Django binaries
 __pycache__/
 
@@ -19,3 +22,4 @@ env/
 */migrations
 media
 /static
+db.sqlite3
