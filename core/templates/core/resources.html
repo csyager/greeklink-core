@@ -51,8 +51,8 @@
         <h2>Files</h2>
         <div class="row">
             {% for file in files %}
-                <div class="col-md-3">
-                    <div class="card">
+                <div class="col-md-auto">
+                    <div class="card resource-card">
                         {% if not request.user_agent.is_mobile %}
                         <img class="card-img-top"
                             {% if file.extension == "txt" %}src="{% static 'core/icons/text_doc_icon.png' %}"
@@ -75,8 +75,8 @@
                 </div>
             {% endfor %}
             {% if user.is_superuser %}
-                <div class="col-md-3">
-                    <div class="card">
+                <div class="col-md-auto">
+                    <div class="card resource-card">
                         {% if not request.user_agent.is_mobile %}
                         <img class="card-img-top" src = "{% static 'core/icons/add_file_icon.png' %}" alt="Add file">
                         {% endif %}
@@ -122,8 +122,8 @@
         <h2>Links</h2>
         <div class="row">
             {% for link in links %}
-                <div class="col-md-3">
-                    <div class="card">
+                <div class="col-md-auto">
+                    <div class="card resource-card">
                         {% if not request.user_agent.is_mobile %}
                         <img class="card-img-top" src="{% static 'core/icons/url_icon.png' %}" alt="No link icon">
                         {% endif %}
@@ -141,8 +141,8 @@
                 </div>
             {% endfor %}
             {% if user.is_superuser %}
-                <div class="col-md-3">
-                    <div class="card">
+                <div class="col-md-auto">
+                    <div class="card resource-card">
                         {% if not request.user_agent.is_mobile %}
                         <img class="card-img-top" src = "{% static 'core/icons/add_file_icon.png' %}" alt="Add link">
                         {% endif %}
