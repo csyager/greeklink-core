@@ -282,7 +282,7 @@ def clear_list(request, event_id):
 def export_xls(request, event_id):
     event = SocialEvent.objects.get(id=event_id)
     response = HttpResponse(content_type='application/ms-excel')
-    response['Content-Disposition'] = 'attachment; filename="' + str(event_id) + '_attendance".xls'
+    response['Content-Disposition'] = 'attachment; filename=' + str(event_id) + '_attendance.xls'
 
     wb = xlwt.Workbook(encoding='utf-8')
     ws = wb.add_sheet('Attendance')

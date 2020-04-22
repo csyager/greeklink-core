@@ -137,11 +137,51 @@ class ResourcesTestCase(TestCase):
         response = self.client.post(path)
         settings.refresh_from_db()
         self.assertEqual(settings.calendar_embed, '')
-        
 
+    # tests the add_link views.py function
+    def test_add_link_view(self):
+        self.client.force_login(self.admin)
+        post_dict = {'name': 'test', 'description': 'test description', 'url': 'https://www.google.com'}
+        path = reverse('add_link')
+        referer = reverse('resources')
+        response = self.client.post(path, post_dict, HTTP_REFERER=referer, follow=True)
+        self.assertContains(response, '<a href="https://www.google.com"')
+        
+    # tests the link form
+    def test_add_link_form_valid(self):
+        self.client.force_login(self.admin)
+        form_data = {'name': 'test', 'description': 'test description', 'url': 'https://www.google.com'}
+        form = LinkForm(data=form_data)
+        self.assertTrue(form.is_valid)
+
+    # tests when the link form is invalid
+    def test_add_link_form_invalid(self):
+        self.client.force_login(self.admin)
+        form_data = {}
+        form = LinkForm(data=form_data)
+        self.assertFalse(form.is_valid())
+
+    # tests that errors are returned when link form is invalid
+    def test_add_link_form_errors(self):
+        self.client.force_login(self.admin)
+        post_dict = {}
+        path = reverse('add_link')
+        response = self.client.post(path, post_dict)
+        self.assertContains(response, 'nameurldescription')
+
+    # tests remove link function
+    def test_remove_link(self):
+        self.client.force_login(self.admin)
+        ResourceLink.objects.create(name='test', description='test description', url='https://www.google.com')
+        path = reverse('remove_link', kwargs=dict(link_id=1))
+        referer = reverse('resources')
+        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        self.assertFalse(ResourceLink.objects.all())
+        self.assertFalse(re.findall("<h4.*test</h4", str(response.content)))
+        
 class AnnouncementsTestCase(TestCase):
     def setUp(self):
-        u = User.objects.create(username="admin", is_superuser=True)
+        u = User.objects.create(username="admin", is_staff=True, is_superuser=True)
         self.client.force_login(u)
         a = Announcement.objects.create(user=u)
 
@@ -172,11 +212,26 @@ class AnnouncementsTestCase(TestCase):
         form = AnnouncementForm(data=form_data)
         self.assertTrue(form.is_valid())
 
-    # tests that announcement form doesn't take valid input
+    # tests that announcement form doesn't take invalid input
     def test_add_announcement_form_invalid(self):
         form_data = {}
         form = AnnouncementForm(data=form_data)
         self.assertFalse(form.is_valid())
+
+    # tests announcement form view
+    def test_add_announcement_view(self):
+        path = reverse('add_announcement')
+        referer = reverse('index')
+        post_dict = {'title': 'test', 'target': 'https://www.google.com', 'body': 'announcement body'}
+        response = self.client.post(path, post_dict, HTTP_REFERER=referer, follow=True)
+        self.assertContains(response, "announcement body")
+
+    # tests announcement form view with invalid input
+    def test_add_announcement_view_invalid(self):
+        path = reverse('add_announcement')
+        post_dict = {}
+        response = self.client.post(path, post_dict, follow=True)
+        self.assertContains(response, 'titlebody')
 
 
 class SocialTestCase(TestCase):
@@ -289,3 +344,17 @@ class SocialTestCase(TestCase):
         content = str(response.content)
         self.assertFalse(re.findall("<td>attendee[1-3]</td>", content))
         self.assertFalse(event.list.all())
+
+    # tests exporting a spreadsheet of attendees
+    def test_export_xls(self):
+        event = SocialEvent.objects.get(id=1)
+        for i in range(0, 3):
+            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin)
+            event.list.add(a)
+        event.save()
+        path = reverse('export_xls', kwargs=dict(event_id=1))
+        response = self.client.post(path)
+        self.assertEqual(response.get('Content-Type'), 'application/ms-excel')
+        self.assertEqual(response.get('Content-Disposition'), 'attachment; filename=1_attendance.xls')
+
+    

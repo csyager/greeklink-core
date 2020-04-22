@@ -19,6 +19,7 @@ env/
 
 # ignore migrations, static, and media directories
 # (static is recollected in start-up.sh)
+db.sqlite3
 */migrations
 media
 /static
