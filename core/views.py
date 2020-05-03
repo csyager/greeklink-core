@@ -133,6 +133,7 @@ class SearchView(ListView):
         context = super().get_context_data(*args, **kwargs)
         context['count'] = self.count or 0
         context['query'] = self.request.GET.get('q')
+        context['settings'] = getSettings()
         return context
     
     def get_queryset(self):
@@ -152,16 +153,6 @@ class SearchView(ListView):
             self.count = len(qs) 
             return qs
         return SocialEvent.objects.none() # just an empty queryset as default
-
-# # TODO: needs to be implemented
-# def search(request):
-#     query = request.GET.get('query')
-#     context = {
-#         "result_list": [],
-#         'settings': getSettings()
-#     }
-#     template = loader.get_template('core/search.html')
-#     return HttpResponse(template.render(context, request))
 
 @login_required
 def resources(request):
