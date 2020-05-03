@@ -225,7 +225,7 @@ def removeCal(request):
 @login_required
 def social_events(request):
     template = loader.get_template('core/social_events.html')
-    events = SocialEvent.objects.all().order_by('date')
+    events = SocialEvent.objects.all().order_by('-date')
     context = {
         'settings': getSettings(),
         'social_page': "active",

@@ -12,25 +12,18 @@
         
 {% for object in object_list %}
     {% with object|get_class as klass %}
-      {% if klass == 'Post' %}
+      {% if klass == 'SocialEvent' %}
            <div class='row'>
              <div class='col-12'>
-                Blog post: <a href='{{ object.get_absolute_url }}'>{{ object.title }}</a>
+                Social Event: <a href='social_event{{ event.id }}'>{{ object.name }}</a> 
             </div>
           </div>
 
-      {% elif klass == 'Lesson' %}
+      {% elif klass == '_______' %}
            <div class='row'>
              <div class='col-12'>
-                Lesson Item: <a href='{{ object.get_absolute_url }}'>{{ object.title }}</a>
+                Lesson Item: <a href='{{ object.get_absolute_url }}'>{{ object.______ }}</a>
               </div>
-            </div>
-        
-      {% elif klass == 'Profile' %}
-           <div class='row'>
-                <div class='col-12'>
-                   Lesson Item: <a href='{{ object.get_absolute_url }}'>{{ object.title }}</a>
-                </div>
             </div>
       {% else %}
            <div class='row'>

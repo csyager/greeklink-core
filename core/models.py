@@ -60,7 +60,8 @@ class Attendee(models.Model):
     class Meta:
         ordering = ['name']
 
-class SocialEventQuerySet(models.QuerySet):    #new- builds reusable search
+#------------------------------------------------------------------ block for social event
+class SocialEventQuerySet(models.QuerySet):
     def search(self, query=None):
         qs = self
         if query is not None:
@@ -70,7 +71,6 @@ class SocialEventQuerySet(models.QuerySet):    #new- builds reusable search
             qs = qs.filter(or_lookup).distinct() 
         return qs
 
-#for search- basically this is used to handle any given query (both none and if we want to include other attributes other than name)
 class SocialEventManager(models.Manager):
     def get_queryset(self):
         return SocialEventQuerySet(self.model, using=self.db)
@@ -88,6 +88,8 @@ class SocialEvent(OrgEvent):
 
     def __str__(self):
         return self.name
+
+#------------------------------------------------------------------------
 
 
 class ResourceLink(models.Model):
