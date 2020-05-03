@@ -27,6 +27,7 @@ from django.utils import timezone
 from itertools import chain
 from django.core.mail import send_mail
 from urllib import parse
+from django.views.generic import ListView
 
 # Create your views here.
 
@@ -123,15 +124,44 @@ def brother_logout(request):
     logout(request)
     return HttpResponseRedirect('/login')
 
-# TODO: needs to be implemented
-def search(request):
-    query = request.GET.get('query')
-    context = {
-        "result_list": [],
-        'settings': getSettings()
-    }
-    template = loader.get_template('core/search.html')
-    return HttpResponse(template.render(context, request))
+class SearchView(ListView):
+    template_name = 'core/search.html'
+    paginate_by = 20
+    count = 0
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['count'] = self.count or 0
+        context['query'] = self.request.GET.get('q')
+        return context
+    
+    def get_queryset(self):
+        request = self.request
+        query = request.GET.get('q', None)
+        #this may be confusing, but this chains the queries together
+        if query is not None:
+            OrgEvent_results = OrgEvent.objects.search(query)
+     
+            # combine the different querysets 
+            queryset_chain = chain(
+                    OrgEvent_results
+            )        
+            qs = sorted(queryset_chain, 
+                        key=lambda instance: instance.pk, 
+                        reverse=True)
+            self.count = len(qs) 
+            return qs
+        return OrgEvent.objects.none() # just an empty queryset as default
+
+# # TODO: needs to be implemented
+# def search(request):
+#     query = request.GET.get('query')
+#     context = {
+#         "result_list": [],
+#         'settings': getSettings()
+#     }
+#     template = loader.get_template('core/search.html')
+#     return HttpResponse(template.render(context, request))
 
 @login_required
 def resources(request):

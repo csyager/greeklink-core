@@ -2,6 +2,7 @@ from django.db import models
 from django.forms import ModelForm
 from django.utils import timezone
 from django.conf import settings
+from django.db.models import Q
 
 
 from django.contrib.auth.models import User
@@ -26,10 +27,28 @@ class ResourceFile(models.Model):
     def __str__(self):
         return self.name
 
+class OrgEventQuerySet(models.QuerySet):    #new- builds reusable search
+    def search(self, query=None):
+        qs = self
+        if query is not None:
+            or_lookup = (Q(name__icontains=query)
+                        )
+            qs = qs.filter(or_lookup).distinct() 
+        return qs
+
+#for search- basically this is used to handle any given query (both none and if we want to include other attributes other than name)
+class OrgEventManager(models.Manager):
+    def get_queryset(self):
+        return OrgEventQuerySet(self.model, using=self.db)
+
+    def search(self, query=None):
+        return self.get_queryset().search(query=query)
 
 class OrgEvent(models.Model):
     name = models.CharField(max_length=50, default="test")
     date = models.DateField(default='2000-01-01')
+
+    objects = OrgEventManager() #new line for org event
 
     class Meta:
         abstract = True
