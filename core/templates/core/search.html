@@ -1,4 +1,5 @@
 {% extends 'core/base.html' %}
+{% load class_tag %}
 {% block content %}
 <br>
 
@@ -10,7 +11,7 @@
         
         
 {% for object in object_list %}
-    {% with object|class_name as klass %}
+    {% with object|get_class as klass %}
       {% if klass == 'Post' %}
            <div class='row'>
              <div class='col-12'>
@@ -34,7 +35,7 @@
       {% else %}
            <div class='row'>
              <div class='col-12 col-lg-8 offset-lg-4'>
-                <a href='{{ object.get_absolute_url }}'>{{ object }} | {{ object|class_name }}</a>
+                <a href='{{ object.get_absolute_url }}'>{{ object }} | {{ object|get_class }}</a>
             </div>
            </div>
         {% endif %}

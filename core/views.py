@@ -137,21 +137,21 @@ class SearchView(ListView):
     
     def get_queryset(self):
         request = self.request
-        query = request.GET.get('q', None)
+        query = request.GET.get('query', None)
         #this may be confusing, but this chains the queries together
         if query is not None:
-            OrgEvent_results = OrgEvent.objects.search(query)
+            SocialEvent_results = SocialEvent.objects.search(query)
      
             # combine the different querysets 
             queryset_chain = chain(
-                    OrgEvent_results
+                    SocialEvent_results
             )        
             qs = sorted(queryset_chain, 
                         key=lambda instance: instance.pk, 
                         reverse=True)
             self.count = len(qs) 
             return qs
-        return OrgEvent.objects.none() # just an empty queryset as default
+        return SocialEvent.objects.none() # just an empty queryset as default
 
 # # TODO: needs to be implemented
 # def search(request):
