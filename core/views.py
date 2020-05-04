@@ -194,8 +194,8 @@ def removeCal(request):
 
 
 @login_required
-def social_events(request):
-    template = loader.get_template('core/social_events.html')
+def social(request):
+    template = loader.get_template('core/social.html')
     events = SocialEvent.objects.all().order_by('date')
     context = {
         'settings': getSettings(),
@@ -265,11 +265,6 @@ def remove_from_list(request, event_id, attendee_id):
     event = SocialEvent.objects.get(id=event_id)
     attendee = Attendee.objects.get(id=attendee_id)
     event.list.remove(attendee)
-    activity = Activity()
-    activity.action = "Removed " + attendee.name + " from list for " + event.name
-    activity.user = request.user
-    activity.target = reverse("social_event", kwargs={"event_id": event.id})
-    activity.save()
     attendee.delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -288,7 +283,7 @@ def clear_list(request, event_id):
 def export_xls(request, event_id):
     event = SocialEvent.objects.get(id=event_id)
     response = HttpResponse(content_type='application/ms-excel')
-    response['Content-Disposition'] = 'attachment; filename="' + str(event_id) + '_attendance".xls'
+    response['Content-Disposition'] = 'attachment; filename=' + str(event_id) + '_attendance.xls'
 
     wb = xlwt.Workbook(encoding='utf-8')
     ws = wb.add_sheet('Attendance')
