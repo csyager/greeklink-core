@@ -27,6 +27,7 @@ from django.utils import timezone
 from itertools import chain
 from django.core.mail import send_mail
 from urllib import parse
+from django.urls import reverse
 
 # Create your views here.
 

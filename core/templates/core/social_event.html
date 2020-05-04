@@ -1,5 +1,6 @@
 {% extends 'core/base.html' %}
 {% block content %}
+{% load static %}
 <br>
 <script>
     function multipleNames() {
@@ -14,9 +15,6 @@
         }
     }
 </script>
-
-
-
 
 <div class="container" style="margin-left: 5%">
     <h1 style="display: inline">{{ event.name }}</h1>
@@ -41,15 +39,39 @@
     </button>
     <a href="export_xls{{ event.id }}"><button type="button" class="btn btn-primary">Export Spreadsheet</button></a><br><br>
     {% endif %}
+
+    <script src="{% static 'core/js/cross_off_list.js' %}"></script>
+
     <table class="table table-hover">
+        <thead>
+          <tr class="d-flex">
+          {% if user.is_staff %}
+            <th scope="col" class="col-3">Name</th>
+            <th scope="col" class="col-3">User</th>
+            <th scope="col" class="col-3">Attended</th>
+            <th scope="col" class="col-3"></th>
+          {% else %}
+            <th scope="col" class="col-4">Name</th>
+            <th scope="col" class="col-4">User</th>
+            <th scope="col" class="col-4">Attended</th>
+          {% endif %}
+          </tr>
+        </thead>
 
         <tbody>
         {% for attendee in event.list.all %}
 
-            <tr>
-                <td>{{ attendee.name }}</td>
-                <td>{{ attendee.user }}</td>
-                <td style="text-align: right"><a href="/remove_from_list{{ event.id }}/{{ attendee.id }}"><button type="button" class="btn btn-danger">Remove from list</button></a></td>
+            <tr class="d-flex" id="list_row_{{ attendee.id }}">
+                {% if user.is_staff %}
+                <td class="col-3">{{ attendee.name }}</td>
+                <td class="col-3">{{ attendee.user }}</td>
+                <td class="col-2" style="text-align: center"><input type="checkbox" id="attendance_checkbox_{{ attendee.id }}" onclick="cross_off_list({{ attendee.id }})"></td>
+                <td class="col-4" style="text-align: right"><a href="/remove_from_list{{ event.id }}/{{ attendee.id }}"><button type="button" class="btn btn-danger">Remove from list</button></a></td>
+                {% else %}
+                <td class="col-4">{{ attendee.name }}</td>
+                <td class="col-4">{{ attendee.user }}</td>
+                <td class="col-4" style="text-align: center"><input type="checkbox" id="attendance_checkbox_{{ attendee.id }}" onclick="cross_off_list({{ attendee.id }})"></td>
+                {% endif %}
             </tr>
         {% endfor %}
         </tbody>
