@@ -323,13 +323,13 @@ class SocialTestCase(TestCase):
         referer = reverse('social_event', kwargs=dict(event_id=1))
         response = self.client.post(path, HTTP_REFERER=referer, follow=True)
         self.assertFalse(Attendee.objects.filter(name="attendee1"))
-        self.assertNotContains(response, "<td>attendee1</td>")
-        self.assertContains(response, "<td>attendee2</td>")
+        self.assertFalse(re.findall("<td.*>attendee1</td>", str(response.content)))
+        self.assertTrue(re.findall("<td.*>attendee2</td>", str(response.content)))
         path = reverse('remove_from_list', kwargs=dict(event_id=1, attendee_id=2))
         response = self.client.post(path, HTTP_REFERER=referer, follow=True)
         self.assertFalse(Attendee.objects.filter(name="attendee2"))
-        self.assertNotContains(response, "<td>attendee2</td>")
-        self.assertContains(response, "<td>attendee3</td>")
+        self.assertFalse(re.findall("<td.*>attendee2</td>", str(response.content)))
+        self.assertTrue(re.findall("<td.*>attendee3</td>", str(response.content)))
 
     # tests clear list feature
     def test_clear_list(self):
