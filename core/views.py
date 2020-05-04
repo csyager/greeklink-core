@@ -127,7 +127,8 @@ def brother_logout(request):
 #------------------------------------------------ for search
 class SearchView(ListView):
     template_name = 'core/search.html'
-    paginate_by = 100
+    paginate_by = 10
+    
     count = 0
 
     def get_context_data(self, *args, **kwargs):
