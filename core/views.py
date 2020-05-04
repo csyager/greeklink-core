@@ -124,28 +124,37 @@ def brother_logout(request):
     logout(request)
     return HttpResponseRedirect('/login')
 
+#------------------------------------------------ for search
 class SearchView(ListView):
     template_name = 'core/search.html'
-    paginate_by = 20
+    paginate_by = 100
     count = 0
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         context['count'] = self.count or 0
-        context['query'] = self.request.GET.get('q')
+        context['query'] = self.request.GET.get('query')
         context['settings'] = getSettings()
         return context
     
     def get_queryset(self):
         request = self.request
         query = request.GET.get('query', None)
-        #this may be confusing, but this chains the queries together
-        if query is not None:
+        #this chains the queries together
+        if query == '':
+            return SocialEvent.objects.none() #just an emptyset. Honestly I have no idea why its doing an empty string rather than None but whatever when you do it this way it works
+        elif (query is not None):
             SocialEvent_results = SocialEvent.objects.search(query)
+            Announcement_results = Announcement.objects.search(query)
+            ResourceLink_results = ResourceLink.objects.search(query)
+            ResourceFile_results = ResourceFile.objects.search(query)
      
             # combine the different querysets 
             queryset_chain = chain(
-                    SocialEvent_results
+                    SocialEvent_results,
+                    Announcement_results,
+                    ResourceLink_results,
+                    ResourceFile_results
             )        
             qs = sorted(queryset_chain, 
                         key=lambda instance: instance.pk, 
@@ -153,6 +162,8 @@ class SearchView(ListView):
             self.count = len(qs) 
             return qs
         return SocialEvent.objects.none() # just an empty queryset as default
+
+#------------------------------------------------------------------------------------------
 
 @login_required
 def resources(request):
