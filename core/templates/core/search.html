@@ -9,7 +9,8 @@
             <span class="input-group-addon cfe-nav" style='color:#000'>
                 <i class="fa fa-search" aria-hidden="true"></i>
             </span>
-            <input type="text" name="query" data-toggle="popover" data-placement="bottom" data-content="Press enter to search" class="form-control cfe-nav mt-0 py-3" placeholder="Search..." value="" style="" data-original-title="" title="" autofocus="autofocus">
+            <input type="text" name="query" data-toggle="popover" data-placement="bottom" data-content="Press enter to search" class="form-control cfe-nav mt-0 py-3 rounded" placeholder="Search..." value="" style="" data-original-title="" title="" autofocus="autofocus">
+            <button type="submit" name="submit" class="btn btn-primary" style="margin-left: 20px">Submit</button>
         </div>
 
     </form>
@@ -30,51 +31,33 @@
         </div>
     </div>
             
-            
+    <ul class="list-group">        
     {% for object in object_list %}
-        {% with object|get_class as klass %}
-        {% if klass == 'SocialEvent' %}
-            <div class='row'>
-                <div class='col-12'>
-                    Social Event: <a href='social_event{{ object.id }}'>{{ object.name }}</a> 
-                </div>
-            </div>
-        {% elif klass == 'Announcement' %}
-            <div class='row'>
-                <div class='col-12'>
-                    Annoucement: <a href='{{ object.target }}'>{{ object.title }}</a>
-                        <p style = 'margin-left: 40px'> 
-                            {{object.body}}
-                        </p> 
-                </div>
-            </div>
-        {% elif klass == 'ResourceLink' %}
-            <div class='row'>
-                <div class='col-12'>
-                    Resource Link: <a href='{{ object.url }}'>{{ object.name }}</a> 
-                        <p style = 'margin-left: 40px'> 
-                            {{object.description}}
-                        </p> 
-                </div>
-            </div>
-        {% elif klass == 'ResourceFile' %}
-            <div class='row'>
-                <div class='col-12'>
-                    Resource File: <a href='{{ object.file.url }}'>{{ object.name }}</a> 
-                        <p style = 'margin-left: 40px'> 
-                            {{object.description}}
-                        </p> 
-                </div>
-            </div>
-            
-        {% else %}
-            <div class='row'>
-                <div class='col-12 col-lg-8 offset-lg-4'>
-                    <a href='{{ object.get_absolute_url }}'>{{ object }} | {{ object|get_class }}</a>
-                </div>
-            </div>
+        <li class="list-group-item">
+            {% with object|get_class as klass %}
+            {% if klass == 'SocialEvent' %}
+                <b>Social Event:</b> <a href='social_event{{ object.id }}'>{{ object.name }}</a> 
+            {% elif klass == 'Announcement' %}
+                <b>Annoucement:</b> <a href='{{ object.target }}'>{{ object.title }}</a>
+                <p style = 'margin-left: 40px'> 
+                    {{object.body}}
+                </p> 
+
+            {% elif klass == 'ResourceLink' %}
+                <b>Resource Link:</b> <a href='{{ object.url }}'>{{ object.name }}</a> 
+                <p style = 'margin-left: 40px'> 
+                    {{object.description}}
+                </p> 
+
+            {% elif klass == 'ResourceFile' %}
+                <b>Resource File:</b> <a href='{{ object.file.url }}'>{{ object.name }}</a> 
+                <p style = 'margin-left: 40px'> 
+                    {{object.description}}
+                </p> 
+            {% else %}
+                <a href='{{ object.get_absolute_url }}'>{{ object }} | {{ object|get_class }}</a>
             {% endif %}
-            
+        </li>    
         {% endwith %}
         
     {% empty %}
