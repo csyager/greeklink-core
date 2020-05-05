@@ -2,6 +2,7 @@ from django.test import TestCase, Client
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import transaction
 from .models import *
 from django.urls import reverse
 from . import views
@@ -357,4 +358,49 @@ class SocialTestCase(TestCase):
         self.assertEqual(response.get('Content-Type'), 'application/ms-excel')
         self.assertEqual(response.get('Content-Disposition'), 'attachment; filename=1_attendance.xls')
 
+    # tests adding single duplicate name to the list
+    def test_add_individual_duplicate(self):
+        event = SocialEvent.objects.get(id=1)
+        a = Attendee.objects.create(name="attendee", user=self.admin)
+        event.list.add(a)
+        path = reverse('add_to_list', kwargs=dict(event_id=1))
+        # should fail, because name is a duplicate
+        post_data = {'multiple_names': '', 'name': 'attendee'}
+        referer = reverse('social_event', kwargs=dict(event_id=1))
+        response = self.client.post(path, post_data, HTTP_REFERER=referer, follow=True)
+        self.assertTrue(re.findall("The following names were not added to the list", str(response.content)))
+        self.assertTrue(re.findall("<li.*>attendee</li>", str(response.content)))
+        self.assertEqual(len(Attendee.objects.filter(name="attendee")), 1)
+
+    # tests adding multiple duplicate names to the list
+    def test_add_multiple_duplicate(self):
+        event = SocialEvent.objects.get(id=1)
+        for i in range(1, 3):
+            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin)
+            event.list.add(a)
+        path = reverse('add_to_list', kwargs=dict(event_id=1))
+        # should fail, because both names are duplicates
+        post_data = {'multiple_names': 'attendee1\nattendee2', 'name': ''}
+        referer = reverse('social_event', kwargs=dict(event_id=1))
+        response = self.client.post(path, post_data, HTTP_REFERER=referer, follow=True)
+        self.assertTrue(re.findall("The following names were not added to the list", str(response.content)))
+        self.assertTrue(re.findall("<li.*>attendee1</li>", str(response.content)))
+        self.assertTrue(re.findall("<li.*>attendee2</li>", str(response.content)))
+        self.assertEqual(len(Attendee.objects.filter(name="attendee1")), 1)
+        self.assertEqual(len(Attendee.objects.filter(name="attendee2")), 1)
     
+    # tests adding multiple names where some are duplicates and some aren't
+    def test_add_duplicates_and_new(self):
+        event = SocialEvent.objects.get(id=1)
+        a = Attendee.objects.create(name="attendee1", user=self.admin)
+        event.list.add(a)
+        path = reverse('add_to_list', kwargs=dict(event_id=1))
+        # one should fail, one should work
+        post_data = {'multiple_names': 'attendee1\nattendee2', 'name': ''}
+        referer = reverse('social_event', kwargs=dict(event_id=1))
+        response = self.client.post(path, post_data, HTTP_REFERER=referer, follow=True)
+        self.assertTrue(re.findall("The following names were not added to the list", str(response.content)))
+        self.assertTrue(re.findall("<li.*>attendee1</li>", str(response.content)))
+        self.assertFalse(re.findall("<li.*>attendee2</li>", str(response.content)))
+        self.assertEqual(len(Attendee.objects.filter(name="attendee1")), 1)
+        self.assertEqual(len(Attendee.objects.filter(name="attendee2")), 1)    

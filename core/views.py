@@ -28,7 +28,7 @@ from itertools import chain
 from django.core.mail import send_mail
 from urllib import parse
 from django.urls import reverse
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.contrib import messages
 
 # Create your views here.
@@ -249,8 +249,9 @@ def add_to_list(request, event_id):
             attendee.name = line
             attendee.user = user
             try:
-                attendee.save()
-                event.list.add(attendee)
+                with transaction.atomic():
+                    attendee.save()
+                    event.list.add(attendee)
             except(IntegrityError):
                 messages.error(request, line)
 
@@ -261,8 +262,9 @@ def add_to_list(request, event_id):
             attendee.name = request.POST.get('name')
             attendee.user = user
             try:
-                attendee.save()
-                event.list.add(attendee)
+                with transaction.atomic():
+                    attendee.save()
+                    event.list.add(attendee)
             except(IntegrityError):
                 messages.error(request, attendee.name)
 
