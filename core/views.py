@@ -28,6 +28,8 @@ from itertools import chain
 from django.core.mail import send_mail
 from urllib import parse
 from django.urls import reverse
+from django.db import IntegrityError
+from django.contrib import messages
 
 # Create your views here.
 
@@ -246,16 +248,23 @@ def add_to_list(request, event_id):
             attendee = Attendee()
             attendee.name = line
             attendee.user = user
-            attendee.save()
-            event.list.add(attendee)
+            try:
+                attendee.save()
+                event.list.add(attendee)
+            except(IntegrityError):
+                messages.error(request, line)
+
 
         individual_name_value = request.POST.get('name')
         if individual_name_value != "":
             attendee = Attendee()
             attendee.name = request.POST.get('name')
             attendee.user = user
-            attendee.save()
-            event.list.add(attendee)
+            try:
+                attendee.save()
+                event.list.add(attendee)
+            except(IntegrityError):
+                messages.error(request, attendee.name)
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
