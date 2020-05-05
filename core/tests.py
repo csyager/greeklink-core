@@ -16,6 +16,7 @@ import re
 # Create your tests here.
 
 # tests users signing in, out, and registering
+# TODO:  This needs to be massively expanded once we get auth figured out
 class AuthenticationTestCase(TestCase):
     def setUp(self):
         self.u = User.objects.create(username="admin", is_superuser=True)
