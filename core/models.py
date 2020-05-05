@@ -45,6 +45,7 @@ class Attendee(models.Model):
 class SocialEvent(OrgEvent):
     time = models.TimeField(default='12:00')
     location = models.CharField(max_length=100, default="")
+    list_limit = models.IntegerField(default=-1)
     list = models.ManyToManyField(Attendee, blank=True)
 
     def __str__(self):

@@ -242,6 +242,10 @@ def add_to_list(request, event_id):
         multiple_names_value = request.POST.get('multiple_names')
         user = request.user.get_full_name()
         for line in multiple_names_value.splitlines():
+            if event.list_limit != -1:
+                user_count = len(event.list.filter(user = user))
+                if user_count + 1 > event.list_limit:
+                    
             attendee = Attendee()
             attendee.name = line
             attendee.user = user
