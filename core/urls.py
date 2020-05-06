@@ -31,8 +31,6 @@ urlpatterns = [
     path('add_announcement', views.add_announcement, name='add_announcement'),
 ]
 
-handler404 = views.handler404
-handler500 = views.handler500
 
 if settings.DEBUG is True:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

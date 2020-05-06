@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, HttpResponseRedirect
-from django.template import loader
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, HttpResponseNotFound
+from django.template import loader, RequestContext
 
 from .models import *
 from .forms import *
@@ -126,10 +126,19 @@ def brother_logout(request):
 
 # ------------------ ERRORS ---------------------
 def handler404(request, exception):
-    return render(request, '404.html', status=404)
+    context = {
+        'settings': getSettings()
+    }
+    template = loader.get_template('core/404.html')
+    return HttpResponseNotFound(template.render(context, request))
 
 def handler500(request):
-    return render(request, 'core/500.html', status=500)
+    settings = getSettings()
+    context = {
+        'settings': getSettings()
+    }
+    template = loader.get_template('core/500.html')
+    return HttpResponseServerError(template.render(context, request))
 
 #------------------------------------------------ for search
 class SearchView(ListView):
