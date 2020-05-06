@@ -436,3 +436,100 @@ class SocialTestCase(TestCase):
         )
         a.refresh_from_db()
         self.assertFalse(a.attended)
+
+    # tests refresh_attendees view for three attendees with attended=False
+    def test_refresh_attendees_static(self):
+        event = SocialEvent.objects.get(id=1)
+        # create three attendees and add to list
+        # by default, all new attendees have attended=False
+        for i in range(0, 3):
+            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin)
+            event.list.add(a)
+        path = reverse('refresh_attendees')
+        get_data = {'event_id': event.id}
+        response = self.client.get(path, get_data)
+        self.assertEqual(response.status_code, 200)
+        # response should be false for all three attendees, with ids from 1 to 3 inclusive
+        self.assertJSONEqual(
+            str(response.content, encoding='utf8'),
+            {
+                str(1): False,
+                str(2): False,
+                str(3): False
+            }
+        )
+    
+    # tests refresh_attendees view when status of attendee changes, to ensure change is propogated
+    def test_refresh_attendees_dynamic(self):
+        event = SocialEvent.objects.get(id=1)
+        for i in range(0, 3):
+            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin)
+            event.list.add(a)
+        path = reverse('refresh_attendees')
+        get_data = {'event_id': event.id}
+        response = self.client.get(path, get_data)
+        self.assertJSONEqual(
+            str(response.content, encoding='utf8'),
+            {
+                str(1): False,
+                str(2): False,
+                str(3): False
+            }
+        )
+
+        # change one of the attendees, to see if the refresh changes the JSON response
+        a = Attendee.objects.get(id=2)
+        a.attended = True
+        a.save()
+
+        response = self.client.get(path, get_data)
+        self.assertJSONEqual(
+            str(response.content, encoding='utf8'),
+            {
+                str(1): False,
+                str(2): True,
+                str(3): False
+            }
+        )
+
+    # test toggle_party_mode view
+    def test_toggle_party_mode_view(self):
+        # event.party_mode is initially false, request should make it true
+        path = reverse('toggle_party_mode', kwargs=dict(event_id=1))
+        response = self.client.post(path)
+        event = SocialEvent.objects.get(id=1)
+        self.assertTrue(event.party_mode)
+
+        # sending request again should make event.party_mode false again
+        response = self.client.post(path)
+        event.refresh_from_db()
+        self.assertFalse(event.party_mode)
+
+    # test toggle_party_mode template
+    def test_toggle_party_mode_template(self):
+        # party mode should initially be false
+        referer = reverse('social_event', kwargs=dict(event_id=1))
+        response = self.client.post(referer)
+
+        # when party mode is off, the label by the button should say off
+        self.assertContains(response, "Party mode off")
+        # the add to list form should be availiable
+        self.assertContains(response, "Type Full Name Here")
+        # the ajax script refreshing the list should not be linked
+        self.assertFalse(re.findall('<script src=".*cross_off_list.js', str(response.content)))
+        # the "attended" column of the list table should not be present
+        self.assertNotContains(response, "Attended")
+
+        # set party mode to true
+        path = reverse('toggle_party_mode', kwargs=dict(event_id=1))
+        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        
+        # when party mode is on, the label by the button should say on
+        self.assertContains(response, "Party mode on")
+        # The attended column should be present
+        self.assertContains(response, "Attended")
+        # the ajax script refreshing the list should be linked
+        self.assertTrue(re.findall('<script src=".*cross_off_list.js', str(response.content)))
+        # the add to list form should not be available
+        self.assertNotContains(response, "Type Full Name Here")
+        
