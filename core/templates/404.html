@@ -1,0 +1,13 @@
+{% extends 'core/base.html' %}
+{% block content %}
+{% load static %}
+<div class="container">
+    <div class="error404-URL">
+        The requested URL, {{ request.get_full_path }} could not be found.
+    </div>
+    <div class="error404-message">
+        404. Page not found.
+    </div>
+        <img src="{% static '/core/icons/android-chrome-192x192.png' %}" class="error-logo">
+</div>
+{% endblock %}

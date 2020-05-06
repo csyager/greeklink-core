@@ -124,6 +124,13 @@ def brother_logout(request):
     logout(request)
     return HttpResponseRedirect('/login')
 
+# ------------------ ERRORS ---------------------
+def handler404(request, exception):
+    return render(request, '404.html', status=404)
+
+def handler500(request):
+    return render(request, 'core/500.html', status=500)
+
 #------------------------------------------------ for search
 class SearchView(ListView):
     template_name = 'core/search.html'
