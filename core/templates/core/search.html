@@ -1,45 +1,110 @@
 {% extends 'core/base.html' %}
 {% block content %}
-<br>
+{% load class_tag %}
+<div class='row' style='margin: auto'>
+    <div class='col-12 col-md-6 mx-auto my-0 py-4'>
+    <form method='GET' class='' action='/search'>
+    
+        <div class="input-group form-group-no-border mx-auto" style="margin-bottom: 0px; font-size: 32px;">
+            <span class="input-group-addon cfe-nav" style='color:#000'>
+                <i class="fa fa-search" aria-hidden="true"></i>
+            </span>
+            <input type="text" name="query" data-toggle="popover" data-placement="bottom" data-content="Press enter to search" class="form-control cfe-nav mt-0 py-3 rounded" placeholder="Search..." value="" style="" data-original-title="" title="" autofocus="autofocus">
+            <button type="submit" name="submit" class="btn btn-primary" style="margin-left: 20px">Submit</button>
+        </div>
 
-<div class="container">
-    <h2>Search Results</h2>
-    <table class="table table-hover">
-        <thead>
-        <tr>
-            <td>ID</td>
-            <td>Name</td>
-            {% if not request.user_agent.is_mobile %}
-            <td>Email</td>
-            <td>Year</td>
-            <td>Major</td>
-            <td>Hometown</td>
-            {% endif %}
-            <td></td>
-        </tr>
-        </thead>
-        <tbody>
-        {% for object in result_list %}
+    </form>
 
-            <tr onclick="window.location='/rushee{{ object.id }}';" class="{% if object.cut != 0 %}table-danger{% endif %}">
-                <td>{{ object.id }}</td>
-                <td>{{ object.name }}</td>
-                {% if not request.user_agent.is_mobile %}
-                <td>{{ object.email }}</td>
-                <td>{{ object.year }}</td>
-                <td>{{ object.major }}</td>
-                <td>{{ object.hometown }}</td>
-                {% endif %}
-                {% if user in object.endorsements.all %}
-                <td><img src="{{ MEDIA_URL }}icons/thumbs_up.png" height="30px" width="30px"></td>
-                {% endif %}
-                {% if user in object.oppositions.all %}
-                <td><img src="{{ MEDIA_URL }}icons/thumbs_down.png" height="30px" width="30px"></td>
-                {% endif %}
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    </div>
 </div>
+</div>
+<br>
+<div class="container">
+    <div class='row title-row my-1'>
+        <div class='col-12 py-1'>
+            {% if query == '' %}
+            <h3 class='my-0 py-0'>{{ count }} results for <b>{{ None }}</b></h3>
+            {% else %}
+
+            <h3 class='my-0 py-0'>{{ count }} results for <b>{{ query }}</b></h3>
+            {% endif %}
+        </div>
+    </div>
+            
+    <ul class="list-group">
+                
+    {% for object in object_list %}
+        <li class="list-group-item">
+            {% with object|get_class as klass %}
+            {% if klass == 'SocialEvent' %}
+                <b>Social Event:</b> <a href='social_event{{ object.id }}'>{{ object.name }}</a> 
+            {% elif klass == 'Announcement' %}
+                <b>Annoucement:</b> <a href='{{ object.target }}'>{{ object.title }}</a>
+                <p style = 'margin-left: 40px'> 
+                    {{object.body}}
+                </p> 
+
+            {% elif klass == 'ResourceLink' %}
+                <b>Resource Link:</b> <a href='{{ object.url }}'>{{ object.name }}</a> 
+                <p style = 'margin-left: 40px'> 
+                    {{object.description}}
+                </p> 
+
+            {% elif klass == 'ResourceFile' %}
+                <b>Resource File:</b> <a href='{{ object.file.url }}'>{{ object.name }}</a> 
+                <p style = 'margin-left: 40px'> 
+                    {{object.description}}
+                </p> 
+            {% else %}
+                <a href='{{ object.get_absolute_url }}'>{{ object }} | {{ object|get_class }}</a>
+            {% endif %}
+        </li>    
+        {% endwith %}
+        
+        
+    {% empty %}
+
+
+{% endfor %}
+
+{% if is_paginated %}
+    <div class="container">
+        <div class='row title-row my-1'>
+            <div class='col-12 py-1'>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class ="page-item"><a class ="page-link" href="search?query={{query}}&page={{ page_obj.previous_page_number }}">Previous</a></li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Previous</span>
+                            </li>
+                        {% endif %}
+                        {% for i in paginator.page_range %}
+                            {% if page_obj.number == i %}
+                                <li class="page-item active">
+                                <a class="page-link" href="search?query={{query}}&page={{ i }}">{{ i }}<span class="sr-only">(current)</span></a>
+                                </li>
+                        {% else %}
+                            <li class="page-item"><a class="page-link" href="search?query={{query}}&page={{ i }}">{{ i }}</a></li>
+
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+
+                        <li class ="page-item"><a class ="page-link" href="search?query={{query}}&page={{ page_obj.next_page_number }}">Next</a></li>
+
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Next</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+{% endif %}
 
 {% endblock %}
