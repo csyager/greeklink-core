@@ -26,6 +26,7 @@ urlpatterns = [
     path('remove_from_list<int:event_id>/<int:attendee_id>', views.remove_from_list, name="remove_from_list"),
     path('check_attendee', views.check_attendee, name="check_attendee"),
     path('refresh_attendees', views.refresh_attendees, name="refresh_attendees"),
+    path('toggle_party_mode<int:event_id>', views.toggle_party_mode, name='toggle_party_mode'),
     path('clear_list<int:event_id>', views.clear_list, name="clear_list"),
     path('export_xls<int:event_id>', views.export_xls, name="export_xls"),
     path('removeLink<int:link_id>', views.remove_link, name="remove_link"),

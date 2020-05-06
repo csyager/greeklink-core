@@ -21,50 +21,59 @@
     <h3>{{ event.date }}, {{ event.time }}</h3>
     <h3>{{ event.location }}</h3>
     <br>
-    <!-- text input to add names to the list -->
-    <form class="form-inline my-2 my-lg-0" id="listform" action="/add_to_list{{ event.id }}" method="post" accept-charset="utf-8">
-        {% csrf_token %}
-          <input class="form-control mr-sm-2" id="single_name" name="name" type="search" placeholder="Type Full Name Here" aria-label="add" style="width: 80%">
-          <textarea class="form-control mr-sm-2" style="width:100%" rows="5" id="multiple_names" name="multiple_names" placeholder="Separate names by a newline" hidden></textarea><br>
-          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Add to list</button>
-    </form>
-    <br>
-    <a onclick="multipleNames()" id="toggle" style="color: blue"><u>Click here to add multiple names</u></a>
-    <br><br>
-    {% if messages %}
-      <div class = "alert alert-danger" role="alert">
-        <b>The following names were not added to the list, because they are duplicates:</b><br>
-        <ul>
-          {% for message in messages %}
-            <li>{{ message }}</li>
-          {% endfor %}
-        </ul>
-      </div>
+
+    <!-- form fields for adding to the list. Only visible if party mode is off -->
+    {% if not event.party_mode %}
+      <!-- text input to add names to the list -->
+      <form class="form-inline my-2 my-lg-0" id="listform" action="/add_to_list{{ event.id }}" method="post" accept-charset="utf-8">
+          {% csrf_token %}
+            <input class="form-control mr-sm-2" id="single_name" name="name" type="search" placeholder="Type Full Name Here" aria-label="add" style="width: 80%">
+            <textarea class="form-control mr-sm-2" style="width:100%" rows="5" id="multiple_names" name="multiple_names" placeholder="Separate names by a newline" hidden></textarea><br>
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Add to list</button>
+      </form>
+      <br>
+      <a onclick="multipleNames()" id="toggle" style="color: blue"><u>Click here to add multiple names</u></a>
+      <br><br>
+      {% if messages %}
+        <div class = "alert alert-danger" role="alert">
+          <b>The following names were not added to the list, because they are duplicates:</b><br>
+          <ul>
+            {% for message in messages %}
+              <li>{{ message }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
     {% endif %}
+
     <h2>List ({{ event.list.count }}) </h2>
     <br>
     {% if user.is_superuser %}
+    <div class="custom-control custom-switch">
+      <input type="checkbox" class="custom-control-input" id="party_mode_switch" {% if event.party_mode %}checked{% endif %} onclick="window.location = 'toggle_party_mode' + {{ event.id }}">
+      <label class="custom-control-label" for="party_mode_switch"><b>Party mode {% if event.party_mode %}on{% else %}off{% endif %}</b>:  turning on disables adding to the list and enables checking attendance</label>
+    </div><br>
     <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#clear_modal">
       Clear list
     </button>
     <a href="export_xls{{ event.id }}"><button type="button" class="btn btn-primary">Export Spreadsheet</button></a><br><br>
     {% endif %}
 
+    <!-- script that refreshes the attendance on the list across devices, only runs during party -->
+    {% if event.party_mode %}
     <script src="{% static 'core/js/cross_off_list.js' %}"></script>
+    {% endif %}
 
     <table class="table table-hover">
         <thead>
           <tr class="d-flex">
-          {% if user.is_staff %}
-            <th scope="col" class="col-3">Name</th>
-            <th scope="col" class="col-3">User</th>
-            <th scope="col" class="col-3">Attended</th>
-            <th scope="col" class="col-3"></th>
-          {% else %}
             <th scope="col" class="col-4">Name</th>
             <th scope="col" class="col-4">User</th>
-            <th scope="col" class="col-4">Attended</th>
-          {% endif %}
+            {% if event.party_mode %}
+            <th scope="col" class="col-4" style="text-align: center">Attended</th>
+            {% else %}
+            <th scope="col" class="col-4"></th>
+            {% endif %}
           </tr>
         </thead>
 
@@ -72,15 +81,14 @@
         {% for attendee in event.list.all %}
 
             <tr class="d-flex {% if attendee.attended %}table-danger{% endif %}" id="list_row_{{ attendee.id }}">
-                {% if user.is_staff %}
-                <td class="col-3">{{ attendee.name }}</td>
-                <td class="col-3">{{ attendee.user }}</td>
-                <td class="col-2" style="text-align: center"><input type="checkbox" id="attendance_checkbox_{{ attendee.id }}" onclick="cross_off_list({{ attendee.id }})" {% if attendee.attended %}checked{% endif %}></td>
-                <td class="col-4" style="text-align: right"><a href="/remove_from_list{{ event.id }}/{{ attendee.id }}"><button type="button" class="btn btn-danger">Remove from list</button></a></td>
-                {% else %}
                 <td class="col-4">{{ attendee.name }}</td>
                 <td class="col-4">{{ attendee.user }}</td>
+                {% if event.party_mode %}
                 <td class="col-4" style="text-align: center"><input type="checkbox" id="attendance_checkbox_{{ attendee.id }}" onclick="cross_off_list({{ attendee.id }})" {% if attendee.attended %}checked{% endif %}></td>
+                {% elif user.is_staff %}
+                <td class="col-4" style="text-align: right"><a href="/remove_from_list{{ event.id }}/{{ attendee.id }}"><button type="button" class="btn btn-danger">Remove from list</button></a></td>
+                {% else %}
+                <td class="col-4"></td>
                 {% endif %}
             </tr>
         {% endfor %}

@@ -274,8 +274,8 @@ def remove_social_event(request, event_id):
 
 @login_required
 def add_to_list(request, event_id):
-    if request.method == 'POST':
-        event = SocialEvent.objects.get(id=event_id)
+    event = SocialEvent.objects.get(id=event_id)
+    if request.method == 'POST' and not event.party_mode:
         multiple_names_value = request.POST.get('multiple_names')
         user = request.user.get_full_name()
         for line in multiple_names_value.splitlines():
@@ -308,12 +308,13 @@ def add_to_list(request, event_id):
 @login_required
 def remove_from_list(request, event_id, attendee_id):
     event = SocialEvent.objects.get(id=event_id)
-    attendee = Attendee.objects.get(id=attendee_id)
-    event.list.remove(attendee)
-    attendee.delete()
+    if not event.party_mode:
+        attendee = Attendee.objects.get(id=attendee_id)
+        event.list.remove(attendee)
+        attendee.delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-
+@login_required
 def check_attendee(request):
     attendee_id = request.GET.get('attendee_id', None)
     attendee = Attendee.objects.get(id=attendee_id)
@@ -327,6 +328,7 @@ def check_attendee(request):
     }
     return JsonResponse(data)
 
+@login_required
 def refresh_attendees(request):
     event_id = int(request.GET.get('event_id', None))
     event = SocialEvent.objects.get(id=event_id)
@@ -334,6 +336,17 @@ def refresh_attendees(request):
     for attendee in event.list.all():
         data.update({attendee.id: attendee.attended})
     return JsonResponse(data)
+
+@staff_member_required
+def toggle_party_mode(request, event_id):
+    event = SocialEvent.objects.get(id=event_id)
+    if(event.party_mode):
+        event.party_mode = False
+    else:
+        event.party_mode = True
+    event.save()
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
 
 @staff_member_required
 def clear_list(request, event_id):
