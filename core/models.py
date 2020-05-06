@@ -38,6 +38,7 @@ class OrgEvent(models.Model):
 class Attendee(models.Model):
     name = models.CharField(max_length=50, unique=True)
     user = models.CharField(max_length=100)
+    attended = models.BooleanField(default=False)
     class Meta:
         ordering = ['name']
 

@@ -71,16 +71,16 @@
         <tbody>
         {% for attendee in event.list.all %}
 
-            <tr class="d-flex" id="list_row_{{ attendee.id }}">
+            <tr class="d-flex {% if attendee.attended %}table-danger{% endif %}" id="list_row_{{ attendee.id }}">
                 {% if user.is_staff %}
                 <td class="col-3">{{ attendee.name }}</td>
                 <td class="col-3">{{ attendee.user }}</td>
-                <td class="col-2" style="text-align: center"><input type="checkbox" id="attendance_checkbox_{{ attendee.id }}" onclick="cross_off_list({{ attendee.id }})"></td>
+                <td class="col-2" style="text-align: center"><input type="checkbox" id="attendance_checkbox_{{ attendee.id }}" onclick="cross_off_list({{ attendee.id }})" {% if attendee.attended %}checked{% endif %}></td>
                 <td class="col-4" style="text-align: right"><a href="/remove_from_list{{ event.id }}/{{ attendee.id }}"><button type="button" class="btn btn-danger">Remove from list</button></a></td>
                 {% else %}
                 <td class="col-4">{{ attendee.name }}</td>
                 <td class="col-4">{{ attendee.user }}</td>
-                <td class="col-4" style="text-align: center"><input type="checkbox" id="attendance_checkbox_{{ attendee.id }}" onclick="cross_off_list({{ attendee.id }})"></td>
+                <td class="col-4" style="text-align: center"><input type="checkbox" id="attendance_checkbox_{{ attendee.id }}" onclick="cross_off_list({{ attendee.id }})" {% if attendee.attended %}checked{% endif %}></td>
                 {% endif %}
             </tr>
         {% endfor %}
