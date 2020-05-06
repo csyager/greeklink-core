@@ -404,4 +404,35 @@ class SocialTestCase(TestCase):
         self.assertTrue(re.findall("<li.*>attendee1</li>", str(response.content)))
         self.assertFalse(re.findall("<li.*>attendee2</li>", str(response.content)))
         self.assertEqual(len(Attendee.objects.filter(name="attendee1")), 1)
-        self.assertEqual(len(Attendee.objects.filter(name="attendee2")), 1)    
+        self.assertEqual(len(Attendee.objects.filter(name="attendee2")), 1)
+
+    # tests checking attendance feature
+    def test_check_attendance(self):
+        event = SocialEvent.objects.get(id=1)
+        a = Attendee.objects.create(name="attendee", user=self.admin)
+        event.list.add(a)
+        path = reverse('check_attendee')
+        get_data = {'attendee_id': a.id}
+        response = self.client.get(path, get_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(
+            str(response.content, encoding='utf8'),
+            {'attended': True}
+        )
+        a.refresh_from_db()
+        self.assertTrue(a.attended)
+
+    def test_uncheck_attendance(self):
+        event = SocialEvent.objects.get(id=1)
+        a = Attendee.objects.create(name="attendee", user=self.admin, attended=True)
+        event.list.add(a)
+        path = reverse('check_attendee')
+        get_data = {'attendee_id': a.id}
+        response = self.client.get(path, get_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(
+            str(response.content, encoding='utf8'),
+            {'attended': False}
+        )
+        a.refresh_from_db()
+        self.assertFalse(a.attended)
