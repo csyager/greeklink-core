@@ -27,6 +27,10 @@ from django.utils import timezone
 from itertools import chain
 from django.core.mail import send_mail
 from urllib import parse
+from django.urls import reverse
+from django.db import IntegrityError, transaction
+from django.contrib import messages
+from django.http import JsonResponse
 from django.views.generic import ListView
 
 # Create your views here.
@@ -270,24 +274,33 @@ def remove_social_event(request, event_id):
 
 @login_required
 def add_to_list(request, event_id):
-    if request.method == 'POST':
-        event = SocialEvent.objects.get(id=event_id)
+    event = SocialEvent.objects.get(id=event_id)
+    if request.method == 'POST' and not event.party_mode:
         multiple_names_value = request.POST.get('multiple_names')
         user = request.user.get_full_name()
         for line in multiple_names_value.splitlines():
             attendee = Attendee()
             attendee.name = line
             attendee.user = user
-            attendee.save()
-            event.list.add(attendee)
+            try:
+                with transaction.atomic():
+                    attendee.save()
+                    event.list.add(attendee)
+            except(IntegrityError):
+                messages.error(request, line)
+
 
         individual_name_value = request.POST.get('name')
         if individual_name_value != "":
             attendee = Attendee()
             attendee.name = request.POST.get('name')
             attendee.user = user
-            attendee.save()
-            event.list.add(attendee)
+            try:
+                with transaction.atomic():
+                    attendee.save()
+                    event.list.add(attendee)
+            except(IntegrityError):
+                messages.error(request, attendee.name)
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -295,9 +308,43 @@ def add_to_list(request, event_id):
 @login_required
 def remove_from_list(request, event_id, attendee_id):
     event = SocialEvent.objects.get(id=event_id)
+    if not event.party_mode:
+        attendee = Attendee.objects.get(id=attendee_id)
+        event.list.remove(attendee)
+        attendee.delete()
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+@login_required
+def check_attendee(request):
+    attendee_id = request.GET.get('attendee_id', None)
     attendee = Attendee.objects.get(id=attendee_id)
-    event.list.remove(attendee)
-    attendee.delete()
+    if attendee.attended == False:
+        attendee.attended = True
+    else:
+        attendee.attended = False
+    attendee.save()
+    data = {
+        'attended': attendee.attended
+    }
+    return JsonResponse(data)
+
+@login_required
+def refresh_attendees(request):
+    event_id = int(request.GET.get('event_id', None))
+    event = SocialEvent.objects.get(id=event_id)
+    data = {}
+    for attendee in event.list.all():
+        data.update({attendee.id: attendee.attended})
+    return JsonResponse(data)
+
+@staff_member_required
+def toggle_party_mode(request, event_id):
+    event = SocialEvent.objects.get(id=event_id)
+    if(event.party_mode):
+        event.party_mode = False
+    else:
+        event.party_mode = True
+    event.save()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 

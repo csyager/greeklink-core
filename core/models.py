@@ -58,8 +58,9 @@ class OrgEvent(models.Model):
 
 
 class Attendee(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
     user = models.CharField(max_length=100)
+    attended = models.BooleanField(default=False)
     class Meta:
         ordering = ['name']
 
@@ -86,6 +87,7 @@ class SocialEvent(OrgEvent):
     time = models.TimeField(default='12:00')
     location = models.CharField(max_length=100, default="")
     list = models.ManyToManyField(Attendee, blank=True)
+    party_mode = models.BooleanField(default=False)
 
     objects = SocialEventManager()
 
