@@ -24,6 +24,10 @@ body {
     margin-bottom: 10%;
 }
 
+/*
+*  overrides default bootstrap behavior for pagination buttons to prevent 
+*  active button from scrolling over footer
+*/
 .page-item.active 
 .page-link {
     z-index: 0;
