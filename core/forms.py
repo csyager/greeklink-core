@@ -6,17 +6,18 @@ from django.forms import ModelForm
 from django.forms.widgets import TextInput
 
 class LoginForm(AuthenticationForm):
-    def confirm_login_allowed(self, user):
+    def __init__(self, *args, **kwargs):
+        super(LoginForm, self).__init__(*args, **kwargs)
 
-        username = forms.CharField(label='Username',
-                                    max_length=100,
-                                    widget=forms.TextInput(attrs={'class': 'form-control'}))
-        password = forms.CharField(label='Password',
-                                    max_length=100,
-                                    widget=forms.PasswordInput(attrs={'class': 'form-control'}))
-        class Meta(AuthenticationForm.Meta):
-            fields = ('username', 'password')
-        
+    username = forms.CharField(widget=forms.TextInput(
+        attrs={'class': 'form-control rounded', 'placeholder': 'Username'}))
+    password = forms.CharField(widget=forms.PasswordInput(
+        attrs={'class': 'form-control rounded', 'placeholder': 'Password'}))
+
+    class Meta:
+        fields = ('username', 'password')
+    
+    def confirm_login_allowed(self, user):   
         if not user.is_active:
             raise forms.ValidationError(
                 _("This account is inactive."),

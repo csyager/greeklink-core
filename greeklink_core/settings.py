@@ -48,7 +48,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core.apps.CoreConfig',
-    'crispy_forms'
+    'crispy_forms',
+    'django_user_agents'
 ]
 
 MIDDLEWARE = [
@@ -59,6 +60,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_user_agents.middleware.UserAgentMiddleware',
 ]
 
 ROOT_URLCONF = 'greeklink_core.urls'
@@ -138,3 +140,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # for @login_required tag
 LOGIN_URL = '/login'
+
+# if next isn't provided, login redirects to index
+LOGIN_REDIRECT_URL = '/'
