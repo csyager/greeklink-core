@@ -23,3 +23,8 @@
 body {
     margin-bottom: 10%;
 }
+
+.page-item.active 
+.page-link {
+    z-index: 0;
+}
