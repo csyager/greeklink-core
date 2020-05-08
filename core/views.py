@@ -279,38 +279,35 @@ def add_to_list(request, event_id):
         multiple_names_value = request.POST.get('multiple_names')
         user = request.user.get_full_name()
         user_count = len(event.list.filter(user = user))
-        for line in multiple_names_value.splitlines():
-            if event.list_limit != -1:
-                if user_count + 1 > event.list_limit:
+        num_adding = len(multiple_names_value.splitlines())
+        if request.POST.get("name") != "":
+            num_adding += 1
+        if event.list_limit != -1 and user_count + num_adding > event.list_limit:
+            messages.error(request, "list limit exceeded")
+        else: 
+            for line in multiple_names_value.splitlines():
+                attendee = Attendee()
+                attendee.name = line
+                attendee.user = user
+                try:
+                    with transaction.atomic():
+                        attendee.save()
+                        event.list.add(attendee)
+                except(IntegrityError):
                     messages.error(request, line)
-    
-            attendee = Attendee()
-            attendee.name = line
-            attendee.user = user
-            user_count+=1
-            try:
-                with transaction.atomic():
-                    attendee.save()
-                    event.list.add(attendee)
-            except(IntegrityError):
-                messages.error(request, line)
 
 
-        individual_name_value = request.POST.get('name')
-        if individual_name_value != "":
-            if event.list_limit != -1:
-                if user_count + 1 > event.list_limit:
-                    messages.error(request, line)
-                    
-            attendee = Attendee()
-            attendee.name = request.POST.get('name')
-            attendee.user = user
-            try:
-                with transaction.atomic():
-                    attendee.save()
-                    event.list.add(attendee)
-            except(IntegrityError):
-                messages.error(request, attendee.name)
+            individual_name_value = request.POST.get('name')
+            if individual_name_value != "":    
+                attendee = Attendee()
+                attendee.name = request.POST.get('name')
+                attendee.user = user
+                try:
+                    with transaction.atomic():
+                        attendee.save()
+                        event.list.add(attendee)
+                except(IntegrityError):
+                    messages.error(request, attendee.name)
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
