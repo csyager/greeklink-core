@@ -35,17 +35,20 @@
       <a onclick="multipleNames()" id="toggle" style="color: blue"><u>Click here to add multiple names</u></a>
       <br><br>
       {% if messages %}
-        <div class = "alert alert-danger" role="alert">
-          <b>The following names were not added to the list, because they are duplicates:</b><br>
-          <ul>
-            {% for message in messages %}
-              <li>{{ message }}</li>
-            {% endfor %}
-          </ul>
+        <div class="alert alert-danger" role="alert">
+          {% for message in messages %}
+            {% if "limit" in message.tags %}
+              <b>Your names were not added to the list, because you ahve exceeded the number of people you are allowed to add.</b>
+            {% else %}
+              <b>The following names were not added to the list, because they are duplicates:</b><br>
+              <ul>
+                  <li>{{ message }}</li>
+              </ul>
+            {% endif %}
+          {% endfor %}
         </div>
       {% endif %}
     {% endif %}
-
     <h2>List ({{ event.list.count }}) </h2>
     <br>
     {% if user.is_superuser %}

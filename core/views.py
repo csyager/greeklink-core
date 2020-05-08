@@ -290,7 +290,7 @@ def add_to_list(request, event_id):
         if request.POST.get("name") != "":
             num_adding += 1
         if event.list_limit != -1 and user_count + num_adding > event.list_limit:
-            messages.error(request, "list limit exceeded")
+            messages.error(request, event.list_limit, extra_tags="limit")
         else: 
             for line in multiple_names_value.splitlines():
                 attendee = Attendee()
@@ -301,7 +301,7 @@ def add_to_list(request, event_id):
                     with transaction.atomic():
                         attendee.save()
                 except(IntegrityError):
-                    messages.error(request, line)
+                    messages.error(request, line, extra_tags='duplicate')
 
 
             individual_name_value = request.POST.get('name')
@@ -314,7 +314,7 @@ def add_to_list(request, event_id):
                     with transaction.atomic():
                         attendee.save()
                 except(IntegrityError):
-                    messages.error(request, attendee.name)
+                    messages.error(request, attendee.name, extra_tags='duplicate')
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
