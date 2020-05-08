@@ -296,10 +296,10 @@ def add_to_list(request, event_id):
                 attendee = Attendee()
                 attendee.name = line
                 attendee.user = user
+                attendee.event = event
                 try:
                     with transaction.atomic():
                         attendee.save()
-                        event.list.add(attendee)
                 except(IntegrityError):
                     messages.error(request, line)
 
@@ -309,10 +309,10 @@ def add_to_list(request, event_id):
                 attendee = Attendee()
                 attendee.name = request.POST.get('name')
                 attendee.user = user
+                attendee.event = event
                 try:
                     with transaction.atomic():
                         attendee.save()
-                        event.list.add(attendee)
                 except(IntegrityError):
                     messages.error(request, attendee.name)
 
@@ -324,7 +324,6 @@ def remove_from_list(request, event_id, attendee_id):
     event = SocialEvent.objects.get(id=event_id)
     if not event.party_mode:
         attendee = Attendee.objects.get(id=attendee_id)
-        event.list.remove(attendee)
         attendee.delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -366,7 +365,6 @@ def toggle_party_mode(request, event_id):
 def clear_list(request, event_id):
     event = SocialEvent.objects.get(id=event_id)
     for attendee in event.list.all():
-        event.list.remove(attendee)
         attendee.delete()
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
