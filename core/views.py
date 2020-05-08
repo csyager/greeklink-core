@@ -249,6 +249,13 @@ def create_social_event(request):
         obj.date = request.POST.get('date')
         obj.time = request.POST.get('time')
         obj.location = request.POST.get('location')
+        if request.POST.get('limit') != None:
+            if request.POST.get('limit') != '':
+                obj.list_limit = request.POST.get('limit')
+            else:
+                obj.list_limit = -1
+        else:
+            obj.list_limit = -1
         obj.save()
 
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
