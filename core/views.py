@@ -4,6 +4,7 @@ from django.template import loader, RequestContext
 
 from .models import *
 from .forms import *
+from .tokens import *
 from django.conf import settings
 
 from django.contrib.auth import authenticate, login, logout
@@ -94,7 +95,7 @@ def signup(request):
                 'token': account_activation_token.make_token(user),
             })
             to_email = form.cleaned_data.get('email')
-            send_mail('Activate your account', message, 'admin@greeklink.com', [to_email], fail_silently=False)
+            send_mail('Activate your account', message, 'verify@greeklink.com', [to_email], fail_silently=False)
 
             return HttpResponse(template2.render(context, request))
     else:
