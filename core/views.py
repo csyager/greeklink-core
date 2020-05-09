@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, HttpResponseRedirect
-from django.template import loader
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, HttpResponseNotFound
+from django.template import loader, RequestContext
 
 from .models import *
 from .forms import *
@@ -129,6 +129,22 @@ def activate(request, uidb64, token):
 def brother_logout(request):
     logout(request)
     return HttpResponseRedirect('/login')
+
+# ------------------ ERRORS ---------------------
+def handler404(request, exception):
+    context = {
+        'settings': getSettings()
+    }
+    template = loader.get_template('core/404.html')
+    return HttpResponseNotFound(template.render(context, request))
+
+def handler500(request):
+    settings = getSettings()
+    context = {
+        'settings': getSettings()
+    }
+    template = loader.get_template('core/500.html')
+    return HttpResponseServerError(template.render(context, request))
 
 #------------------------------------------------ for search
 class SearchView(ListView):
