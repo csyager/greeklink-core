@@ -61,10 +61,10 @@
         </div>
     </div>
     <br>
-    <br>
     {% endif %}
+    <br>
 </div>
-
+{% if eventscount > 10 %}
 <div class="container">
     <div class='row title-row my-1'>
         <div class='col-12 py-1'>
@@ -104,4 +104,6 @@
 </div>
 </div>
 </div>
+
+{% endif %}
 {% endblock %}

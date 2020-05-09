@@ -248,12 +248,14 @@ def social(request):
     paginator = Paginator(events, 10)                                               #this number changes items per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+    eventscount = len(events)
 
     context = {
         'settings': getSettings(),
         'social_page': "active",
         'page_obj': page_obj,
         'events': events,
+        'eventscount' : eventscount
     }
     return HttpResponse(template.render(context, request))
 
