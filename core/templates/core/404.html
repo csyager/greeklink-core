@@ -1,13 +1,19 @@
 {% extends 'core/base.html' %}
 {% block content %}
 {% load static %}
-<div class="container">
-    <div class="error404-URL">
-        The requested URL, {{ request.get_full_path }} could not be found.
+<div class="container d-flex align-items-center" style="padding-top: 100px">
+    <div class="row">
+        <div class="col-md-3">
+            <img src="{% static '/core/icons/android-chrome-192x192.png' %}" class="error-logo">
+        </div>
+        <div class="col-md-9">
+            <div class="error404-message">
+                404.  Page not found<br>
+            </div>
+            <div class="error404-URL">
+                The requested URL, {{ request.get_full_path }} could not be found.
+            </div>
+        </div>
     </div>
-    <div class="error404-message">
-        404. Page not found.
-    </div>
-        <img src="{% static '/core/icons/android-chrome-192x192.png' %}" class="error-logo">
 </div>
 {% endblock %}
