@@ -88,7 +88,7 @@ class SocialEvent(OrgEvent):
     location = models.CharField(max_length=100, default="")
     list = models.ManyToManyField(Attendee, blank=True)
     party_mode = models.BooleanField(default=False)
-
+    
     objects = SocialEventManager()
 
     def __str__(self):
