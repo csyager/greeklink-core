@@ -1,6 +1,6 @@
 from django.urls import path, include
 from django.contrib import admin
-from django.conf.urls import url
+from django.conf.urls import url, handler404, handler500
 from django.conf import settings
 from django.contrib.auth.views import LoginView
 from django.conf.urls.static import static
@@ -33,6 +33,7 @@ urlpatterns = [
     path('addLink', views.add_link, name="add_link"),
     path('add_announcement', views.add_announcement, name='add_announcement'),
 ]
+
 
 if settings.DEBUG is True:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
