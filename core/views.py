@@ -125,7 +125,7 @@ def activate(request, uidb64, token):
 
 
 # logs brothers out of the system
-def brother_logout(request):
+def logout_user(request):
     logout(request)
     return HttpResponseRedirect('/login')
 
