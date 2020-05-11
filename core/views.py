@@ -136,7 +136,7 @@ def handler404(request, exception):
         'settings': getSettings()
     }
     template = loader.get_template('core/404.html')
-    return HttpResponseNotFound(template.render(context, request))
+    return HttpResponseNotFound(template.render(context, request), status=404)
 
 def handler500(request):
     settings = getSettings()

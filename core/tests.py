@@ -9,7 +9,8 @@ from . import views
 from .forms import *
 from datetime import date, timedelta
 from django.utils import timezone
-from .views import getSettings
+from .views import getSettings, handler500
+from django.http import HttpResponse
 import re
 
 
@@ -533,3 +534,19 @@ class SocialTestCase(TestCase):
         # the add to list form should not be available
         self.assertNotContains(response, "Type Full Name Here")
         
+
+class ErrorsTestCase(TestCase):
+    
+    # tests custom 404 page appears on 404 error
+    def test_404_custom_page(self):
+        path = '/path/that/does/not/exist'
+        response = self.client.get(path)
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("The requested URL, " + path + " could not be found.", str(response.content))
+
+    # tests custom 500 error appears on 500 error
+    def test_500_custom_page(self):
+        request = self.client.request()
+        response = handler500(request)
+        self.assertIn("Something went wrong on our end.  We\\\'re working hard to fix it.", str(response.content))
+
