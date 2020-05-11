@@ -33,7 +33,9 @@ from django.db import IntegrityError, transaction
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.generic import ListView
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.shortcuts import render
+import datetime
 # Create your views here.
 
 
@@ -248,12 +250,29 @@ def removeCal(request):
 
 @login_required
 def social(request):
+     
     template = loader.get_template('core/social.html')
-    events = SocialEvent.objects.all().order_by('-date')
+
+    now = datetime.datetime.now()
+    upcoming = SocialEvent.objects.filter(date__gte=now).order_by('date', 'time')   #today, then tomorrow, tomorrow + 1
+    past = SocialEvent.objects.filter(date__lt=now).order_by('-date', '-time')      #yesterday, day before yesterday
+
+    events = chain(upcoming, past)
+    events = list(events)                                                           #converts to list, necessary for paginator
+    # events = SocialEvent.objects.all().order_by('-date', 'time')                  lets keep this just in case something goes wrong with the query chain
+
+    #for pagination
+    paginator = Paginator(events, 10)                                               #this number changes items per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    eventscount = len(events)
+
     context = {
         'settings': getSettings(),
         'social_page': "active",
+        'page_obj': page_obj,
         'events': events,
+        'eventscount' : eventscount
     }
     return HttpResponse(template.render(context, request))
 
