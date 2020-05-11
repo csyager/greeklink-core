@@ -3,6 +3,7 @@ from django.contrib import admin
 from django.conf.urls import url, handler404, handler500
 from django.conf import settings
 from django.contrib.auth.views import LoginView
+from core.forms import LoginForm
 from django.conf.urls.static import static
 from . import views
 
@@ -10,8 +11,8 @@ urlpatterns = [
     path('', views.index, name='index'),
     url(r'^signup/$', views.signup, name='signup'),
     url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$', views.activate, name='activate'),
-    path('login/', LoginView.as_view(template_name='core/login.html'), name="login"),
-    path('logout', views.brother_logout, name='logout'),
+    path('login/', LoginView.as_view(template_name='core/login.html', authentication_form=LoginForm), name="login"),
+    path('logout', views.logout_user, name='logout'),
     path('resources', views.resources, name="resources"),
     path('search', views.SearchView.as_view(), name="search"),
     path('uploadfile', views.upload_file, name="upload_file"),
