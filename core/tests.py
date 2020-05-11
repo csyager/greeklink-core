@@ -550,3 +550,46 @@ class ErrorsTestCase(TestCase):
         response = handler500(request)
         self.assertIn("Something went wrong on our end.  We\\\'re working hard to fix it.", str(response.content))
 
+class SearchTestCases(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create(username="admin", is_staff=True, is_superuser=True)
+        self.client.force_login(self.admin)
+        file = SimpleUploadedFile("file.txt", b"file_content", content_type="text/plain")
+        for i in range(0, 10):
+            SocialEvent.objects.create(name="test_event_" + str(i))
+            ResourceLink.objects.create(name="test_link_" + str(i), description="test", url="https://www.google.com")
+            Announcement.objects.create(title="announcement_" + str(i))
+            ResourceFile.objects.create(name="test_file_" + str(i), file=file, description="test")
+
+    # tests basic search
+    def test_search_basic(self):
+        path = reverse('search')
+        get_data = {'query': 'test'}
+        response = self.client.get(path, get_data, follow=True)
+        self.assertContains(response, "40 results")
+
+    # test paginate feature for more than 10 results
+    def test_search_paginate_more_than_10(self):
+        path = reverse('search')
+        get_data = {'query': 'test'}
+        response = self.client.get(path, get_data, follow=True)
+        # should be 40 results over 4 pages
+        self.assertContains(response, 'nav aria-label="Page navigation"')
+        self.assertContains(response, 'href="search?query=test&page=4')
+        self.assertNotContains(response, 'href="search?query=test&page=5')
+    
+    # test paginate doesn't appear with fewer than 10
+    def test_search_paginate_fewer_than_10(self):
+        path = reverse('search')
+        get_data = {'query': 'test1'}
+        response = self.client.get(path, get_data, follow=True)
+        self.assertNotContains(response, 'nav aria-label="Page navigation"')
+
+    # test search with empty string query
+    def test_search_empty_string(self):
+        path = reverse('search')
+        get_data = {'query': ''}
+        response = self.client.get(path, get_data, follow=True)
+        self.assertContains(response, '0 results for <b>None</b>')
+    
+

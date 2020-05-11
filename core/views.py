@@ -184,7 +184,6 @@ class SearchView(ListView):
                         reverse=True)
             self.count = len(qs) 
             return qs
-        return SocialEvent.objects.none() # just an empty queryset as default
 
 #------------------------------------------------------------------------------------------
 
