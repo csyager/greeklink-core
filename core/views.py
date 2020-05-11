@@ -42,7 +42,7 @@ import datetime
 def getSettings():
     settings = SiteSettings.objects.all()
     if len(settings) == 0:
-        newsettings = SiteSettings()
+        newsettings = SiteSettings(pk=1)
         newsettings.save()
         settings = SiteSettings.objects.all()
     settings = settings[0]
