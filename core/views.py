@@ -76,10 +76,19 @@ def all_announcements(request):
     announcements = Announcement.objects.order_by('-date')
     announcement_form = AnnouncementForm()
 
+    #for pagination
+    paginator = Paginator(announcements, 10)                                               #this number changes items per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    announcementscount = len(announcements)
+
     context = {
     'settings': getSettings(),
     "announcements": announcements,
     "announcement_form": announcement_form,
+    'page_obj': page_obj,
+    'announcementscount' : announcementscount
+
     }
     return HttpResponse(template.render(context, request))
 
