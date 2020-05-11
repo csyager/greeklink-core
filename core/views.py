@@ -72,6 +72,29 @@ def index(request):
     }
     return HttpResponse(template.render(context, request))
 
+def all_announcements(request):
+    template = loader.get_template('core/all_announcements.html')
+    announcements = Announcement.objects.order_by('-date')
+    announcement_form = AnnouncementForm()
+
+    #for pagination
+    paginator = Paginator(announcements, 10)                                               #this number changes items per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    announcementscount = len(announcements)
+
+    context = {
+    'settings': getSettings(),
+    "announcements": announcements,
+    "announcement_form": announcement_form,
+    'page_obj': page_obj,
+    'announcementscount' : announcementscount
+
+    }
+    return HttpResponse(template.render(context, request))
+
+
+
 # users signing up for site
 def signup(request):
     template = loader.get_template('core/signup.html')
@@ -289,6 +312,18 @@ def create_social_event(request):
 
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
+@staff_member_required
+def edit_social_event(request, event_id):
+    if request.method == 'POST':
+        obj = SocialEvent.objects.get(id=event_id)
+        obj.name = request.POST.get('name')
+        obj.date = request.POST.get('date')
+        obj.time = request.POST.get('time')
+        obj.location = request.POST.get('location')
+        obj.save()
+
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
 
 @login_required
 def social_event(request, event_id):
@@ -307,6 +342,10 @@ def remove_social_event(request, event_id):
     SocialEvent.objects.filter(id=event_id).delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
+@staff_member_required
+def remove_announcement(request, announcement_id):
+    Announcement.objects.filter(id=announcement_id).delete()
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @login_required
 def add_to_list(request, event_id):
