@@ -9,13 +9,9 @@ from . import views
 from .forms import *
 from datetime import date, timedelta
 from django.utils import timezone
-<<<<<<< HEAD
 from .views import getSettings, handler500
 from django.http import HttpResponse
-=======
-from .views import getSettings
 from .tokens import *
->>>>>>> master
 import re
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
