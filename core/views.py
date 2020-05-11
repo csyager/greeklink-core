@@ -4,6 +4,7 @@ from django.template import loader, RequestContext
 
 from .models import *
 from .forms import *
+from .tokens import *
 from django.conf import settings
 
 from django.contrib.auth import authenticate, login, logout
@@ -71,6 +72,29 @@ def index(request):
     }
     return HttpResponse(template.render(context, request))
 
+def all_announcements(request):
+    template = loader.get_template('core/all_announcements.html')
+    announcements = Announcement.objects.order_by('-date')
+    announcement_form = AnnouncementForm()
+
+    #for pagination
+    paginator = Paginator(announcements, 10)                                               #this number changes items per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    announcementscount = len(announcements)
+
+    context = {
+    'settings': getSettings(),
+    "announcements": announcements,
+    "announcement_form": announcement_form,
+    'page_obj': page_obj,
+    'announcementscount' : announcementscount
+
+    }
+    return HttpResponse(template.render(context, request))
+
+
+
 # users signing up for site
 def signup(request):
     template = loader.get_template('core/signup.html')
@@ -96,7 +120,7 @@ def signup(request):
                 'token': account_activation_token.make_token(user),
             })
             to_email = form.cleaned_data.get('email')
-            send_mail('Activate your account', message, 'admin@greeklink.com', [to_email], fail_silently=False)
+            send_mail('Activate your account', message, 'verify@greeklink.com', [to_email], fail_silently=False)
 
             return HttpResponse(template2.render(context, request))
     else:
@@ -126,7 +150,7 @@ def activate(request, uidb64, token):
 
 
 # logs brothers out of the system
-def brother_logout(request):
+def logout_user(request):
     logout(request)
     return HttpResponseRedirect('/login')
 
@@ -287,6 +311,18 @@ def create_social_event(request):
 
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
+@staff_member_required
+def edit_social_event(request, event_id):
+    if request.method == 'POST':
+        obj = SocialEvent.objects.get(id=event_id)
+        obj.name = request.POST.get('name')
+        obj.date = request.POST.get('date')
+        obj.time = request.POST.get('time')
+        obj.location = request.POST.get('location')
+        obj.save()
+
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
 
 @login_required
 def social_event(request, event_id):
@@ -305,6 +341,10 @@ def remove_social_event(request, event_id):
     SocialEvent.objects.filter(id=event_id).delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
+@staff_member_required
+def remove_announcement(request, announcement_id):
+    Announcement.objects.filter(id=announcement_id).delete()
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @login_required
 def add_to_list(request, event_id):
