@@ -71,6 +71,20 @@ def index(request):
     }
     return HttpResponse(template.render(context, request))
 
+def all_announcements(request):
+    template = loader.get_template('core/all_announcements.html')
+    announcements = Announcement.objects.order_by('-date')
+    announcement_form = AnnouncementForm()
+
+    context = {
+    'settings': getSettings(),
+    "announcements": announcements,
+    "announcement_form": announcement_form,
+    }
+    return HttpResponse(template.render(context, request))
+
+
+
 # users signing up for site
 def signup(request):
     template = loader.get_template('core/signup.html')

@@ -32,6 +32,7 @@ urlpatterns = [
     path('removeLink<int:link_id>', views.remove_link, name="remove_link"),
     path('addLink', views.add_link, name="add_link"),
     path('add_announcement', views.add_announcement, name='add_announcement'),
+    path('all_announcements', views.all_announcements, name='all_announcements')
 ]
 
 
