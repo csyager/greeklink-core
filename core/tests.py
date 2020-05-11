@@ -542,7 +542,6 @@ class SocialTestCase(TestCase):
         self.assertNotContains(response, "Type Full Name Here")
         
 
-<<<<<<< HEAD
 class ErrorsTestCase(TestCase):
     
     # tests custom 404 page appears on 404 error
@@ -601,7 +600,6 @@ class SearchTestCases(TestCase):
         self.assertContains(response, '0 results for <b>None</b>')
     
 
-=======
 class AuthenticationTestCase(TestCase):
     # def setUp(self):
 
@@ -723,4 +721,3 @@ class AuthenticationTestCase(TestCase):
         path = reverse('logout')
         response = self.client.post(path, follow=True)
         self.assertContains(response, "Login")
->>>>>>> master
