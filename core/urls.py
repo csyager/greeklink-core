@@ -1,8 +1,9 @@
 from django.urls import path, include
 from django.contrib import admin
-from django.conf.urls import url
+from django.conf.urls import url, handler404, handler500
 from django.conf import settings
 from django.contrib.auth.views import LoginView
+from core.forms import LoginForm
 from django.conf.urls.static import static
 from . import views
 
@@ -10,8 +11,8 @@ urlpatterns = [
     path('', views.index, name='index'),
     url(r'^signup/$', views.signup, name='signup'),
     url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$', views.activate, name='activate'),
-    path('login/', LoginView.as_view(template_name='core/login.html'), name="login"),
-    path('logout', views.brother_logout, name='logout'),
+    path('login/', LoginView.as_view(template_name='core/login.html', authentication_form=LoginForm), name="login"),
+    path('logout', views.logout_user, name='logout'),
     path('resources', views.resources, name="resources"),
     path('search', views.SearchView.as_view(), name="search"),
     path('uploadfile', views.upload_file, name="upload_file"),
@@ -32,7 +33,11 @@ urlpatterns = [
     path('removeLink<int:link_id>', views.remove_link, name="remove_link"),
     path('addLink', views.add_link, name="add_link"),
     path('add_announcement', views.add_announcement, name='add_announcement'),
+    path('all_announcements', views.all_announcements, name='all_announcements'),
+    path('removeAnnouncement<int:announcement_id>', views.remove_announcement, name="remove_announcement"),
+    path('editSocialEvent<int:event_id>', views.edit_social_event, name="edit_social_event"),
 ]
+
 
 if settings.DEBUG is True:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
