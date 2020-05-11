@@ -37,9 +37,14 @@
             <ul class="list-group">
                 {% for announcement in announcements %}
                 <li class="list-group-item">
-                    <b><a href="{{ announcement.target }}">{{ announcement.title }}</a></b> - {{ announcement.user }}<br>
+                    <b><a href="{{ announcement.target }}">{{ announcement.title }}</a></b> - {{ announcement.user }} 
+                {% if user.is_superuser %}
+                <a href="removeAnnouncement{{ announcement.id }}" class="btn btn-danger btn-sm float-right">Remove</a>
+                {% endif %} 
+                    <br>
                     {{ announcement.body }}
                 </li>
+                
                 {% endfor %}
             </ul><br>
                 {% if request.user.is_superuser %}

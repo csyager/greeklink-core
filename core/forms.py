@@ -69,7 +69,6 @@ class AnnouncementForm(ModelForm):
         model = Announcement
         fields = ('title', 'target', 'body')
 
-
 class SiteSettingsForm(ModelForm):
     class Meta:
         model = SiteSettings

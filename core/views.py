@@ -302,6 +302,18 @@ def create_social_event(request):
 
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
+@staff_member_required
+def edit_social_event(request, event_id):
+    if request.method == 'POST':
+        obj = SocialEvent.objects.get(id=event_id)
+        obj.name = request.POST.get('name')
+        obj.date = request.POST.get('date')
+        obj.time = request.POST.get('time')
+        obj.location = request.POST.get('location')
+        obj.save()
+
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
 
 @login_required
 def social_event(request, event_id):
@@ -320,6 +332,10 @@ def remove_social_event(request, event_id):
     SocialEvent.objects.filter(id=event_id).delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
+@staff_member_required
+def remove_announcement(request, announcement_id):
+    Announcement.objects.filter(id=announcement_id).delete()
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @login_required
 def add_to_list(request, event_id):
