@@ -322,8 +322,7 @@ class SocialTestCase(TestCase):
     def test_remove_from_list(self):
         event = SocialEvent.objects.get(id=1)
         for i in range(1, 4):
-            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin)
-            event.list.add(a)
+            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin, event=event)
         event.save()
         path = reverse('remove_from_list', kwargs=dict(event_id=1, attendee_id=1))
         referer = reverse('social_event', kwargs=dict(event_id=1))
@@ -341,8 +340,7 @@ class SocialTestCase(TestCase):
     def test_clear_list(self):
         event = SocialEvent.objects.get(id=1)
         for i in range(1, 4):
-            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin)
-            event.list.add(a)
+            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin, event=event)
         event.save()
         path = reverse('clear_list', kwargs=dict(event_id=1))
         referer = reverse('social_event', kwargs=dict(event_id=1))
@@ -355,8 +353,7 @@ class SocialTestCase(TestCase):
     def test_export_xls(self):
         event = SocialEvent.objects.get(id=1)
         for i in range(0, 3):
-            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin)
-            event.list.add(a)
+            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin, event=event)
         event.save()
         path = reverse('export_xls', kwargs=dict(event_id=1))
         response = self.client.post(path)
@@ -366,8 +363,7 @@ class SocialTestCase(TestCase):
     # tests adding single duplicate name to the list
     def test_add_individual_duplicate(self):
         event = SocialEvent.objects.get(id=1)
-        a = Attendee.objects.create(name="attendee", user=self.admin)
-        event.list.add(a)
+        a = Attendee.objects.create(name="attendee", user=self.admin, event=event)
         path = reverse('add_to_list', kwargs=dict(event_id=1))
         # should fail, because name is a duplicate
         post_data = {'multiple_names': '', 'name': 'attendee'}
@@ -381,8 +377,7 @@ class SocialTestCase(TestCase):
     def test_add_multiple_duplicate(self):
         event = SocialEvent.objects.get(id=1)
         for i in range(1, 3):
-            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin)
-            event.list.add(a)
+            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin, event=event)
         path = reverse('add_to_list', kwargs=dict(event_id=1))
         # should fail, because both names are duplicates
         post_data = {'multiple_names': 'attendee1\nattendee2', 'name': ''}
@@ -397,8 +392,7 @@ class SocialTestCase(TestCase):
     # tests adding multiple names where some are duplicates and some aren't
     def test_add_duplicates_and_new(self):
         event = SocialEvent.objects.get(id=1)
-        a = Attendee.objects.create(name="attendee1", user=self.admin)
-        event.list.add(a)
+        a = Attendee.objects.create(name="attendee1", user=self.admin, event=event)
         path = reverse('add_to_list', kwargs=dict(event_id=1))
         # one should fail, one should work
         post_data = {'multiple_names': 'attendee1\nattendee2', 'name': ''}
@@ -413,8 +407,7 @@ class SocialTestCase(TestCase):
     # tests checking attendance feature
     def test_check_attendance(self):
         event = SocialEvent.objects.get(id=1)
-        a = Attendee.objects.create(name="attendee", user=self.admin)
-        event.list.add(a)
+        a = Attendee.objects.create(name="attendee", user=self.admin, event=event)
         path = reverse('check_attendee')
         get_data = {'attendee_id': a.id}
         response = self.client.get(path, get_data)
@@ -428,8 +421,7 @@ class SocialTestCase(TestCase):
 
     def test_uncheck_attendance(self):
         event = SocialEvent.objects.get(id=1)
-        a = Attendee.objects.create(name="attendee", user=self.admin, attended=True)
-        event.list.add(a)
+        a = Attendee.objects.create(name="attendee", user=self.admin, attended=True, event=event)
         path = reverse('check_attendee')
         get_data = {'attendee_id': a.id}
         response = self.client.get(path, get_data)
@@ -447,8 +439,7 @@ class SocialTestCase(TestCase):
         # create three attendees and add to list
         # by default, all new attendees have attended=False
         for i in range(0, 3):
-            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin)
-            event.list.add(a)
+            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin, event=event)
         path = reverse('refresh_attendees')
         get_data = {'event_id': event.id}
         response = self.client.get(path, get_data)
@@ -467,8 +458,7 @@ class SocialTestCase(TestCase):
     def test_refresh_attendees_dynamic(self):
         event = SocialEvent.objects.get(id=1)
         for i in range(0, 3):
-            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin)
-            event.list.add(a)
+            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin, event=event)
         path = reverse('refresh_attendees')
         get_data = {'event_id': event.id}
         response = self.client.get(path, get_data)

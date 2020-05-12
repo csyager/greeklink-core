@@ -307,6 +307,13 @@ def create_social_event(request):
         obj.date = request.POST.get('date')
         obj.time = request.POST.get('time')
         obj.location = request.POST.get('location')
+        if request.POST.get('limit') != None:
+            if request.POST.get('limit') != '':
+                obj.list_limit = request.POST.get('limit')
+            else:
+                obj.list_limit = -1
+        else:
+            obj.list_limit = -1
         obj.save()
 
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
@@ -319,6 +326,13 @@ def edit_social_event(request, event_id):
         obj.date = request.POST.get('date')
         obj.time = request.POST.get('time')
         obj.location = request.POST.get('location')
+        if request.POST.get('limit') != None:
+            if request.POST.get('limit') != '':
+                obj.list_limit = request.POST.get('limit')
+            else:
+                obj.list_limit = -1
+        else:
+            obj.list_limit = -1
         obj.save()
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
@@ -352,29 +366,36 @@ def add_to_list(request, event_id):
     if request.method == 'POST' and not event.party_mode:
         multiple_names_value = request.POST.get('multiple_names')
         user = request.user.get_full_name()
-        for line in multiple_names_value.splitlines():
-            attendee = Attendee()
-            attendee.name = line
-            attendee.user = user
-            try:
-                with transaction.atomic():
-                    attendee.save()
-                    event.list.add(attendee)
-            except(IntegrityError):
-                messages.error(request, line)
+        user_count = len(event.list.filter(user = user))
+        num_adding = len(multiple_names_value.splitlines())
+        if request.POST.get("name") != "":
+            num_adding += 1
+        if event.list_limit != -1 and user_count + num_adding > event.list_limit:
+            messages.error(request, event.list_limit, extra_tags="limit")
+        else: 
+            for line in multiple_names_value.splitlines():
+                attendee = Attendee()
+                attendee.name = line
+                attendee.user = user
+                attendee.event = event
+                try:
+                    with transaction.atomic():
+                        attendee.save()
+                except(IntegrityError):
+                    messages.error(request, line, extra_tags='duplicate')
 
 
-        individual_name_value = request.POST.get('name')
-        if individual_name_value != "":
-            attendee = Attendee()
-            attendee.name = request.POST.get('name')
-            attendee.user = user
-            try:
-                with transaction.atomic():
-                    attendee.save()
-                    event.list.add(attendee)
-            except(IntegrityError):
-                messages.error(request, attendee.name)
+            individual_name_value = request.POST.get('name')
+            if individual_name_value != "":    
+                attendee = Attendee()
+                attendee.name = request.POST.get('name')
+                attendee.user = user
+                attendee.event = event
+                try:
+                    with transaction.atomic():
+                        attendee.save()
+                except(IntegrityError):
+                    messages.error(request, attendee.name, extra_tags='duplicate')
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -384,7 +405,6 @@ def remove_from_list(request, event_id, attendee_id):
     event = SocialEvent.objects.get(id=event_id)
     if not event.party_mode:
         attendee = Attendee.objects.get(id=attendee_id)
-        event.list.remove(attendee)
         attendee.delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -426,7 +446,6 @@ def toggle_party_mode(request, event_id):
 def clear_list(request, event_id):
     event = SocialEvent.objects.get(id=event_id)
     for attendee in event.list.all():
-        event.list.remove(attendee)
         attendee.delete()
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))

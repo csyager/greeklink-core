@@ -6,6 +6,20 @@
     <div class="container">
         <h2>Events</h2>
         <ul class="list-group">
+            <script>
+                function toggle_limit_edit(id){
+                    var check_elem = document.getElementById('edit_checkbox_' + id);
+                    var limit_elem = document.getElementById('edit_limit_' + id);
+    
+                    if(check_elem.checked) {
+                        limit_elem.removeAttribute('disabled');
+                    } else {
+                        limit_elem.value = "";
+                        limit_elem.setAttribute('disabled', 'true');
+                    }
+                }
+    
+            </script>
             {% for event in page_obj %}
             <li class="list-group-item"> <a href="social_event{{ event.id }}">{{ event.name }} -- {{ event.date }}, {{ event.time }} <span class="badge badge-info">{{ event.list.count }}</span> </a>
                 {% if user.is_superuser %}
@@ -30,26 +44,37 @@
                                     <div class="form-group row">
                                         <label for="new_name" class="col-sm-2 col-form-label">Name</label>
                                         <div class="col-sm-10">
-                                            <input type="text" class="form-control" id="new_name" name="name" value="{{ event.name }}">
+                                            <input type="text" class="form-control" id="edit_name_{{ event.id }}" name="name" value="{{ event.name }}">
                                         </div>
                                     </div>
                                     <div class="form-group row">
                                         <label for="new_date" class="col-sm-2 col-form-label">Date</label>
                                         <div class="col-sm-10">
-                                            <input type="date" class="form-control" id="new_date" name="date" value="{{ event.date|date:'Y-m-d' }}">
+                                            <input type="date" class="form-control" id="edit_date_{{ event.id }}" name="date" value="{{ event.date|date:'Y-m-d' }}">
                                         </div>
                                     </div>
                                     <div class="form-group row">
                                         <label for="new_time" class="col-sm-2 col-form-label">Time</label>
                                         <div class="col-sm-10">
-                                            <input type="time" class="form-control" id="new_time" name="time" value="{{ event.time|date:'G:i' }}">
+                                            <input type="time" class="form-control" id="edit_time_{{ event.id }}" name="time" value="{{ event.time|date:'G:i' }}">
                                         </div>
                                     </div>
                                     <div class="form-group row">
                                         <label for="new_location" class="col-sm-2 col-form-label">Location</label>
                                         <div class="col-sm-10">
-                                            <input type="text" class="form-control" id="new_location" name="location" value="{{ event.location }}">
+                                            <input type="text" class="form-control" id="edit_location_{{ event.id }}" name="location" value="{{ event.location }}">
                                         </div>
+                                    </div>
+                                    <div class="form-group form-check">
+                                        <input type="checkbox" class="form-check-input" id="edit_checkbox_{{ event.id }}" name="checkbox" onclick="toggle_limit_edit({{ event.id }})" {% if event.list_limit != -1 %} checked {% endif %}>
+                                        <label class="form-check-label" for="new_checkbox">Limit list additions?</label>                            
+                                    </div>
+                                    <div class="form-group row">
+                                        <label for="new_limit" class="col-sm-2 col-form-label">List Limit</label>
+                                        <div class="col-sm-10">
+                                            <input type="number" class="form-control" id="edit_limit_{{ event.id }}" name="limit" {% if event.list_limit == -1 %}disabled="true"{% endif %} {% if event.list_limit != -1 %} value={{ event.list_limit }} {% else %} value="" {% endif %}>
+                                            <small>Setting this variable will limit the number of people users can add to the list for this event.</small>
+                                        </div>   
                                     </div>
                             </div>
                             <div class="modal-footer">
@@ -75,6 +100,21 @@
         {% if user.is_superuser %}
         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#eventModal">Add Event</button>
         <!-- Modal -->
+
+        <script>
+            function toggle_limit(){
+                var check_elem = document.getElementById('new_checkbox');
+                var limit_elem = document.getElementById('new_limit');
+
+                if(check_elem.checked) {
+                    limit_elem.removeAttribute('disabled');
+                } else {
+                    limit_elem.setAttribute('disabled', 'true');
+                }
+            }
+
+        </script>
+
         <div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModal" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -86,6 +126,7 @@
                     </div>
                     <div class="modal-body">
                         <form method="post" action="createSocialEvent">
+                        <div class="table">
                             {% csrf_token %}
                             <div class="form-group row">
                                 <label for="new_name" class="col-sm-2 col-form-label">Name</label>
@@ -111,6 +152,18 @@
                                     <input type="text" class="form-control" id="new_location" name="location">
                                 </div>
                             </div>
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" id="new_checkbox" name="checkbox" onclick="toggle_limit()">
+                                <label class="form-check-label" for="new_checkbox">Limit list additions?</label>                            
+                            </div>
+                            <div class="form-group row">
+                                <label for="new_limit" class="col-sm-2 col-form-label">List Limit</label>
+                                <div class="col-sm-10">
+                                    <input type="number" class="form-control" id="new_limit" name="limit" disabled="true">
+                                    <small>Setting this variable will limit the number of people users can add to the list for this event.</small>
+                                </div>   
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

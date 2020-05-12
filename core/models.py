@@ -57,13 +57,6 @@ class OrgEvent(models.Model):
         abstract = True
 
 
-class Attendee(models.Model):
-    name = models.CharField(max_length=50, unique=True)
-    user = models.CharField(max_length=100)
-    attended = models.BooleanField(default=False)
-    class Meta:
-        ordering = ['name']
-
 #------------------------------------------------------------------ block for social event
 class SocialEventQuerySet(models.QuerySet):
     def search(self, query=None):
@@ -86,7 +79,7 @@ class SocialEventManager(models.Manager):
 class SocialEvent(OrgEvent):
     time = models.TimeField(default='12:00')
     location = models.CharField(max_length=100, default="")
-    list = models.ManyToManyField(Attendee, blank=True)
+    list_limit = models.IntegerField(default=-1)
     party_mode = models.BooleanField(default=False)
     
     objects = SocialEventManager()
@@ -95,6 +88,20 @@ class SocialEvent(OrgEvent):
         return self.name
 
 #------------------------------------------------------------------------ block for resource link
+
+class Attendee(models.Model):
+    name = models.CharField(max_length=50)
+    user = models.CharField(max_length=100)
+    attended = models.BooleanField(default=False)
+    event = models.ForeignKey(SocialEvent, on_delete=models.CASCADE, related_name='list')
+    
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['name']
+        unique_together = ('name', 'event')
+
 class ResourceLinkQuerySet(models.QuerySet):
     def search(self, query=None):
         qs = self
