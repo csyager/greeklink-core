@@ -42,7 +42,7 @@ import datetime
 def getSettings():
     settings = SiteSettings.objects.all()
     if len(settings) == 0:
-        newsettings = SiteSettings()
+        newsettings = SiteSettings(pk=1)
         newsettings.save()
         settings = SiteSettings.objects.all()
     settings = settings[0]
@@ -160,7 +160,7 @@ def handler404(request, exception):
         'settings': getSettings()
     }
     template = loader.get_template('core/404.html')
-    return HttpResponseNotFound(template.render(context, request))
+    return HttpResponseNotFound(template.render(context, request), status=404)
 
 def handler500(request):
     settings = getSettings()
@@ -208,7 +208,6 @@ class SearchView(ListView):
                         reverse=True)
             self.count = len(qs) 
             return qs
-        return SocialEvent.objects.none() # just an empty queryset as default
 
 #------------------------------------------------------------------------------------------
 
