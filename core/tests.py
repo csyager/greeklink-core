@@ -104,6 +104,9 @@ class ResourcesTestCase(TestCase):
         response = self.client.post(path, post_dict, follow=True)
         self.assertContains(response, 'filename')
 
+        # cleanup:  need to delete the file or it stays forever
+        ResourceFile.objects.get(pk=1).file.delete()
+
     # tests error messages in file upload form
     def test_file_upload_errors(self):
         self.client.force_login(self.admin)
