@@ -32,6 +32,125 @@ class AuthenticationTestCase(TestCase):
         response = self.client.post(path, follow=True)
         self.assertContains(response, 'Login')
 
+    # gets template with signup form
+    def test_signup_get_template(self):
+        path = reverse('signup')
+        response = self.client.get(path)
+        self.assertContains(response, "Register")
+
+    # tests that signup form accepts valid input
+    def test_signup_form(self):
+        form_data = {
+            'username': 'test',
+            'email': 'test@test.com',
+            'first_name': 'Test_first',
+            'last_name': 'Test_last',
+            'verification_key': '9999',
+            'password1': 'c0mpl#x_p@$$w0rd',
+            'password2': 'c0mpl#x_p@$$w0rd'
+        }
+
+        form = SignupForm(form_data)
+        self.assertTrue(form.is_valid())
+
+    # tests that form rejects passwords that are too simple
+    def test_simple_password(self):
+        form_data = {
+            'username': 'test',
+            'email': 'test@test.com',
+            'first_name': 'Test_first',
+            'last_name': 'Test_last',
+            'verification_key': '9999',
+            'password1': 'password',
+            'password2': 'password'
+        }
+        form = SignupForm(form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn('This password is too common', form.errors['password2'][0])
+
+    # tests that form rejects passwords that don't match
+    def test_passwords_not_match(self):
+        form_data = {
+            'username': 'test',
+            'email': 'test@test.com',
+            'first_name': 'Test_first',
+            'last_name': 'Test_last',
+            'verification_key': '9999',
+            'password1': 'password1',
+            'password2': 'password2'
+        }
+        form = SignupForm(form_data)
+        self.assertFalse(form.is_valid())
+        self.assertEqual("The two password fields didn’t match.", form.errors['password2'][0])
+
+    # tests that form rejects usernames that are already in use
+    def test_username_already_taken(self):
+        User.objects.create(username="test")
+        form_data = {
+            'username': 'test',
+            'email': 'test@test.com',
+            'first_name': 'Test_first',
+            'last_name': 'Test_last',
+            'verification_key': '9999',
+            'password1': 'c0mpl#x_p@$$w0rd',
+            'password2': 'c0mpl#x_p@$$w0rd'
+        }
+        form = SignupForm(form_data)
+        self.assertFalse(form.is_valid())
+        self.assertEqual("A user with that username already exists.", form.errors['username'][0])
+
+    # tests that the user is redirected to successful verification page
+    def test_valid_input_template(self):
+        post_data = {
+            'username': 'test',
+            'email': 'test@test.com',
+            'first_name': 'Test_first',
+            'last_name': 'Test_last',
+            'verification_key': '9999',
+            'password1': 'c0mpl#x_p@$$w0rd',
+            'password2': 'c0mpl#x_p@$$w0rd'
+        }
+        path = reverse('signup')
+        response = self.client.post(path, post_data)
+
+        self.assertContains(response, "Thank you for signing up for GreekLink")
+
+    # tests that inactive users can activate with activate view
+    def test_activate_view(self):
+        user = User.objects.create(username="test", is_active="False")
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+        token = account_activation_token.make_token(user)
+        path = reverse('activate', kwargs=dict(uidb64=uidb64, token=token))
+        response = self.client.post(path)
+        self.assertContains(response, "Your account has been verified!")
+
+    # tests user that does not exist
+    def test_activate_user_does_not_exist(self):
+        user = User.objects.create(username="test", is_active="False")
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+        token = account_activation_token.make_token(user)
+        path = reverse('activate', kwargs=dict(uidb64=uidb64, token=token))
+        user.delete()
+        response = self.client.post(path)
+        self.assertContains(response, "Activation link is invalid")
+
+    # tests invalid activation token
+    def test_activate_user_invalid_token(self):
+        user = User.objects.create(username="test", is_active="False")
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+        token = "999-99999999999999999999"
+        path = reverse('activate', kwargs=dict(uidb64=uidb64, token=token))
+        response = self.client.post(path)
+        self.assertContains(response, "Activation link is invalid")
+
+    # tests logout
+    def test_logout(self):
+        user = User.objects.create(username="test")
+        self.client.force_login(user)
+        path = reverse('logout')
+        response = self.client.post(path, follow=True)
+        self.assertContains(response, "Login")
+
 
 class ResourcesTestCase(TestCase):
     def setUp(self):
@@ -557,6 +676,10 @@ class SearchTestCases(TestCase):
             Announcement.objects.create(title="announcement_" + str(i))
             ResourceFile.objects.create(name="test_file_" + str(i), file=file, description="test")
 
+    def tearDown(self):
+        for i in range(0, 10):
+            ResourceFile.objects.get(name="test_file_" + str(i)).file.delete()
+
     # tests basic search
     def test_search_basic(self):
         path = reverse('search')
@@ -588,125 +711,3 @@ class SearchTestCases(TestCase):
         response = self.client.get(path, get_data, follow=True)
         self.assertContains(response, '0 results for <b>None</b>')
     
-
-class AuthenticationTestCase(TestCase):
-    # def setUp(self):
-
-    # gets template with signup form
-    def test_signup_get_template(self):
-        path = reverse('signup')
-        response = self.client.get(path)
-        self.assertContains(response, "Register")
-
-    # tests that signup form accepts valid input
-    def test_signup_form(self):
-        form_data = {
-            'username': 'test',
-            'email': 'test@test.com',
-            'first_name': 'Test_first',
-            'last_name': 'Test_last',
-            'verification_key': '9999',
-            'password1': 'c0mpl#x_p@$$w0rd',
-            'password2': 'c0mpl#x_p@$$w0rd'
-        }
-
-        form = SignupForm(form_data)
-        self.assertTrue(form.is_valid())
-
-    # tests that form rejects passwords that are too simple
-    def test_simple_password(self):
-        form_data = {
-            'username': 'test',
-            'email': 'test@test.com',
-            'first_name': 'Test_first',
-            'last_name': 'Test_last',
-            'verification_key': '9999',
-            'password1': 'password',
-            'password2': 'password'
-        }
-        form = SignupForm(form_data)
-        self.assertFalse(form.is_valid())
-        self.assertIn('This password is too common', form.errors['password2'][0])
-
-    # tests that form rejects passwords that don't match
-    def test_passwords_not_match(self):
-        form_data = {
-            'username': 'test',
-            'email': 'test@test.com',
-            'first_name': 'Test_first',
-            'last_name': 'Test_last',
-            'verification_key': '9999',
-            'password1': 'password1',
-            'password2': 'password2'
-        }
-        form = SignupForm(form_data)
-        self.assertFalse(form.is_valid())
-        self.assertEqual("The two password fields didn’t match.", form.errors['password2'][0])
-
-    # tests that form rejects usernames that are already in use
-    def test_username_already_taken(self):
-        User.objects.create(username="test")
-        form_data = {
-            'username': 'test',
-            'email': 'test@test.com',
-            'first_name': 'Test_first',
-            'last_name': 'Test_last',
-            'verification_key': '9999',
-            'password1': 'c0mpl#x_p@$$w0rd',
-            'password2': 'c0mpl#x_p@$$w0rd'
-        }
-        form = SignupForm(form_data)
-        self.assertFalse(form.is_valid())
-        self.assertEqual("A user with that username already exists.", form.errors['username'][0])
-
-    # tests that the user is redirected to successful verification page
-    def test_valid_input_template(self):
-        post_data = {
-            'username': 'test',
-            'email': 'test@test.com',
-            'first_name': 'Test_first',
-            'last_name': 'Test_last',
-            'verification_key': '9999',
-            'password1': 'c0mpl#x_p@$$w0rd',
-            'password2': 'c0mpl#x_p@$$w0rd'
-        }
-        path = reverse('signup')
-        response = self.client.post(path, post_data)
-
-        self.assertContains(response, "Thank you for signing up for GreekLink")
-
-    # tests that inactive users can activate with activate view
-    def test_activate_view(self):
-        user = User.objects.create(username="test", is_active="False")
-        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
-        token = account_activation_token.make_token(user)
-        path = reverse('activate', kwargs=dict(uidb64=uidb64, token=token))
-        response = self.client.post(path)
-        self.assertContains(response, "Your account has been verified!")
-
-    # tests user that does not exist
-    def test_activate_user_does_not_exist(self):
-        user = User.objects.create(username="test", is_active="False")
-        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
-        token = account_activation_token.make_token(user)
-        path = reverse('activate', kwargs=dict(uidb64=uidb64, token=token))
-        user.delete()
-        response = self.client.post(path)
-        self.assertContains(response, "Activation link is invalid")
-
-    # tests invalid activation token
-    def test_activate_user_invalid_token(self):
-        user = User.objects.create(username="test", is_active="False")
-        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
-        token = "999-99999999999999999999"
-        path = reverse('activate', kwargs=dict(uidb64=uidb64, token=token))
-        response = self.client.post(path)
-        self.assertContains(response, "Activation link is invalid")
-
-    # tests logout
-    def test_logout(self):
-        user = User.objects.create(username="test")
-        self.client.force_login(user)
-        path = reverse('logout')
-        response = self.client.post(path, follow=True)
-        self.assertContains(response, "Login")
