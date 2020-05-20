@@ -676,6 +676,7 @@ class SearchTestCases(TestCase):
             Announcement.objects.create(title="announcement_" + str(i))
             ResourceFile.objects.create(name="test_file_" + str(i), file=file, description="test")
 
+    # deletes any files created in this test case from the server
     def tearDown(self):
         for i in range(0, 10):
             ResourceFile.objects.get(name="test_file_" + str(i)).file.delete()
