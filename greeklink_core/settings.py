@@ -16,7 +16,6 @@ import environ
 env = environ.Env()
 environ.Env.read_env()
 
-# sets to testing in testing environment
 ENV = os.environ['ENV']
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -35,7 +34,7 @@ if ENV == 'testing':
 else:
     DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'greeklink-core-env.eba-7mntraig.us-west-2.elasticbeanstalk.com']
 
 
 # Application definition
@@ -89,12 +88,26 @@ WSGI_APPLICATION = 'greeklink_core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+# aws postgres database in production
+if 'RDS_DB_NAME' in os.environ:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': os.environ['RDS_DB_NAME'],
+            'USER': os.environ['RDS_USERNAME'],
+            'PASSWORD': os.environ['RDS_PASSWORD'],
+            'HOST': os.environ['RDS_HOSTNAME'],
+            'PORT': os.environ['RDS_PORT'],
+        }
     }
-}
+# django-native sqlite database in local development    
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
 
 
 # Password validation
