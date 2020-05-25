@@ -11,8 +11,7 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-# attempting a fix
-###########################
+'''
 import time
 import traceback
 import signal
@@ -34,4 +33,3 @@ except Exception:
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'greeklink_core.settings')
 
 application = get_wsgi_application()
-'''
