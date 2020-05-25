@@ -250,7 +250,9 @@ def upload_file(request):
 
 @staff_member_required
 def remove_file(request, file_id):
-    ResourceFile.objects.get(id=file_id).delete()
+    obj = ResourceFile.objects.get(id=file_id)
+    obj.file.delete()
+    obj.delete()
     return HttpResponseRedirect('resources')
 
 
