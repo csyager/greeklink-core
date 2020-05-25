@@ -55,6 +55,7 @@ class OrgEvent(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ['date']
 
 
 #------------------------------------------------------------------ block for social event
