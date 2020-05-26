@@ -159,6 +159,9 @@ def forgot_credentials(request):
             except User.MultipleObjectsReturned:
                 messages.error(request, "Multiple accounts exist with the same email address.  Contact your site administrator for assistance.")
                 return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+            except User.DoesNotExist:
+                messages.error(request, "User with this email does not exist.")
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
             mail_subject = "Reset your password"
             current_site = get_current_site(request)
             message = render_to_string('core/reset_credentials_email.html', {
