@@ -11,6 +11,8 @@ urlpatterns = [
     path('', views.index, name='index'),
     url(r'^signup/$', views.signup, name='signup'),
     url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$', views.activate, name='activate'),
+    path('forgot_credentials', views.forgot_credentials, name='forgot_credentials'),
+    path('reset_password<int:user_id>/<str:token>', views.reset_password, name='reset_password'),
     path('login/', LoginView.as_view(template_name='core/login.html', authentication_form=LoginForm), name="login"),
     path('logout', views.logout_user, name='logout'),
     path('resources', views.resources, name="resources"),

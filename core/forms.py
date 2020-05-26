@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, SetPasswordForm
 from django.contrib.auth.models import User
 from .models import *
 from django.forms import ModelForm
@@ -63,9 +63,37 @@ class SignupForm(UserCreationForm):
             raise ValidationError("Verification key is incorrect")
         return verification_key
 
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        username = self.cleaned_data['username']
+        if email and User.objects.filter(email=email).exclude(username=username).exists():
+            raise ValidationError("Email address is already in use.")
+        return email
+
     class Meta:
         model = User
         fields = ('username', 'email', 'verification_key', 'first_name', 'last_name', 'password1', 'password2')
+
+
+class ForgotCredentialsForm(forms.Form):
+    email = forms.EmailField(max_length=100,
+        widget=forms.EmailInput(attrs={'class': 'form-control rounded', 'placeholder': 'Email'}))
+
+    class Meta:
+        fields = ('email')
+
+
+class SetPasswordForm(SetPasswordForm):
+    def __init__(self, *args, **kwargs):
+        super(SetPasswordForm, self).__init__(self, *args, **kwargs)
+
+    new_password1 = forms.CharField(max_length=100,
+        widget=forms.PasswordInput(attrs={'class': 'form-control rounded', 'placeholder': 'New Password'}))
+    new_password2 = forms.CharField(max_length=100,
+        widget=forms.PasswordInput(attrs={'class': 'form-control rounded', 'placeholder': 'Confirm New Password'}))
+        
+    class Meta:
+        fields = ('new_password1', 'new_password2')
 
 
 class UploadFileForm(ModelForm):
