@@ -9,7 +9,6 @@ function filter_list() {
         td = tr[i].getElementsByTagName("td")[0];
         if (td) {
             txtValue = td.textContent || td.innerText;
-            console.log(txtValue + ": " + txtValue.toUpperCase().indexOf(filter));
             if (txtValue.toUpperCase().indexOf(filter) > -1) {
                 tr[i].style.display = "";
             } else {
