@@ -9,8 +9,8 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
-    url(r'^signup/$', views.signup, name='signup'),
-    url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$', views.activate, name='activate'),
+    path('signup', views.signup, name='signup'),
+    path('activate/<int:user_id>/<str:token>', views.activate, name='activate'),
     path('login/', LoginView.as_view(template_name='core/login.html', authentication_form=LoginForm), name="login"),
     path('logout', views.logout_user, name='logout'),
     path('resources', views.resources, name="resources"),
