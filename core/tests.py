@@ -151,6 +151,106 @@ class AuthenticationTestCase(TestCase):
         response = self.client.post(path, follow=True)
         self.assertContains(response, "Login")
 
+    # tests forgot_credentials view under a get method
+    def test_forgot_credentials_get(self):
+        path = reverse('forgot_credentials')
+        response = self.client.get(path)
+        self.assertContains(response, "Forgot Credentials?")
+
+    # tests forgot_credentials view under a post method
+    def test_forgot_credentials_post(self):
+        user = User.objects.create(username="test", email="test@test.com")
+        post_data = {'email': 'test@test.com'}
+        path = reverse('forgot_credentials')
+        response = self.client.post(path, post_data, HTTP_REFERER=path, follow=True)    
+        self.assertContains(response, "Email with password reset link has been sent.")
+
+    # tests forgot_credentials view when email is not unique
+    def test_forgot_credentials_common_email(self):
+        user1 = User.objects.create(username="test1", email="test@test.com")
+        user2 = User.objects.create(username="test2", email="test@test.com")
+        post_data = {'email': 'test@test.com'}
+        path = reverse('forgot_credentials')
+        response = self.client.post(path, post_data, HTTP_REFERER=path, follow=True)
+        self.assertContains(response, "Multiple accounts exist with the same email address.")
+
+    # tests forgot_credentials view when email does not exist
+    def test_forgot_credentials_email_dne(self):
+        post_data = {'email': 'test@test.com'}
+        path = reverse('forgot_credentials')
+        response = self.client.post(path, post_data, HTTP_REFERER=path, follow=True)
+        self.assertContains(response, "User with this email does not exist")
+
+    # tests reset_password view under a get method
+    def test_reset_password_view_get(self):
+        user = User.objects.create(username="test", email="test@test.com")
+        token = account_activation_token.make_token(user)
+        path = reverse('reset_password', kwargs=dict(user_id=user.pk, token=token))
+        response = self.client.get(path)
+        self.assertContains(response, "Reset Password")
+
+    # tests reset_password view under a post method
+    def test_reset_password_view_post(self):
+        user = User.objects.create(username="test", email="test@test.com")
+        user.set_password("originalpassword")
+        user.save()
+        token = account_activation_token.make_token(user)
+        path = reverse('reset_password', kwargs=dict(user_id=user.pk, token=token))
+        post_data = {'new_password1': 'testpassword', 'new_password2': 'testpassword'}
+        response = self.client.post(path, post_data)
+        user.refresh_from_db()
+        self.assertContains(response, "Your password has been changed.")
+        self.assertFalse(user.check_password("originalpassword"))
+        self.assertTrue(user.check_password("testpassword"))
+
+    # tests reset_password view under a get method
+    def test_reset_password_view_get(self):
+        user = User.objects.create(username="test", email="test@test.com")
+        token = account_activation_token.make_token(user)
+        path = reverse('reset_password', kwargs=dict(user_id=user.pk, token=token))
+        response = self.client.get(path)
+        self.assertContains(response, "Reset Password")
+
+    # tests reset password with passwords that don't match
+    def test_reset_password_no_match(self):
+        user = User.objects.create(username="test", email="test@test.com")
+        user.set_password("originalpassword")
+        user.save()
+        token = account_activation_token.make_token(user)
+        path = reverse('reset_password', kwargs=dict(user_id=user.pk, token=token))
+        post_data = {'new_password1': 'testpassword1', 'new_password2': 'testpassword2'}
+        response = self.client.post(path, post_data, HTTP_REFERER=path, follow=True)
+        user.refresh_from_db()
+        self.assertContains(response, "The two password fields")
+        self.assertFalse(user.check_password('testpassword1'))
+        self.assertFalse(user.check_password('testpassword2'))
+        self.assertTrue(user.check_password("originalpassword"))
+
+    def test_reset_password_common(self):
+        user = User.objects.create(username="test", email="test@test.com")
+        user.set_password("originalpassword")
+        user.save()
+        token = account_activation_token.make_token(user)
+        path = reverse('reset_password', kwargs=dict(user_id=user.pk, token=token))
+        post_data = {'new_password1': 'password', 'new_password2': 'password'}
+        response = self.client.post(path, post_data, HTTP_REFERER=path, follow=True)
+        user.refresh_from_db()
+        self.assertContains(response, "This password is too common")
+        self.assertFalse(user.check_password('password'))
+        self.assertTrue(user.check_password('originalpassword'))
+
+    def test_reset_password_short(self):
+        user = User.objects.create(username="test", email="test@test.com")
+        user.set_password("originalpassword")
+        user.save()
+        token = account_activation_token.make_token(user)
+        path = reverse('reset_password', kwargs=dict(user_id=user.pk, token=token))
+        post_data = {'new_password1': 'xyzabc', 'new_password2': 'xyzabc'}
+        response = self.client.post(path, post_data, HTTP_REFERER=path, follow=True)
+        user.refresh_from_db()
+        self.assertContains(response, "This password is too short.")
+        self.assertFalse(user.check_password('xyzabc'))
+        self.assertTrue(user.check_password('originalpassword'))
 
 class ResourcesTestCase(TestCase):
     def setUp(self):
