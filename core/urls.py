@@ -8,9 +8,9 @@ from django.conf.urls.static import static
 from . import views
 
 urlpatterns = [
-    path('', views.index, name='index'),
-    url(r'^signup/$', views.signup, name='signup'),
-    url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$', views.activate, name='activate'),
+    path('', views.index, name='index'),   
+    path('signup', views.signup, name='signup'),
+    path('activate/<int:user_id>/<str:token>', views.activate, name='activate'),
     path('forgot_credentials', views.forgot_credentials, name='forgot_credentials'),
     path('reset_password<int:user_id>/<str:token>', views.reset_password, name='reset_password'),
     path('login/', LoginView.as_view(template_name='core/login.html', authentication_form=LoginForm), name="login"),

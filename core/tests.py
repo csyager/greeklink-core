@@ -81,7 +81,7 @@ class AuthenticationTestCase(TestCase):
         }
         form = SignupForm(form_data)
         self.assertFalse(form.is_valid())
-        self.assertEqual("The two password fields didn’t match.", form.errors['password2'][0])
+        self.assertEqual("The two password fields didn't match.", form.errors['password2'][0])
 
     # tests that form rejects usernames that are already in use
     def test_username_already_taken(self):
@@ -118,18 +118,16 @@ class AuthenticationTestCase(TestCase):
     # tests that inactive users can activate with activate view
     def test_activate_view(self):
         user = User.objects.create(username="test", is_active="False")
-        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
         token = account_activation_token.make_token(user)
-        path = reverse('activate', kwargs=dict(uidb64=uidb64, token=token))
+        path = reverse('activate', kwargs=dict(user_id = user.pk, token=token))
         response = self.client.post(path)
         self.assertContains(response, "Your account has been verified!")
 
     # tests user that does not exist
     def test_activate_user_does_not_exist(self):
         user = User.objects.create(username="test", is_active="False")
-        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
         token = account_activation_token.make_token(user)
-        path = reverse('activate', kwargs=dict(uidb64=uidb64, token=token))
+        path = reverse('activate', kwargs=dict(user_id=user.pk, token=token))
         user.delete()
         response = self.client.post(path)
         self.assertContains(response, "Activation link is invalid")
@@ -137,9 +135,8 @@ class AuthenticationTestCase(TestCase):
     # tests invalid activation token
     def test_activate_user_invalid_token(self):
         user = User.objects.create(username="test", is_active="False")
-        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
         token = "999-99999999999999999999"
-        path = reverse('activate', kwargs=dict(uidb64=uidb64, token=token))
+        path = reverse('activate', kwargs=dict(user_id=user.pk, token=token))
         response = self.client.post(path)
         self.assertContains(response, "Activation link is invalid")
 
