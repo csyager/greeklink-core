@@ -200,13 +200,13 @@ class AuthenticationTestCase(TestCase):
         self.assertFalse(user.check_password("originalpassword"))
         self.assertTrue(user.check_password("testpassword"))
 
-    # tests reset_password view under a get method
-    def test_reset_password_view_get(self):
+    # tests reset password with invalid token
+    def test_reset_password_invalid_token(self):
         user = User.objects.create(username="test", email="test@test.com")
-        token = account_activation_token.make_token(user)
+        token = '999-99999999999999999999'
         path = reverse('reset_password', kwargs=dict(user_id=user.pk, token=token))
         response = self.client.get(path)
-        self.assertContains(response, "Reset Password")
+        self.assertContains(response, "Invalid token!")
 
     # tests reset password with passwords that don't match
     def test_reset_password_no_match(self):

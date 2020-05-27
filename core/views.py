@@ -203,13 +203,16 @@ def reset_password(request, user_id, token):
                 for error in field.errors:
                     messages.error(request, error)
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-    else:
+    elif account_activation_token.check_token(user, token):
         template = loader.get_template('core/reset_password.html')
         context = {
             'settings': getSettings(),
             'form': SetPasswordForm()
         }
         return HttpResponse(template.render(context, request))
+    
+    else:
+        return HttpResponse("Invalid token!")
 
 # logs brothers out of the system
 def logout_user(request):
