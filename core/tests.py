@@ -412,12 +412,19 @@ class SocialTestCase(TestCase):
         self.assertTrue(Attendee.objects.filter(name="many_name3"))
         self.assertFalse(Attendee.objects.filter(name="individual_name"))
 
+class SocialEventTestCase(TestCase):
+    
+    def setUp(self):
+        self.admin = User.objects.create(username="admin", is_staff=True, is_superuser=True)
+        self.client.force_login(self.admin)
+        SocialEvent.objects.create()
+        self.event = SocialEvent.objects.get(id=1)
+        for i in range(1, 4):
+            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin, event=self.event)
+        self.event.save()
+
     # tests remove_from_list feature to make sure attendees are removed from database and UI
     def test_remove_from_list(self):
-        event = SocialEvent.objects.get(id=1)
-        for i in range(1, 4):
-            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin, event=event)
-        event.save()
         path = reverse('remove_from_list', kwargs=dict(event_id=1, attendee_id=1))
         referer = reverse('social_event', kwargs=dict(event_id=1))
         response = self.client.post(path, HTTP_REFERER=referer, follow=True)
@@ -432,23 +439,15 @@ class SocialTestCase(TestCase):
 
     # tests clear list feature
     def test_clear_list(self):
-        event = SocialEvent.objects.get(id=1)
-        for i in range(1, 4):
-            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin, event=event)
-        event.save()
         path = reverse('clear_list', kwargs=dict(event_id=1))
         referer = reverse('social_event', kwargs=dict(event_id=1))
         response = self.client.post(path, HTTP_REFERER=referer, follow=True)
         content = str(response.content)
         self.assertFalse(re.findall("<td>attendee[1-3]</td>", content))
-        self.assertFalse(event.list.all())
+        self.assertFalse(self.event.list.all())
 
     # tests exporting a spreadsheet of attendees
     def test_export_xls(self):
-        event = SocialEvent.objects.get(id=1)
-        for i in range(0, 3):
-            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin, event=event)
-        event.save()
         path = reverse('export_xls', kwargs=dict(event_id=1))
         response = self.client.post(path)
         self.assertEqual(response.get('Content-Type'), 'application/ms-excel')
@@ -456,22 +455,17 @@ class SocialTestCase(TestCase):
 
     # tests adding single duplicate name to the list
     def test_add_individual_duplicate(self):
-        event = SocialEvent.objects.get(id=1)
-        a = Attendee.objects.create(name="attendee", user=self.admin, event=event)
         path = reverse('add_to_list', kwargs=dict(event_id=1))
         # should fail, because name is a duplicate
-        post_data = {'multiple_names': '', 'name': 'attendee'}
+        post_data = {'multiple_names': '', 'name': 'attendee1'}
         referer = reverse('social_event', kwargs=dict(event_id=1))
         response = self.client.post(path, post_data, HTTP_REFERER=referer, follow=True)
         self.assertTrue(re.findall("The following names were not added to the list", str(response.content)))
-        self.assertTrue(re.findall("<li.*>attendee</li>", str(response.content)))
-        self.assertEqual(len(Attendee.objects.filter(name="attendee")), 1)
+        self.assertTrue(re.findall("<li.*>attendee1</li>", str(response.content)))
+        self.assertEqual(len(Attendee.objects.filter(name="attendee1")), 1)
 
     # tests adding multiple duplicate names to the list
     def test_add_multiple_duplicate(self):
-        event = SocialEvent.objects.get(id=1)
-        for i in range(1, 3):
-            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin, event=event)
         path = reverse('add_to_list', kwargs=dict(event_id=1))
         # should fail, because both names are duplicates
         post_data = {'multiple_names': 'attendee1\nattendee2', 'name': ''}
@@ -485,11 +479,9 @@ class SocialTestCase(TestCase):
     
     # tests adding multiple names where some are duplicates and some aren't
     def test_add_duplicates_and_new(self):
-        event = SocialEvent.objects.get(id=1)
-        a = Attendee.objects.create(name="attendee1", user=self.admin, event=event)
         path = reverse('add_to_list', kwargs=dict(event_id=1))
         # one should fail, one should work
-        post_data = {'multiple_names': 'attendee1\nattendee2', 'name': ''}
+        post_data = {'multiple_names': 'attendee1\nattendee5', 'name': ''}
         referer = reverse('social_event', kwargs=dict(event_id=1))
         response = self.client.post(path, post_data, HTTP_REFERER=referer, follow=True)
         self.assertTrue(re.findall("The following names were not added to the list", str(response.content)))
@@ -500,9 +492,8 @@ class SocialTestCase(TestCase):
 
     # tests checking attendance feature
     def test_check_attendance(self):
-        event = SocialEvent.objects.get(id=1)
-        a = Attendee.objects.create(name="attendee", user=self.admin, event=event)
         path = reverse('check_attendee')
+        a = Attendee.objects.get(id=1)
         get_data = {'attendee_id': a.id}
         response = self.client.get(path, get_data)
         self.assertEqual(response.status_code, 200)
@@ -514,8 +505,9 @@ class SocialTestCase(TestCase):
         self.assertTrue(a.attended)
 
     def test_uncheck_attendance(self):
-        event = SocialEvent.objects.get(id=1)
-        a = Attendee.objects.create(name="attendee", user=self.admin, attended=True, event=event)
+        a = Attendee.objects.get(id=1)
+        a.attended = True
+        a.save()
         path = reverse('check_attendee')
         get_data = {'attendee_id': a.id}
         response = self.client.get(path, get_data)
@@ -529,13 +521,8 @@ class SocialTestCase(TestCase):
 
     # tests refresh_attendees view for three attendees with attended=False
     def test_refresh_attendees_static(self):
-        event = SocialEvent.objects.get(id=1)
-        # create three attendees and add to list
-        # by default, all new attendees have attended=False
-        for i in range(0, 3):
-            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin, event=event)
         path = reverse('refresh_attendees')
-        get_data = {'event_id': event.id}
+        get_data = {'event_id': self.event.id}
         response = self.client.get(path, get_data)
         self.assertEqual(response.status_code, 200)
         # response should be false for all three attendees, with ids from 1 to 3 inclusive
@@ -550,11 +537,8 @@ class SocialTestCase(TestCase):
     
     # tests refresh_attendees view when status of attendee changes, to ensure change is propogated
     def test_refresh_attendees_dynamic(self):
-        event = SocialEvent.objects.get(id=1)
-        for i in range(0, 3):
-            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin, event=event)
         path = reverse('refresh_attendees')
-        get_data = {'event_id': event.id}
+        get_data = {'event_id': self.event.id}
         response = self.client.get(path, get_data)
         self.assertJSONEqual(
             str(response.content, encoding='utf8'),
@@ -585,13 +569,13 @@ class SocialTestCase(TestCase):
         # event.party_mode is initially false, request should make it true
         path = reverse('toggle_party_mode', kwargs=dict(event_id=1))
         response = self.client.post(path)
-        event = SocialEvent.objects.get(id=1)
-        self.assertTrue(event.party_mode)
+        self.event.refresh_from_db()
+        self.assertTrue(self.event.party_mode)
 
         # sending request again should make event.party_mode false again
         response = self.client.post(path)
-        event.refresh_from_db()
-        self.assertFalse(event.party_mode)
+        self.event.refresh_from_db()
+        self.assertFalse(self.event.party_mode)
 
     # test toggle_party_mode template
     def test_toggle_party_mode_template(self):
