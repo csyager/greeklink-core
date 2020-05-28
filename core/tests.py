@@ -124,29 +124,19 @@ class SignupTestCase(TestCase):
         self.assertContains(response, "Thank you for signing up for GreekLink")
 
 
-class ResourcesTestCase(TestCase):
+class ResourcesTestCaseAdmin(TestCase):
     def setUp(self):
         self.admin = User.objects.create(username="admin", is_superuser=True, is_staff=True)
-        self.regular = User.objects.create(username="regular")
-        
-    # tests that resources page exists with proper header
-    def test_resources_page_exists(self):
-        self.client.force_login(self.regular)
-        path = reverse('resources')
-        response = self.client.post(path)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Resources")
+        self.client.force_login(self.admin)
 
     # tests that for an admin user the alert giving the option to load a google calendar appears
     def test_admin_load_link_alert(self):
-        self.client.force_login(self.admin)
         path = reverse('resources')
         response = self.client.post(path)
         self.assertContains(response, "No Google Calendar loaded!")
 
     # tests that adding a google calendar makes the alert disappear
     def test_google_calendar_alert_disappears(self):
-        self.client.force_login(self.admin)
         settings = getSettings()
         settings.calendar_embed = 'cal_link_here'
         settings.save()
@@ -156,7 +146,6 @@ class ResourcesTestCase(TestCase):
 
     # tests that all admin options appear on the resources page
     def test_admin_controls(self):
-        self.client.force_login(self.admin)
         settings = getSettings()
         settings.calendar_embed = 'cal_link_here'
         settings.save()
@@ -166,20 +155,9 @@ class ResourcesTestCase(TestCase):
         self.assertContains(response, "Upload File")
         self.assertContains(response, "Add link")
         self.assertContains(response, "modal")
-
-    # tests that admin options do not appear for users without admin privileges
-    def test_regular_users(self):
-        self.client.force_login(self.regular)
-        path = reverse('resources')
-        response = self.client.post(path)
-        self.assertNotContains(response, "No Google Calendar loaded!")
-        self.assertNotContains(response, "Upload File")
-        self.assertNotContains(response, "Add link")
-        self.assertNotContains(response, "modal")
-
+    
     # tests resource file upload form
     def test_file_upload(self):
-        self.client.force_login(self.admin)
         file = SimpleUploadedFile("file.txt", b"file_content", content_type="text/plain")
         post_dict = {'name': 'filename', 'description': 'file description'}
         file_dict = {'file': file}
@@ -188,7 +166,6 @@ class ResourcesTestCase(TestCase):
 
     # tests resource file upload function
     def test_file_upload_view(self):
-        self.client.force_login(self.admin)
         file = SimpleUploadedFile("file.txt", b"file_content", content_type="text/plain")
         post_dict = {'name': 'filename', 'file': file, 'description': 'file description'}
         path = reverse('upload_file')
@@ -200,7 +177,6 @@ class ResourcesTestCase(TestCase):
 
     # tests error messages in file upload form
     def test_file_upload_errors(self):
-        self.client.force_login(self.admin)
         post_dict = {'name': 'filename', 'description': 'file description'}
         path = reverse('upload_file')
         response = self.client.post(path, post_dict)
@@ -208,7 +184,6 @@ class ResourcesTestCase(TestCase):
 
     # tests remove file function
     def test_remove_file(self):
-        self.client.force_login(self.admin)
         file = SimpleUploadedFile("file.txt", b"file_content", content_type="text/plain")
         post_dict = {'name': 'filename', 'file': file, 'description': 'file description'}
         path = reverse('upload_file')
@@ -220,7 +195,6 @@ class ResourcesTestCase(TestCase):
 
     # tests the add calendar function
     def test_add_calendar(self):
-        self.client.force_login(self.admin)
         path = reverse('addCal')
         post_dict = {'cal_embed_link': 'hyperlink'}
         response = self.client.post(path, post_dict, follow=True)
@@ -229,7 +203,6 @@ class ResourcesTestCase(TestCase):
 
     # tests the remove calendar function
     def test_remove_calendar(self):
-        self.client.force_login(self.admin)
         settings = getSettings()
         settings.calendar_embed = 'hyperlink'
         settings.save()
@@ -240,7 +213,6 @@ class ResourcesTestCase(TestCase):
 
     # tests the add_link views.py function
     def test_add_link_view(self):
-        self.client.force_login(self.admin)
         post_dict = {'name': 'test', 'description': 'test description', 'url': 'https://www.google.com'}
         path = reverse('add_link')
         referer = reverse('resources')
@@ -249,21 +221,18 @@ class ResourcesTestCase(TestCase):
         
     # tests the link form
     def test_add_link_form_valid(self):
-        self.client.force_login(self.admin)
         form_data = {'name': 'test', 'description': 'test description', 'url': 'https://www.google.com'}
         form = LinkForm(data=form_data)
         self.assertTrue(form.is_valid)
 
     # tests when the link form is invalid
     def test_add_link_form_invalid(self):
-        self.client.force_login(self.admin)
         form_data = {}
         form = LinkForm(data=form_data)
         self.assertFalse(form.is_valid())
 
     # tests that errors are returned when link form is invalid
     def test_add_link_form_errors(self):
-        self.client.force_login(self.admin)
         post_dict = {}
         path = reverse('add_link')
         response = self.client.post(path, post_dict)
@@ -271,13 +240,33 @@ class ResourcesTestCase(TestCase):
 
     # tests remove link function
     def test_remove_link(self):
-        self.client.force_login(self.admin)
         ResourceLink.objects.create(name='test', description='test description', url='https://www.google.com')
         path = reverse('remove_link', kwargs=dict(link_id=1))
         referer = reverse('resources')
         response = self.client.post(path, HTTP_REFERER=referer, follow=True)
         self.assertFalse(ResourceLink.objects.all())
         self.assertFalse(re.findall("<h4.*test</h4", str(response.content)))
+
+
+class ResourcesTestCaseRegular(TestCase):
+    def setUp(self):
+        self.regular = User.objects.create(username="regular")
+        self.client.force_login(self.regular)
+        self.path = reverse('resources')
+        self.response = self.client.post(self.path)
+        
+    # tests that resources page exists with proper header
+    def test_resources_page_exists(self):
+        self.assertEqual(self.response.status_code, 200)
+        self.assertContains(self.response, "Resources")  
+
+    # tests that admin options do not appear for users without admin privileges
+    def test_regular_users(self):
+        self.assertNotContains(self.response, "No Google Calendar loaded!")
+        self.assertNotContains(self.response, "Upload File")
+        self.assertNotContains(self.response, "Add link")
+        self.assertNotContains(self.response, "modal")
+
         
 class AnnouncementsTestCase(TestCase):
     def setUp(self):
