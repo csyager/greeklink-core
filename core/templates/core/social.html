@@ -38,9 +38,9 @@
                         <a href="removeSocialEvent{{ event.id }}" class="btn btn-danger btn-sm float-right">Remove</a>
 
 
-                        <button type="button" class="btn btn-secondary btn-sm float-right mr-1" data-toggle="modal" data-target="#editeventModal">Edit</button>
+                        <button type="button" class="btn btn-secondary btn-sm float-right mr-1" data-toggle="modal" data-target="#editeventModal{{ event.id }}">Edit</button>
                         <!-- Modal -->
-                        <div class="modal fade" id="editeventModal" tabindex="-1" role="dialog" aria-labelledby="editeventModal" aria-hidden="true">
+                        <div class="modal fade" id="editeventModal{{ event.id }}" tabindex="-1" role="dialog" aria-labelledby="editeventModal" aria-hidden="true">
                             <div class="modal-dialog" role="document">
                                 <div class="modal-content">
                                     <div class="modal-header">
