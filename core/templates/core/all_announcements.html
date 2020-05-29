@@ -38,7 +38,7 @@
                 {% for announcement in page_obj %}
                 <li class="list-group-item">
                     <b><a href="{{ announcement.target }}">{{ announcement.title }}</a></b> - {{ announcement.user }}
-                {% if user.is_superuser %}
+                {% if perms.core.remove_announcement %}
                 <a href="removeAnnouncement{{ announcement.id }}" class="btn btn-danger btn-sm float-right">Remove</a>
                 {% endif %}
                     <br>
@@ -46,7 +46,7 @@
                 </li>
                 {% endfor %}
             </ul><br>
-            {% if request.user.is_superuser %}
+            {% if perms.core.add_announcement %}
             <button class="btn btn-primary" data-toggle="modal" data-target="#announcementModal">Add Announcement</button>
           <!-- Modal -->
             <div class="modal fade" id="announcementModal" tabindex="-1" role="dialog" aria-labelledby="announcementModal" aria-hidden="true">

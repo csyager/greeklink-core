@@ -57,7 +57,7 @@
 
     <!-- search bar -->
     <input type="text" class="form-control" onkeyup="filter_list()" id="social_search" placeholder="Search"><br>
-    {% if user.is_superuser %}
+    {% if perms.core.change_socialevent %}
     <div class="custom-control custom-switch">
       <input type="checkbox" class="custom-control-input" id="party_mode_switch" {% if event.party_mode %}checked{% endif %} onclick="window.location = 'toggle_party_mode' + {{ event.id }}">
       <label class="custom-control-label" for="party_mode_switch"><b>Party mode {% if event.party_mode %}on{% else %}off{% endif %}</b>:  turning on disables adding to the list and enables checking attendance</label>
@@ -96,7 +96,7 @@
                 <td class="col-4">{{ attendee.user }}</td>
                 {% if event.party_mode %}
                 <td class="col-4" style="text-align: center"><input type="checkbox" id="attendance_checkbox_{{ attendee.id }}" onclick="cross_off_list({{ attendee.id }})" {% if attendee.attended %}checked{% endif %}></td>
-                {% elif user.is_staff %}
+                {% elif perms.core.change_socialevent %}
                 <td class="col-4" style="text-align: right"><a href="/remove_from_list{{ event.id }}/{{ attendee.id }}"><button type="button" class="btn btn-danger">Remove from list</button></a></td>
                 {% else %}
                 <td class="col-4"></td>

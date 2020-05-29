@@ -5,7 +5,7 @@ from django.conf import settings
 from django.db.models import Q
 
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group, Permission
 
 # Stores site settings in a single model
 class SiteSettings(models.Model):
@@ -17,6 +17,16 @@ class SiteSettings(models.Model):
     verification_key = models.CharField(max_length=50, default="9999")
     organization_name = models.CharField(max_length=50, default="test")
 
+
+# dummy model for supporting permissions
+class PermissionsSupport(models.Model):
+    class Meta:
+        managed = False
+        default_permissions = ()
+        permissions = (
+            ('add_calendar', 'Add calendar'),
+            ('delete_calendar', 'Remove calendar')
+        )
 #----------------------------------------------------------------------- block for resource file
 class ResourceFileQuerySet(models.QuerySet):
     def search(self, query=None):

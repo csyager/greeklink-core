@@ -22,7 +22,7 @@
             </script>
             {% for event in page_obj %}
             <li class="list-group-item"> <a href="social_event{{ event.id }}">{{ event.name }} -- {{ event.date }}, {{ event.time }} <span class="badge badge-info">{{ event.list.count }}</span> </a>
-                {% if user.is_superuser %}
+                {% if perms.core.change_socialevent %}
                 
                 <a href="removeSocialEvent{{ event.id }}" class="btn btn-danger btn-sm float-right">Remove</a>
 
@@ -97,7 +97,7 @@
             {% endfor %}
         </ul>
         <br>
-        {% if user.is_superuser %}
+        {% if perms.core.add_socialevent %}
         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#eventModal">Add Event</button>
         <!-- Modal -->
 
