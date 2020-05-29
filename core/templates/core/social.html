@@ -112,11 +112,48 @@
                     {% for roster in rosters %}
                         <li class="list-group-item"><a href="roster{{ roster.id }}">{{ roster.title }}</a></li>
                     {% endfor %}
-                </ul>
+                </ul><br>
+                <button class="btn btn-primary" data-toggle="modal" data-target="#roster_modal">Add Roster</button>
             </div>
         </div>
         
-        <!-- Modal -->
+        <!-- add roster modal -->
+        <div class="modal fade" id="roster_modal" tabindex="-1" role="dialog" aria-labelledby="roster_modal_label" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="roster_modal_label">Add Roster</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Rosters are lists of names that can be saved and added to events later.  Create a name for your roster and add names below to begin.  This roster can be edited later.</p>
+                        <form method="post" action="create_roster">
+                            {% csrf_token %}
+                            <div class="form-group row">
+                                <label for="title" class="col-sm-3 col-form-label">Roster Name</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" id="title" name="title" placeholder="Roster Name">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="members" class="col-sm-3 col-form-label">Members</label>
+                                <div class="col-sm-9">
+                                    <textarea class="form-control" name="members" rows="10" placeholder="Separate names by a new line"></textarea>
+                                </div>
+                            </div>
+                            
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
 
         <script>
             function toggle_limit(){
@@ -131,7 +168,7 @@
             }
 
         </script>
-
+        <!-- add event modal -->
         <div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModal" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">

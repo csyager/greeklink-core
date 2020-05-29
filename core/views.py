@@ -563,6 +563,18 @@ def save_as_roster(request, event_id):
 
 
 @staff_member_required
+def create_roster(request):
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        members = request.POST.get('members').splitlines()
+        roster = Roster.objects.create(title=title)
+        for member in members:
+            RosterMember.objects.create(name=member, roster=roster)
+        roster.save()
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+@staff_member_required
 def remove_link(request, link_id):
     link = ResourceLink.objects.get(id=link_id).delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))

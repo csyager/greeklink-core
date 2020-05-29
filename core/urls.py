@@ -31,6 +31,7 @@ urlpatterns = [
     path('clear_list<int:event_id>', views.clear_list, name="clear_list"),
     path('export_xls<int:event_id>', views.export_xls, name="export_xls"),
     path('save_as_roster<int:event_id>', views.save_as_roster, name="save_as_roster"),
+    path('create_roster', views.create_roster, name="create_roster"),
     path('roster<int:roster_id>', views.roster, name="roster"),
     path('edit_roster<int:roster_id>', views.edit_roster, name="edit_roster"),
     path('remove_from_roster<int:roster_id>/<int:member_id>', views.remove_from_roster, name="remove_from_roster"),
