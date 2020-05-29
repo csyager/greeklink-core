@@ -36,6 +36,7 @@ urlpatterns = [
     path('edit_roster<int:roster_id>', views.edit_roster, name="edit_roster"),
     path('remove_from_roster<int:roster_id>/<int:member_id>', views.remove_from_roster, name="remove_from_roster"),
     path('add_roster_to_events<int:roster_id>', views.add_roster_to_events, name="add_roster_to_events"),
+    path('remove_roster<int:roster_id>', views.remove_roster, name="remove_roster"),
     path('removeLink<int:link_id>', views.remove_link, name="remove_link"),
     path('addLink', views.add_link, name="add_link"),
     path('add_announcement', views.add_announcement, name='add_announcement'),

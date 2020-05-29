@@ -573,6 +573,14 @@ def create_roster(request):
         roster.save()
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
+    else:
+        return HttpResponseNotFound(request)
+
+@staff_member_required
+def remove_roster(request, roster_id):
+    Roster.objects.get(pk=roster_id).delete()
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
 
 @staff_member_required
 def remove_link(request, link_id):
