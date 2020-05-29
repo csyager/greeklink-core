@@ -31,7 +31,7 @@ from urllib import parse
 from django.urls import reverse
 from django.db import IntegrityError, transaction
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from django.views.generic import ListView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render
@@ -375,21 +375,24 @@ def roster(request, roster_id):
 
 @staff_member_required
 def edit_roster(request, roster_id):
-    roster = Roster.objects.get(id=roster_id)
-    updated_members = request.POST.get('updated_members')
-    roster.members.all().delete()
-    for line in updated_members.splitlines():
-        if line != "":
-            member = RosterMember()
-            member.name = line
-            member.roster = roster
-            try:
-                with transaction.atomic():
-                    member.save()
-            except IntegrityError:
-                    messages.error(request, line)
-    roster.save()
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    if request.method == 'POST':
+        roster = Roster.objects.get(id=roster_id)
+        updated_members = request.POST.get('updated_members')
+        roster.members.all().delete()
+        for line in updated_members.splitlines():
+            if line != "":
+                member = RosterMember()
+                member.name = line
+                member.roster = roster
+                try:
+                    with transaction.atomic():
+                        member.save()
+                except IntegrityError:
+                        messages.error(request, line)
+        roster.save()
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    else:
+        raise Http404
 
 @staff_member_required
 def remove_from_roster(request, roster_id, member_id):
@@ -420,7 +423,7 @@ def add_roster_to_events(request, roster_id):
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
     else:
-        return HttpResponseNotFound(request)
+        raise Http404
     
 
 @staff_member_required
@@ -559,7 +562,7 @@ def save_as_roster(request, event_id):
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
     
     else:
-        return HttpResponseNotFound(request)
+        raise Http404
 
 
 @staff_member_required
@@ -569,7 +572,11 @@ def create_roster(request):
         members = request.POST.get('members').splitlines()
         roster = Roster.objects.create(title=title)
         for member in members:
-            RosterMember.objects.create(name=member, roster=roster)
+            try:
+                with transaction.atomic():
+                    RosterMember.objects.create(name=member, roster=roster)
+            except IntegrityError:
+                continue
         roster.save()
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
