@@ -460,9 +460,8 @@ class SocialEventTestCase(TestCase):
         post_data = {'multiple_names': 'attendee1\nattendee2', 'name': ''}
         referer = reverse('social_event', kwargs=dict(event_id=1))
         response = self.client.post(path, post_data, HTTP_REFERER=referer, follow=True)
-        self.assertTrue(re.findall("The following names were not added to the list", str(response.content)))
-        self.assertTrue(re.findall("<li.*>attendee1</li>", str(response.content)))
-        self.assertTrue(re.findall("<li.*>attendee2</li>", str(response.content)))
+        self.assertContains(response, " <b>The following name was not added to the list, because it is a duplicate:</b> attendee1")
+        self.assertContains(response, " <b>The following name was not added to the list, because it is a duplicate:</b> attendee2")
         self.assertEqual(len(Attendee.objects.filter(name="attendee1")), 1)
         self.assertEqual(len(Attendee.objects.filter(name="attendee2")), 1)
     
@@ -473,9 +472,8 @@ class SocialEventTestCase(TestCase):
         post_data = {'multiple_names': 'attendee1\nattendee5', 'name': ''}
         referer = reverse('social_event', kwargs=dict(event_id=1))
         response = self.client.post(path, post_data, HTTP_REFERER=referer, follow=True)
-        self.assertTrue(re.findall("The following names were not added to the list", str(response.content)))
-        self.assertTrue(re.findall("<li.*>attendee1</li>", str(response.content)))
-        self.assertFalse(re.findall("<li.*>attendee2</li>", str(response.content)))
+        self.assertContains(response, "<b>The following name was not added to the list, because it is a duplicate:</b> attendee1")
+        self.assertNotContains(response, "<b>The following name was not added to the list, because it is a duplicate:</b> attendee2")
         self.assertEqual(len(Attendee.objects.filter(name="attendee1")), 1)
         self.assertEqual(len(Attendee.objects.filter(name="attendee2")), 1)
 
@@ -656,4 +654,165 @@ class SearchTestCases(TestCase):
         get_data = {'query': ''}
         response = self.client.get(path, get_data, follow=True)
         self.assertContains(response, '0 results for <b>None</b>')
+
+
+class RosterTestCase(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create(username="admin", is_superuser=True, is_staff=True)
+        self.client.force_login(self.admin)
+        self.roster = Roster.objects.create(title="test_roster")
+    
+    # tests roster view function
+    def test_roster_view(self):
+        path = reverse('roster', kwargs=dict(roster_id=1))
+        response = self.client.get(path)
+        self.assertContains(response, "test_roster</h1>")
+
+    # tests roster appears in social view
+    def test_roster_appears_in_social(self):
+        path = reverse('social')
+        response = self.client.get(path)
+        self.assertContains(response, "test_roster</a>")
+    
+    # tests edit_roster view function
+    def test_edit_roster_view(self):
+        path = reverse('edit_roster', kwargs=dict(roster_id=1))
+        referer = reverse('roster', kwargs=dict(roster_id=1))
+        post_data = {
+            'updated_members': 'test1\ntest2\ntest3'
+        }
+        response = self.client.post(path, post_data, HTTP_REFERER=referer, follow=True)
+        self.assertContains(response, "test1</td>")
+        self.assertContains(response, "test2</td>")
+        self.assertContains(response, "test3</td>")
+        self.assertEqual(self.roster.members.count(), 3)
+
+    # tests editing roster with duplicates
+    def test_edit_roster_duplicates(self):
+        path = reverse('edit_roster', kwargs=dict(roster_id=1))
+        referer = reverse('roster', kwargs=dict(roster_id=1))
+        # contains duplicate of test1
+        post_data = {
+            'updated_members': 'test1\ntest2\ntest1'
+        }
+        response = self.client.post(path, post_data, HTTP_REFERER=referer, follow=True)
+        self.assertContains(response, "The following name was not added to the roster, because it is a duplicate:</b> test1")
+        self.assertEqual(self.roster.members.count(), 2)
+
+    # tests edit roster with get request, should return 404
+    def test_edit_roster_get(self):
+        path = reverse('edit_roster', kwargs=dict(roster_id=1))
+        response = self.client.get(path)
+        self.assertEqual(response.status_code, 404)
+        
+    # tests remove_from_roster function
+    def test_remove_from_roster(self):
+        RosterMember.objects.create(name="test", roster=self.roster)
+        path = reverse('remove_from_roster', kwargs=dict(roster_id=1, member_id=1))
+        referer = reverse('roster', kwargs=dict(roster_id=1))
+        response = self.client.get(path, HTTP_REFERER=referer, follow=True)
+        self.assertEqual(self.roster.members.count(), 0)
+        self.assertNotContains(response, "test</td>")
+    
+    # test add_roster_to_events function
+    def test_add_roster_to_events(self):
+        path = reverse('add_roster_to_events', kwargs=dict(roster_id=1))
+        s = SocialEvent.objects.create()
+        RosterMember.objects.create(name="test", roster=self.roster)
+        referer = reverse('roster', kwargs=dict(roster_id=1))
+
+        # contains the name of all checked events, default name for an event is test
+        post_data = {
+            'event_checkboxes': 'test'
+        }
+        response = self.client.post(path, post_data, HTTP_REFERER=referer, follow=True)
+        s.refresh_from_db()
+        self.assertContains(response, "The members of this roster were successfully added to the following event:</b> test")
+        self.assertEqual(s.list.count(), 1)
+
+    # shouldn't behave differently, but shouldn't add duplicates to the event
+    def test_add_roster_to_events(self):
+        path = reverse('add_roster_to_events', kwargs=dict(roster_id=1))
+        s = SocialEvent.objects.create()
+        Attendee.objects.create(name="test", user="admin", event=s)
+        RosterMember.objects.create(name="test", roster=self.roster)
+        referer = reverse('roster', kwargs=dict(roster_id=1))
+
+        # contains the name of all checked events, default name for an event is test
+        post_data = {
+            'event_checkboxes': 'test'
+        }
+        response = self.client.post(path, post_data, HTTP_REFERER=referer, follow=True)
+        s.refresh_from_db()
+        self.assertContains(response, "The members of this roster were successfully added to the following event:</b> test")
+        self.assertEqual(s.list.count(), 1)
+
+    # test add_roster_to_events with get request, should return 404
+    def test_add_roster_to_events_get(self):
+        path = reverse('add_roster_to_events', kwargs=dict(roster_id=1))
+        response = self.client.get(path)
+        self.assertEqual(response.status_code, 404)
+
+    # test save_as_roster view
+    def test_save_as_roster(self):
+        s = SocialEvent.objects.create()
+        path = reverse('save_as_roster', kwargs=dict(event_id=s.pk))
+        Attendee.objects.create(name="test", user="admin", event=s)
+        post_data = {
+            'roster_name': 'saved_roster'
+        }
+        referer = reverse('social_event', kwargs=dict(event_id=s.pk))
+        response = self.client.post(path, post_data, HTTP_REFERER=referer, follow=True)
+        self.assertContains(response, "List successfully saved as roster: saved_roster")
+        self.assertTrue(Roster.objects.get(title="saved_roster"))
+        self.assertEqual(Roster.objects.get(title="saved_roster").members.count(), 1)
+        self.assertTrue(Roster.objects.get(title="saved_roster").members.get(name="test"))
+
+    # test save_as_roster view with get method, which should return 404
+    def test_save_as_roster_get(self):
+        s = SocialEvent.objects.create()
+        path = reverse('save_as_roster', kwargs=dict(event_id=s.pk))
+        response = self.client.get(path)
+        self.assertEqual(response.status_code, 404)
+    
+    # tests create_roster function
+    def test_create_roster(self):
+        path = reverse('create_roster')
+        post_data = {
+            'title': 'created_roster',
+            'members': 'test1\ntest2\ntest3'
+        }
+        referer = reverse('social')
+        response = self.client.post(path, post_data, HTTP_REFERER=referer, follow=True)
+        self.assertContains(response, "created_roster</a>")
+        self.assertTrue(Roster.objects.get(title="created_roster"))
+        self.assertEqual(Roster.objects.get(title="created_roster").members.count(), 3)
+
+    # tests create_roster with duplicates
+    def test_create_roster_duplicates(self):
+        path = reverse('create_roster')
+        post_data = {
+            'title': 'created_roster',
+            'members': 'test1\ntest2\ntest1'
+        }
+        referer = reverse('social')
+        response = self.client.post(path, post_data, HTTP_REFERER=referer, follow=True)
+        self.assertContains(response, "created_roster</a>")
+        self.assertTrue(Roster.objects.get(title="created_roster"))
+        self.assertEqual(Roster.objects.get(title="created_roster").members.count(), 2)
+
+    # tests create_roster function under get request, should be 404
+    def test_create_roster_get(self):
+        path = reverse('create_roster')
+        response = self.client.get(path)
+        self.assertEqual(response.status_code, 404)
+
+    # tests remove_roster function
+    def test_remove_roster(self):
+        path = reverse('remove_roster', kwargs=dict(roster_id=1))
+        referer = reverse('social')
+        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        self.assertNotContains(response, "test_roster</a>")
+        self.assertFalse(Roster.objects.filter(id=1))
+
     
