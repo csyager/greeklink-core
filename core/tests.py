@@ -38,83 +38,6 @@ class AuthenticationTestCase(TestCase):
         response = self.client.get(path)
         self.assertContains(response, "Register")
 
-    # tests that signup form accepts valid input
-    def test_signup_form(self):
-        form_data = {
-            'username': 'test',
-            'email': 'test@test.com',
-            'first_name': 'Test_first',
-            'last_name': 'Test_last',
-            'verification_key': '9999',
-            'password1': 'c0mpl#x_p@$$w0rd',
-            'password2': 'c0mpl#x_p@$$w0rd'
-        }
-
-        form = SignupForm(form_data)
-        self.assertTrue(form.is_valid())
-
-    # tests that form rejects passwords that are too simple
-    def test_simple_password(self):
-        form_data = {
-            'username': 'test',
-            'email': 'test@test.com',
-            'first_name': 'Test_first',
-            'last_name': 'Test_last',
-            'verification_key': '9999',
-            'password1': 'password',
-            'password2': 'password'
-        }
-        form = SignupForm(form_data)
-        self.assertFalse(form.is_valid())
-        self.assertIn('This password is too common', form.errors['password2'][0])
-
-    # tests that form rejects passwords that don't match
-    def test_passwords_not_match(self):
-        form_data = {
-            'username': 'test',
-            'email': 'test@test.com',
-            'first_name': 'Test_first',
-            'last_name': 'Test_last',
-            'verification_key': '9999',
-            'password1': 'password1',
-            'password2': 'password2'
-        }
-        form = SignupForm(form_data)
-        self.assertFalse(form.is_valid())
-        self.assertEqual("The two password fields didn't match.", form.errors['password2'][0])
-
-    # tests that form rejects usernames that are already in use
-    def test_username_already_taken(self):
-        User.objects.create(username="test")
-        form_data = {
-            'username': 'test',
-            'email': 'test@test.com',
-            'first_name': 'Test_first',
-            'last_name': 'Test_last',
-            'verification_key': '9999',
-            'password1': 'c0mpl#x_p@$$w0rd',
-            'password2': 'c0mpl#x_p@$$w0rd'
-        }
-        form = SignupForm(form_data)
-        self.assertFalse(form.is_valid())
-        self.assertEqual("A user with that username already exists.", form.errors['username'][0])
-
-    # tests that the user is redirected to successful verification page
-    def test_valid_input_template(self):
-        post_data = {
-            'username': 'test',
-            'email': 'test@test.com',
-            'first_name': 'Test_first',
-            'last_name': 'Test_last',
-            'verification_key': '9999',
-            'password1': 'c0mpl#x_p@$$w0rd',
-            'password2': 'c0mpl#x_p@$$w0rd'
-        }
-        path = reverse('signup')
-        response = self.client.post(path, post_data)
-
-        self.assertContains(response, "Thank you for signing up for GreekLink")
-
     # tests that inactive users can activate with activate view
     def test_activate_view(self):
         user = User.objects.create(username="test", is_active="False")
@@ -149,29 +72,71 @@ class AuthenticationTestCase(TestCase):
         self.assertContains(response, "Login")
 
 
-class ResourcesTestCase(TestCase):
+class SignupTestCase(TestCase):
+    def setUp(self):
+        self.form_data = {
+            'username': 'test',
+            'email': 'test@test.com',
+            'first_name': 'Test_first',
+            'last_name': 'Test_last',
+            'verification_key': '9999',
+            'password1': 'c0mpl#x_p@$$w0rd',
+            'password2': 'c0mpl#x_p@$$w0rd'
+        }
+
+    # tests that signup form accepts valid input
+    def test_signup_form(self):
+        form = SignupForm(self.form_data)
+        self.assertTrue(form.is_valid())
+
+    # tests that form rejects passwords that are too simple
+    def test_simple_password(self):
+        self.form_data.update({
+            'password1': 'password',
+            'password2': 'password'
+        })
+        form = SignupForm(self.form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn('This password is too common', form.errors['password2'][0])
+
+    # tests that form rejects passwords that don't match
+    def test_passwords_not_match(self):
+        self.form_data.update({
+            'password1': 'password1',
+            'password2': 'password2'
+        })
+        form = SignupForm(self.form_data)
+        self.assertFalse(form.is_valid())
+        self.assertEqual("The two password fields didn't match.", form.errors['password2'][0])
+
+    # tests that form rejects usernames that are already in use
+    def test_username_already_taken(self):
+        User.objects.create(username="test")
+        form = SignupForm(self.form_data)
+        self.assertFalse(form.is_valid())
+        self.assertEqual("A user with that username already exists.", form.errors['username'][0])
+
+    # tests that the user is redirected to successful verification page
+    def test_valid_input_template(self):
+        post_data = self.form_data
+        path = reverse('signup')
+        response = self.client.post(path, post_data)
+        self.assertContains(response, "Thank you for signing up for GreekLink")
+
+
+class ResourcesTestCaseAdmin(TestCase):
     def setUp(self):
         self.admin = User.objects.create(username="admin", is_superuser=True, is_staff=True)
-        self.regular = User.objects.create(username="regular")
-        
-    # tests that resources page exists with proper header
-    def test_resources_page_exists(self):
-        self.client.force_login(self.regular)
-        path = reverse('resources')
-        response = self.client.post(path)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Resources")
+        self.client.force_login(self.admin)
 
     # tests that for an admin user the alert giving the option to load a google calendar appears
     def test_admin_load_link_alert(self):
-        self.client.force_login(self.admin)
         path = reverse('resources')
         response = self.client.post(path)
         self.assertContains(response, "No Google Calendar loaded!")
 
     # tests that adding a google calendar makes the alert disappear
     def test_google_calendar_alert_disappears(self):
-        self.client.force_login(self.admin)
         settings = getSettings()
         settings.calendar_embed = 'cal_link_here'
         settings.save()
@@ -181,7 +146,6 @@ class ResourcesTestCase(TestCase):
 
     # tests that all admin options appear on the resources page
     def test_admin_controls(self):
-        self.client.force_login(self.admin)
         settings = getSettings()
         settings.calendar_embed = 'cal_link_here'
         settings.save()
@@ -191,20 +155,9 @@ class ResourcesTestCase(TestCase):
         self.assertContains(response, "Upload File")
         self.assertContains(response, "Add link")
         self.assertContains(response, "modal")
-
-    # tests that admin options do not appear for users without admin privileges
-    def test_regular_users(self):
-        self.client.force_login(self.regular)
-        path = reverse('resources')
-        response = self.client.post(path)
-        self.assertNotContains(response, "No Google Calendar loaded!")
-        self.assertNotContains(response, "Upload File")
-        self.assertNotContains(response, "Add link")
-        self.assertNotContains(response, "modal")
-
+    
     # tests resource file upload form
     def test_file_upload(self):
-        self.client.force_login(self.admin)
         file = SimpleUploadedFile("file.txt", b"file_content", content_type="text/plain")
         post_dict = {'name': 'filename', 'description': 'file description'}
         file_dict = {'file': file}
@@ -213,7 +166,6 @@ class ResourcesTestCase(TestCase):
 
     # tests resource file upload function
     def test_file_upload_view(self):
-        self.client.force_login(self.admin)
         file = SimpleUploadedFile("file.txt", b"file_content", content_type="text/plain")
         post_dict = {'name': 'filename', 'file': file, 'description': 'file description'}
         path = reverse('upload_file')
@@ -225,7 +177,6 @@ class ResourcesTestCase(TestCase):
 
     # tests error messages in file upload form
     def test_file_upload_errors(self):
-        self.client.force_login(self.admin)
         post_dict = {'name': 'filename', 'description': 'file description'}
         path = reverse('upload_file')
         response = self.client.post(path, post_dict)
@@ -233,7 +184,6 @@ class ResourcesTestCase(TestCase):
 
     # tests remove file function
     def test_remove_file(self):
-        self.client.force_login(self.admin)
         file = SimpleUploadedFile("file.txt", b"file_content", content_type="text/plain")
         post_dict = {'name': 'filename', 'file': file, 'description': 'file description'}
         path = reverse('upload_file')
@@ -245,7 +195,6 @@ class ResourcesTestCase(TestCase):
 
     # tests the add calendar function
     def test_add_calendar(self):
-        self.client.force_login(self.admin)
         path = reverse('addCal')
         post_dict = {'cal_embed_link': 'hyperlink'}
         response = self.client.post(path, post_dict, follow=True)
@@ -254,7 +203,6 @@ class ResourcesTestCase(TestCase):
 
     # tests the remove calendar function
     def test_remove_calendar(self):
-        self.client.force_login(self.admin)
         settings = getSettings()
         settings.calendar_embed = 'hyperlink'
         settings.save()
@@ -265,7 +213,6 @@ class ResourcesTestCase(TestCase):
 
     # tests the add_link views.py function
     def test_add_link_view(self):
-        self.client.force_login(self.admin)
         post_dict = {'name': 'test', 'description': 'test description', 'url': 'https://www.google.com'}
         path = reverse('add_link')
         referer = reverse('resources')
@@ -274,21 +221,18 @@ class ResourcesTestCase(TestCase):
         
     # tests the link form
     def test_add_link_form_valid(self):
-        self.client.force_login(self.admin)
         form_data = {'name': 'test', 'description': 'test description', 'url': 'https://www.google.com'}
         form = LinkForm(data=form_data)
         self.assertTrue(form.is_valid)
 
     # tests when the link form is invalid
     def test_add_link_form_invalid(self):
-        self.client.force_login(self.admin)
         form_data = {}
         form = LinkForm(data=form_data)
         self.assertFalse(form.is_valid())
 
     # tests that errors are returned when link form is invalid
     def test_add_link_form_errors(self):
-        self.client.force_login(self.admin)
         post_dict = {}
         path = reverse('add_link')
         response = self.client.post(path, post_dict)
@@ -296,13 +240,33 @@ class ResourcesTestCase(TestCase):
 
     # tests remove link function
     def test_remove_link(self):
-        self.client.force_login(self.admin)
         ResourceLink.objects.create(name='test', description='test description', url='https://www.google.com')
         path = reverse('remove_link', kwargs=dict(link_id=1))
         referer = reverse('resources')
         response = self.client.post(path, HTTP_REFERER=referer, follow=True)
         self.assertFalse(ResourceLink.objects.all())
         self.assertFalse(re.findall("<h4.*test</h4", str(response.content)))
+
+
+class ResourcesTestCaseRegular(TestCase):
+    def setUp(self):
+        self.regular = User.objects.create(username="regular")
+        self.client.force_login(self.regular)
+        self.path = reverse('resources')
+        self.response = self.client.post(self.path)
+        
+    # tests that resources page exists with proper header
+    def test_resources_page_exists(self):
+        self.assertEqual(self.response.status_code, 200)
+        self.assertContains(self.response, "Resources")  
+
+    # tests that admin options do not appear for users without admin privileges
+    def test_regular_users(self):
+        self.assertNotContains(self.response, "No Google Calendar loaded!")
+        self.assertNotContains(self.response, "Upload File")
+        self.assertNotContains(self.response, "Add link")
+        self.assertNotContains(self.response, "modal")
+
         
 class AnnouncementsTestCase(TestCase):
     def setUp(self):
@@ -437,12 +401,19 @@ class SocialTestCase(TestCase):
         self.assertTrue(Attendee.objects.filter(name="many_name3"))
         self.assertFalse(Attendee.objects.filter(name="individual_name"))
 
+class SocialEventTestCase(TestCase):
+    
+    def setUp(self):
+        self.admin = User.objects.create(username="admin", is_staff=True, is_superuser=True)
+        self.client.force_login(self.admin)
+        SocialEvent.objects.create()
+        self.event = SocialEvent.objects.get(id=1)
+        for i in range(1, 4):
+            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin, event=self.event)
+        self.event.save()
+
     # tests remove_from_list feature to make sure attendees are removed from database and UI
     def test_remove_from_list(self):
-        event = SocialEvent.objects.get(id=1)
-        for i in range(1, 4):
-            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin, event=event)
-        event.save()
         path = reverse('remove_from_list', kwargs=dict(event_id=1, attendee_id=1))
         referer = reverse('social_event', kwargs=dict(event_id=1))
         response = self.client.post(path, HTTP_REFERER=referer, follow=True)
@@ -457,23 +428,15 @@ class SocialTestCase(TestCase):
 
     # tests clear list feature
     def test_clear_list(self):
-        event = SocialEvent.objects.get(id=1)
-        for i in range(1, 4):
-            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin, event=event)
-        event.save()
         path = reverse('clear_list', kwargs=dict(event_id=1))
         referer = reverse('social_event', kwargs=dict(event_id=1))
         response = self.client.post(path, HTTP_REFERER=referer, follow=True)
         content = str(response.content)
         self.assertFalse(re.findall("<td>attendee[1-3]</td>", content))
-        self.assertFalse(event.list.all())
+        self.assertFalse(self.event.list.all())
 
     # tests exporting a spreadsheet of attendees
     def test_export_xls(self):
-        event = SocialEvent.objects.get(id=1)
-        for i in range(0, 3):
-            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin, event=event)
-        event.save()
         path = reverse('export_xls', kwargs=dict(event_id=1))
         response = self.client.post(path)
         self.assertEqual(response.get('Content-Type'), 'application/ms-excel')
@@ -481,21 +444,16 @@ class SocialTestCase(TestCase):
 
     # tests adding single duplicate name to the list
     def test_add_individual_duplicate(self):
-        event = SocialEvent.objects.get(id=1)
-        a = Attendee.objects.create(name="attendee", user=self.admin, event=event)
         path = reverse('add_to_list', kwargs=dict(event_id=1))
         # should fail, because name is a duplicate
-        post_data = {'multiple_names': '', 'name': 'attendee'}
+        post_data = {'multiple_names': '', 'name': 'attendee1'}
         referer = reverse('social_event', kwargs=dict(event_id=1))
         response = self.client.post(path, post_data, HTTP_REFERER=referer, follow=True)
-        self.assertContains(response, "<b>The following name was not added to the list, because it is a duplicate:</b> attendee")
-        self.assertEqual(len(Attendee.objects.filter(name="attendee")), 1)
+        self.assertContains(response, " <b>The following name was not added to the list, because it is a duplicate:</b> attendee1")
+        self.assertEqual(len(Attendee.objects.filter(name="attendee1")), 1)
 
     # tests adding multiple duplicate names to the list
     def test_add_multiple_duplicate(self):
-        event = SocialEvent.objects.get(id=1)
-        for i in range(1, 3):
-            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin, event=event)
         path = reverse('add_to_list', kwargs=dict(event_id=1))
         # should fail, because both names are duplicates
         post_data = {'multiple_names': 'attendee1\nattendee2', 'name': ''}
@@ -508,11 +466,9 @@ class SocialTestCase(TestCase):
     
     # tests adding multiple names where some are duplicates and some aren't
     def test_add_duplicates_and_new(self):
-        event = SocialEvent.objects.get(id=1)
-        a = Attendee.objects.create(name="attendee1", user=self.admin, event=event)
         path = reverse('add_to_list', kwargs=dict(event_id=1))
         # one should fail, one should work
-        post_data = {'multiple_names': 'attendee1\nattendee2', 'name': ''}
+        post_data = {'multiple_names': 'attendee1\nattendee5', 'name': ''}
         referer = reverse('social_event', kwargs=dict(event_id=1))
         response = self.client.post(path, post_data, HTTP_REFERER=referer, follow=True)
         self.assertContains(response, "<b>The following name was not added to the list, because it is a duplicate:</b> attendee1")
@@ -522,9 +478,8 @@ class SocialTestCase(TestCase):
 
     # tests checking attendance feature
     def test_check_attendance(self):
-        event = SocialEvent.objects.get(id=1)
-        a = Attendee.objects.create(name="attendee", user=self.admin, event=event)
         path = reverse('check_attendee')
+        a = Attendee.objects.get(id=1)
         get_data = {'attendee_id': a.id}
         response = self.client.get(path, get_data)
         self.assertEqual(response.status_code, 200)
@@ -536,8 +491,9 @@ class SocialTestCase(TestCase):
         self.assertTrue(a.attended)
 
     def test_uncheck_attendance(self):
-        event = SocialEvent.objects.get(id=1)
-        a = Attendee.objects.create(name="attendee", user=self.admin, attended=True, event=event)
+        a = Attendee.objects.get(id=1)
+        a.attended = True
+        a.save()
         path = reverse('check_attendee')
         get_data = {'attendee_id': a.id}
         response = self.client.get(path, get_data)
@@ -551,13 +507,8 @@ class SocialTestCase(TestCase):
 
     # tests refresh_attendees view for three attendees with attended=False
     def test_refresh_attendees_static(self):
-        event = SocialEvent.objects.get(id=1)
-        # create three attendees and add to list
-        # by default, all new attendees have attended=False
-        for i in range(0, 3):
-            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin, event=event)
         path = reverse('refresh_attendees')
-        get_data = {'event_id': event.id}
+        get_data = {'event_id': self.event.id}
         response = self.client.get(path, get_data)
         self.assertEqual(response.status_code, 200)
         # response should be false for all three attendees, with ids from 1 to 3 inclusive
@@ -572,11 +523,8 @@ class SocialTestCase(TestCase):
     
     # tests refresh_attendees view when status of attendee changes, to ensure change is propogated
     def test_refresh_attendees_dynamic(self):
-        event = SocialEvent.objects.get(id=1)
-        for i in range(0, 3):
-            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin, event=event)
         path = reverse('refresh_attendees')
-        get_data = {'event_id': event.id}
+        get_data = {'event_id': self.event.id}
         response = self.client.get(path, get_data)
         self.assertJSONEqual(
             str(response.content, encoding='utf8'),
@@ -607,13 +555,13 @@ class SocialTestCase(TestCase):
         # event.party_mode is initially false, request should make it true
         path = reverse('toggle_party_mode', kwargs=dict(event_id=1))
         response = self.client.post(path)
-        event = SocialEvent.objects.get(id=1)
-        self.assertTrue(event.party_mode)
+        self.event.refresh_from_db()
+        self.assertTrue(self.event.party_mode)
 
         # sending request again should make event.party_mode false again
         response = self.client.post(path)
-        event.refresh_from_db()
-        self.assertFalse(event.party_mode)
+        self.event.refresh_from_db()
+        self.assertFalse(self.event.party_mode)
 
     # test toggle_party_mode template
     def test_toggle_party_mode_template(self):
