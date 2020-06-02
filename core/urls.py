@@ -8,9 +8,11 @@ from django.conf.urls.static import static
 from . import views
 
 urlpatterns = [
-    path('', views.index, name='index'),
+    path('', views.index, name='index'),   
     path('signup/', views.signup, name='signup'),
     path('activate/<int:user_id>/<str:token>', views.activate, name='activate'),
+    path('forgot_credentials', views.forgot_credentials, name='forgot_credentials'),
+    path('reset_password<int:user_id>/<str:token>', views.reset_password, name='reset_password'),
     path('login/', LoginView.as_view(template_name='core/login.html', authentication_form=LoginForm), name="login"),
     path('logout', views.logout_user, name='logout'),
     path('resources', views.resources, name="resources"),

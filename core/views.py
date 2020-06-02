@@ -148,6 +148,71 @@ def activate(request, user_id, token):
     else:
         return HttpResponse('Activation link is invalid!')
 
+# forgot credentials page
+def forgot_credentials(request):
+    if request.method == 'POST':
+        form = ForgotCredentialsForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data.get('email')
+            try:
+                user = User.objects.get(email=email)
+            except User.MultipleObjectsReturned:
+                messages.error(request, "Multiple accounts exist with the same email address.  Contact your site administrator for assistance.")
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+            except User.DoesNotExist:
+                messages.error(request, "User with this email does not exist.")
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+            mail_subject = "Reset your password"
+            current_site = get_current_site(request)
+            message = render_to_string('core/reset_credentials_email.html', {
+                'user': user,
+                'domain': current_site.domain,
+                'uid': user.pk,
+                'token': account_activation_token.make_token(user),
+            })
+            send_mail(mail_subject, message, 'verify@greeklink.com', [email], fail_silently=False)
+            messages.success(request, "Email with password reset link has been sent.")
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+    else:    
+        template = loader.get_template('core/forgot_credentials.html')
+        context = {
+            'settings': getSettings(),
+            'form': ForgotCredentialsForm(),
+        }
+        return HttpResponse(template.render(context, request))
+
+
+def reset_password(request, user_id, token):
+    user = User.objects.get(pk=user_id)
+    if request.method == 'POST':
+        form = SetPasswordForm(request.POST)
+        if form.is_valid():
+            password1 = form.cleaned_data.get('new_password1')
+            password2 = form.cleaned_data.get('new_password2')
+            if password1 == password2:
+                user.set_password(password1)
+                user.save()
+                template = loader.get_template('core/reset_password_success.html')
+                context = {
+                    'settings': getSettings()
+                }
+                return HttpResponse(template.render(context, request))
+        else:   # fields did not match
+            for field in form:
+                for error in field.errors:
+                    messages.error(request, error)
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    elif account_activation_token.check_token(user, token):
+        template = loader.get_template('core/reset_password.html')
+        context = {
+            'settings': getSettings(),
+            'form': SetPasswordForm()
+        }
+        return HttpResponse(template.render(context, request))
+    
+    else:
+        return HttpResponse("Invalid token!")
 
 # logs brothers out of the system
 def logout_user(request):
@@ -165,7 +230,7 @@ def handler404(request, exception):
 def handler500(request):
     settings = getSettings()
     context = {
-        'settings': getSettings()
+        'settings': getSettings(),
     }
     template = loader.get_template('core/500.html')
     return HttpResponseServerError(template.render(context, request))
