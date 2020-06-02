@@ -449,8 +449,7 @@ class SocialEventTestCase(TestCase):
         post_data = {'multiple_names': '', 'name': 'attendee1'}
         referer = reverse('social_event', kwargs=dict(event_id=1))
         response = self.client.post(path, post_data, HTTP_REFERER=referer, follow=True)
-        self.assertTrue(re.findall("The following names were not added to the list", str(response.content)))
-        self.assertTrue(re.findall("<li.*>attendee1</li>", str(response.content)))
+        self.assertContains(response, " <b>The following name was not added to the list, because it is a duplicate:</b> attendee1")
         self.assertEqual(len(Attendee.objects.filter(name="attendee1")), 1)
 
     # tests adding multiple duplicate names to the list
