@@ -4,7 +4,7 @@
 <br>
 <div class="container">
     <h1>Resources</h1><br>
-    {% if calendar_embed == "" and user.is_staff %}
+    {% if calendar_embed == "" and perms.core.add_calendar %}
     <div class="alert alert-warning" role="alert">
         <a data-toggle="modal" data-target="#calModal">No Google Calendar loaded!  Click here to add one!</a>
     </div>
@@ -39,7 +39,7 @@
         <iframe class="embed-responsive-item" src="{{ calendar_embed }}" style="border: 0" width="800" height="600" frameborder="0" scrolling="no"></iframe>
     </div>
     <br>
-    {% if user.is_staff %}
+    {% if perms.core.delete_calendar %}
     <div class="container">
         <a href="removeCal"><button class="btn btn-danger">Remove Calendar</button></a>
     </div>
@@ -65,7 +65,7 @@
                             <h4 class="card-title">{{ file.name }}</h4>
                             <p class="card-text">{{ file.description }}</p>
                             <a href="{{ file.file.url }}" class="btn btn-primary" target="_blank">Open File</a>
-                            {% if perms.core.remove_resourcefile %}
+                            {% if perms.core.delete_resourcefile %}
                             <br>
                             <br>
                             <a href="removeFile{{ file.id }}" class="btn btn-danger">Remove File</a>
