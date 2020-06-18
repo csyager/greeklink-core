@@ -39,7 +39,7 @@
 
 
                         <button type="button" class="btn btn-secondary btn-sm float-right mr-1" data-toggle="modal" data-target="#editeventModal{{ event.id }}">Edit</button>
-                        <!-- Modal -->
+                        <!-- Edit Event Modal -->
                         <div class="modal fade" id="editeventModal{{ event.id }}" tabindex="-1" role="dialog" aria-labelledby="editeventModal" aria-hidden="true">
                             <div class="modal-dialog" role="document">
                                 <div class="modal-content">
@@ -102,7 +102,7 @@
                     {% endfor %}
                 </ul>
                 <br>
-                {% if user.is_superuser %}
+                {% if perms.core.add_socialevent %}
                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#eventModal">Add Event</button>
                 {% endif %}
             </div>
@@ -112,7 +112,7 @@
                 <ul class="list-group">
                     {% for roster in rosters %}
                         <li class="list-group-item"><a href="roster{{ roster.id }}">{{ roster.title }}</a>
-                            {% if user.is_superuser %}
+                            {% if perms.core.delete_roster %}
                             <button class="btn btn-danger btn-sm float-right" data-toggle="modal" data-target="#remove_roster_modal{{ roster.id }}">Delete Roster</button>
                             
                         </li>
@@ -140,7 +140,7 @@
                         </li>
                     {% endfor %}
                 </ul><br>
-                {% if user.is_superuser %}
+                {% if perms.core.add_roster %}
                 <button class="btn btn-primary" data-toggle="modal" data-target="#roster_modal">Add Roster</button>
                 <!-- add roster modal -->
                 <div class="modal fade" id="roster_modal" tabindex="-1" role="dialog" aria-labelledby="roster_modal_label" aria-hidden="true">
@@ -180,13 +180,9 @@
                 </div>
                 {% endif %}
             
-            </li>
-            {% endfor %}
-        </ul>
+            </div>
+        </div>
         <br>
-        {% if perms.core.add_socialevent %}
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#eventModal">Add Event</button>
-
         <script>
             function toggle_limit(){
                 var check_elem = document.getElementById('new_checkbox');
@@ -200,7 +196,7 @@
             }
 
         </script>
-        {% if user.is_superuser %}
+        {% if perms.core.add_socialevent %}
         <!-- add event modal -->
         <div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModal" aria-hidden="true">
             <div class="modal-dialog" role="document">
