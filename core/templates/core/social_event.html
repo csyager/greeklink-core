@@ -35,18 +35,21 @@
       <a onclick="multipleNames()" id="toggle" style="color: blue"><u>Click here to add multiple names</u></a>
       <br><br>
       {% if messages %}
-        <div class="alert alert-danger" role="alert">
           {% for message in messages %}
-            {% if "limit" in message.tags %}
-              <b>Your names were not added to the list, because you have exceeded the number of people you are allowed to add.</b>
-            {% else %}
-              <b>The following names were not added to the list, because they are duplicates:</b><br>
-              <ul>
-                  <li>{{ message }}</li>
-              </ul>
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+              <div class="alert alert-danger" role="alert">
+              {% if "limit" in message.tags %}
+                <b>Your names were not added to the list, because you have exceeded the number of people you are allowed to add.</b>
+              {% else %}
+                <b>The following name was not added to the list, because it is a duplicate:</b> {{ message }}<br>
+              {% endif %}
+              </div>
+            {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+              <div class="alert alert-success" role="alert">
+                {{ message }}
+              </div>
             {% endif %}
           {% endfor %}
-        </div>
       {% endif %}
     {% endif %}
     <h2>List ({{ event.list.count }}) </h2>
@@ -56,7 +59,7 @@
     <script src="{% static 'core/js/filter_list.js' %}"></script>
 
     <!-- search bar -->
-    <input type="text" class="form-control" onkeyup="filter_list()" id="social_search" placeholder="Search"><br>
+    <input type="text" class="form-control" onkeyup="filter_list()" id="social_search" placeholder="Search" style="width: 80%"><br>
     {% if perms.core.change_socialevent %}
     <div class="custom-control custom-switch">
       <input type="checkbox" class="custom-control-input" id="party_mode_switch" {% if event.party_mode %}checked{% endif %} onclick="window.location = 'toggle_party_mode' + {{ event.id }}">
@@ -65,7 +68,35 @@
     <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#clear_modal">
       Clear list
     </button>
-    <a href="export_xls{{ event.id }}"><button type="button" class="btn btn-primary">Export Spreadsheet</button></a><br><br>
+    <a href="export_xls{{ event.id }}"><button type="button" class="btn btn-primary">Export Spreadsheet</button></a>
+    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#roster_modal">Save list as roster</button>
+    
+    <!-- roster modal -->
+    <div class="modal fade" id="roster_modal" tabindex="-1" role="dialog" aria-labelledby="roster_modal" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="roster_modal">Save List as Roster</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+            <div class="modal-body">
+              <p>Saving this list as a roster will allow you to add the members of this list to other events in the future.</p>
+              <form method="post" action="save_as_roster{{ event.id }}">
+                {% csrf_token %}
+                <input type="text" class="form-control" name="roster_name" placeholder="Input roster name here" required>
+            </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-success">Save as Roster</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <br><br>
     {% endif %}
 
     <!-- script that refreshes the attendance on the list across devices, only runs during party -->

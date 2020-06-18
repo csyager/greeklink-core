@@ -4,93 +4,180 @@
 <div class="container">
     <h1>Social</h1>
     <div class="container">
-        <h2>Events</h2>
-        <ul class="list-group">
-            <script>
-                function toggle_limit_edit(id){
-                    var check_elem = document.getElementById('edit_checkbox_' + id);
-                    var limit_elem = document.getElementById('edit_limit_' + id);
-    
-                    if(check_elem.checked) {
-                        limit_elem.removeAttribute('disabled');
-                    } else {
-                        limit_elem.value = "";
-                        limit_elem.setAttribute('disabled', 'true');
-                    }
-                }
-    
-            </script>
-            {% for event in page_obj %}
-            <li class="list-group-item"> <a href="social_event{{ event.id }}">{{ event.name }} -- {{ event.date }}, {{ event.time }} <span class="badge badge-info">{{ event.list.count }}</span> </a>
-                {% if perms.core.change_socialevent %}
-                
-                <a href="removeSocialEvent{{ event.id }}" class="btn btn-danger btn-sm float-right">Remove</a>
+        <ul class="nav nav-tabs" id="social_tabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="events-tab" data-toggle="tab" href="#events" role="tab" aria-controls="events" aria-selected="true">Events</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="rosters-tab" data-toggle="tab" href="#rosters" role="tab" aria-controls="rosters" aria-selected="true">Rosters</a>
+            </li>
+        </ul>
+        <div class="tab-content" id="social_tab_content">
+            <div class="tab-pane fade show active" id="events" role="tabpanel" aria-labelledby="events-tab">
+                <br>
+                <h2>Events</h2>
+                <ul class="list-group">
+                    <script>
+                        function toggle_limit_edit(id){
+                            var check_elem = document.getElementById('edit_checkbox_' + id);
+                            var limit_elem = document.getElementById('edit_limit_' + id);
+            
+                            if(check_elem.checked) {
+                                limit_elem.removeAttribute('disabled');
+                            } else {
+                                limit_elem.value = "";
+                                limit_elem.setAttribute('disabled', 'true');
+                            }
+                        }
+            
+                    </script>
+                    {% for event in page_obj %}
+                    <li class="list-group-item"> <a href="social_event{{ event.id }}">{{ event.name }} -- {{ event.date }}, {{ event.time }} <span class="badge badge-info">{{ event.list.count }}</span> </a>
+                        {% if perms.core.change_socialevent %}
+                        
+                        <a href="removeSocialEvent{{ event.id }}" class="btn btn-danger btn-sm float-right">Remove</a>
 
 
-                <button type="button" class="btn btn-secondary btn-sm float-right mr-1" data-toggle="modal" data-target="#editeventModal">Edit</button>
-                <!-- Modal -->
-                <div class="modal fade" id="editeventModal" tabindex="-1" role="dialog" aria-labelledby="editeventModal" aria-hidden="true">
+                        <button type="button" class="btn btn-secondary btn-sm float-right mr-1" data-toggle="modal" data-target="#editeventModal{{ event.id }}">Edit</button>
+                        <!-- Modal -->
+                        <div class="modal fade" id="editeventModal{{ event.id }}" tabindex="-1" role="dialog" aria-labelledby="editeventModal" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h4 class="modal-title" id="editeventModalLabel">Edit Event</h4>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form method="post" action="editSocialEvent{{ event.id }}">
+                                            {% csrf_token %}
+                                            <div class="form-group row">
+                                                <label for="new_name" class="col-sm-2 col-form-label">Name</label>
+                                                <div class="col-sm-10">
+                                                    <input type="text" class="form-control" id="edit_name_{{ event.id }}" name="name" value="{{ event.name }}">
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="new_date" class="col-sm-2 col-form-label">Date</label>
+                                                <div class="col-sm-10">
+                                                    <input type="date" class="form-control" id="edit_date_{{ event.id }}" name="date" value="{{ event.date|date:'Y-m-d' }}">
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="new_time" class="col-sm-2 col-form-label">Time</label>
+                                                <div class="col-sm-10">
+                                                    <input type="time" class="form-control" id="edit_time_{{ event.id }}" name="time" value="{{ event.time|date:'G:i' }}">
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="new_location" class="col-sm-2 col-form-label">Location</label>
+                                                <div class="col-sm-10">
+                                                    <input type="text" class="form-control" id="edit_location_{{ event.id }}" name="location" value="{{ event.location }}">
+                                                </div>
+                                            </div>
+                                            <div class="form-group form-check">
+                                                <input type="checkbox" class="form-check-input" id="edit_checkbox_{{ event.id }}" name="checkbox" onclick="toggle_limit_edit({{ event.id }})" {% if event.list_limit != -1 %} checked {% endif %}>
+                                                <label class="form-check-label" for="new_checkbox">Limit list additions?</label>                            
+                                            </div>
+                                            <div class="form-group row">
+                                                <label for="new_limit" class="col-sm-2 col-form-label">List Limit</label>
+                                                <div class="col-sm-10">
+                                                    <input type="number" class="form-control" id="edit_limit_{{ event.id }}" name="limit" {% if event.list_limit == -1 %}disabled="true"{% endif %} {% if event.list_limit != -1 %} value={{ event.list_limit }} {% else %} value="" {% endif %}>
+                                                    <small>Setting this variable will limit the number of people users can add to the list for this event.</small>
+                                                </div>   
+                                            </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                        <button type="submit" class="btn btn-primary">Save changes</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    
+                    </li>
+                    {% endfor %}
+                </ul>
+                <br>
+                {% if user.is_superuser %}
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#eventModal">Add Event</button>
+                {% endif %}
+            </div>
+            <div class="tab-pane fade" id="rosters" role="tabpanel" aria-labelledby="rosters-tab">
+                <br>
+                <h2>Rosters</h2>
+                <ul class="list-group">
+                    {% for roster in rosters %}
+                        <li class="list-group-item"><a href="roster{{ roster.id }}">{{ roster.title }}</a>
+                            {% if user.is_superuser %}
+                            <button class="btn btn-danger btn-sm float-right" data-toggle="modal" data-target="#remove_roster_modal{{ roster.id }}">Delete Roster</button>
+                            
+                        </li>
+                        <!-- remove roster modal -->
+                        <div class="modal fade" id="remove_roster_modal{{ roster.id }}" tabindex="-1" role="dialog" aria-labelledby="remove_roster_modal_label{{ roster.id }}" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="remove_roster_modal_label{{ roster.id }}">Warning! Delete {{ roster.title }}?</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Deleting a roster cannot be reversed, and any names contained in it will have to be entered again.  Are you sure you wish to continue?</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                        <a href="remove_roster{{ roster.id }}"><button type="submit" class="btn btn-danger">Delete Roster</button></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul><br>
+                {% if user.is_superuser %}
+                <button class="btn btn-primary" data-toggle="modal" data-target="#roster_modal">Add Roster</button>
+                <!-- add roster modal -->
+                <div class="modal fade" id="roster_modal" tabindex="-1" role="dialog" aria-labelledby="roster_modal_label" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h4 class="modal-title" id="editeventModalLabel">Edit Event</h4>
+                                <h5 class="modal-title" id="roster_modal_label">Add Roster</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
+                                <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
                             <div class="modal-body">
-                                <form method="post" action="editSocialEvent{{ event.id }}">
+                                <p>Rosters are lists of names that can be saved and added to events later.  Create a name for your roster and add names below to begin.  This roster can be edited later.</p>
+                                <form method="post" action="create_roster">
                                     {% csrf_token %}
                                     <div class="form-group row">
-                                        <label for="new_name" class="col-sm-2 col-form-label">Name</label>
-                                        <div class="col-sm-10">
-                                            <input type="text" class="form-control" id="edit_name_{{ event.id }}" name="name" value="{{ event.name }}">
+                                        <label for="title" class="col-sm-3 col-form-label">Roster Name</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control" id="title" name="title" placeholder="Roster Name">
                                         </div>
                                     </div>
                                     <div class="form-group row">
-                                        <label for="new_date" class="col-sm-2 col-form-label">Date</label>
-                                        <div class="col-sm-10">
-                                            <input type="date" class="form-control" id="edit_date_{{ event.id }}" name="date" value="{{ event.date|date:'Y-m-d' }}">
+                                        <label for="members" class="col-sm-3 col-form-label">Members</label>
+                                        <div class="col-sm-9">
+                                            <textarea class="form-control" name="members" rows="10" placeholder="Separate names by a new line"></textarea>
                                         </div>
                                     </div>
-                                    <div class="form-group row">
-                                        <label for="new_time" class="col-sm-2 col-form-label">Time</label>
-                                        <div class="col-sm-10">
-                                            <input type="time" class="form-control" id="edit_time_{{ event.id }}" name="time" value="{{ event.time|date:'G:i' }}">
-                                        </div>
-                                    </div>
-                                    <div class="form-group row">
-                                        <label for="new_location" class="col-sm-2 col-form-label">Location</label>
-                                        <div class="col-sm-10">
-                                            <input type="text" class="form-control" id="edit_location_{{ event.id }}" name="location" value="{{ event.location }}">
-                                        </div>
-                                    </div>
-                                    <div class="form-group form-check">
-                                        <input type="checkbox" class="form-check-input" id="edit_checkbox_{{ event.id }}" name="checkbox" onclick="toggle_limit_edit({{ event.id }})" {% if event.list_limit != -1 %} checked {% endif %}>
-                                        <label class="form-check-label" for="new_checkbox">Limit list additions?</label>                            
-                                    </div>
-                                    <div class="form-group row">
-                                        <label for="new_limit" class="col-sm-2 col-form-label">List Limit</label>
-                                        <div class="col-sm-10">
-                                            <input type="number" class="form-control" id="edit_limit_{{ event.id }}" name="limit" {% if event.list_limit == -1 %}disabled="true"{% endif %} {% if event.list_limit != -1 %} value={{ event.list_limit }} {% else %} value="" {% endif %}>
-                                            <small>Setting this variable will limit the number of people users can add to the list for this event.</small>
-                                        </div>   
-                                    </div>
+                                    
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                <button type="submit" class="btn btn-primary">Save changes</button>
+                                <button type="submit" class="btn btn-primary">Submit</button>
                                 </form>
                             </div>
                         </div>
                     </div>
                 </div>
-
-
-
-
-
-
                 {% endif %}
             
             </li>
@@ -99,7 +186,6 @@
         <br>
         {% if perms.core.add_socialevent %}
         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#eventModal">Add Event</button>
-        <!-- Modal -->
 
         <script>
             function toggle_limit(){
@@ -114,7 +200,8 @@
             }
 
         </script>
-
+        {% if user.is_superuser %}
+        <!-- add event modal -->
         <div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModal" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -173,9 +260,9 @@
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
     <br>
-    {% endif %}
     <br>
 </div>
 {% if eventscount > 10 %}

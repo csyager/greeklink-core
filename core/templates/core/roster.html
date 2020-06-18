@@ -1,0 +1,101 @@
+{% extends 'core/base.html' %}
+{% block content %}
+{% load static %}
+<br>
+<div class="container" style="margin-left: 5%">
+    <h1 style="display: inline">{{ roster.title }}</h1><br>
+    <h3 style="display: inline">Last updated:  {{ roster.last_updated }}</h3><br><br>
+    {% if user.is_staff %}
+        <button class="btn btn-primary" data-toggle="modal" data-target="#edit_modal">Edit Roster</button>
+        <button class="btn btn-success" data-toggle="modal" data-target="#invite_modal">Add Roster to Event</button>
+        <br><br>
+        {% if messages %}
+            
+                {% for message in messages %}
+                    {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                    <div class="alert alert-danger" role="alert">
+                        <b>The following name was not added to the roster, because it is a duplicate:</b> {{ message }}<br>
+                    </div>
+                    {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                    <div class="alert alert-success" role="alert">
+                        <b>The members of this roster were successfully added to the following event:</b> {{ message }}<br>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+        {% endif %}
+        <div class="modal fade" id="edit_modal" tabindex="-1" role="dialog" aria-labelledby="edit_modal_label" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="edit_modal_label">Edit {{ roster.title }}</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Add names on a newline to add them to the roster.  Delete names to remove them.</p>
+                        <form method="post" action="edit_roster{{ roster.pk }}">
+                            {% csrf_token %}
+                            <textarea class="form-control" name="updated_members" rows="10" placeholder="Separate names by a new line">{% for member in roster.members.all %}{{ member.name }}&#13;&#10;{% endfor %}</textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Confirm Changes</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="invite_modal" tabindex="-1" role="dialog" aria-labelledby="invite_modal_label" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="invite_modal_label">Add {{ roster.title }} to Event</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Select the events that you want to add this roster to.</p>
+                        <form method="post" action="add_roster_to_events{{ roster.pk }}">
+                            {% csrf_token %}
+                            {% for event in events %}
+                                <div class="form-check">
+                                    <input type="checkbox" name="event_checkboxes" class="form-check-input" id="{{ event.name }}_check" value="{{ event.name }}">
+                                    <label class="form-check-label" for="{{ event.name }}_check">{{ event.name }} -- {{ event.date }}, {{ event.time }}</label>
+                                </div>
+                            {% endfor %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Confirm</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    <h2>List ({{ roster.members.count }}) </h2>
+    <table class="table table-hover" id="members_table">
+        <thead>
+          <tr class="d-flex">
+            <th scope="col" class="col-12">Name</th>
+          </tr>
+        </thead>
+
+        <tbody>
+        {% for member in roster.members.all %}
+
+            <tr class="d-flex" id="members_row_{{ member.id }}">
+                <td class="col-8">{{ member.name }}</td>
+                {% if user.is_staff %}
+                <td class="col-4" style="text-align: right"><a href="/remove_from_roster{{ roster.id }}/{{ member.id }}"><button type="button" class="btn btn-danger">Remove from roster</button></a></td>
+                {% else %}
+                <td class="col-4"></td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

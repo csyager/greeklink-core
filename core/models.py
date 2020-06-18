@@ -113,6 +113,23 @@ class Attendee(models.Model):
         ordering = ['name']
         unique_together = ('name', 'event')
 
+class Roster(models.Model):
+    title = models.CharField(max_length=50)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
+
+class RosterMember(models.Model):
+    name = models.CharField(max_length=50)
+    roster = models.ForeignKey(Roster, on_delete=models.CASCADE, related_name='members')
+
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        unique_together = ('name', 'roster')
+
 class ResourceLinkQuerySet(models.QuerySet):
     def search(self, query=None):
         qs = self
