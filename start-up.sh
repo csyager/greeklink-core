@@ -13,4 +13,4 @@ python manage.py migrate
 python manage.py collectstatic --noinput
 
 # load fixtures
-python manage.py loaddata db.json
+python manage.py loaddata auth.json
