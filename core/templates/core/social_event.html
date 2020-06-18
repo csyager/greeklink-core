@@ -69,6 +69,8 @@
       Clear list
     </button>
     <a href="export_xls{{ event.id }}"><button type="button" class="btn btn-primary">Export Spreadsheet</button></a>
+    {% endif %}
+    {% if perms.core.add_roster %}
     <button type="button" class="btn btn-success" data-toggle="modal" data-target="#roster_modal">Save list as roster</button>
     
     <!-- roster modal -->
@@ -95,9 +97,9 @@
         </div>
       </div>
     </div>
+    {% endif %}
     
     <br><br>
-    {% endif %}
 
     <!-- script that refreshes the attendance on the list across devices, only runs during party -->
     {% if event.party_mode %}
