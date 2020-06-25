@@ -21,7 +21,8 @@ admin.autodiscover()
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('core.urls'))
+    path('', include('core.urls')),
+    path('rush/', include('rush.urls'))
 ]
 
 handler404 = 'core.views.handler404'
