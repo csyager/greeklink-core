@@ -20,7 +20,7 @@
         <tbody>
         {% for rushee in rushees %}
 
-            <tr onclick="window.location='/rushee{{ rushee.id }}';">
+            <tr onclick="window.location='rushee{{ rushee.id }}';">
                 <td>{{ rushee.id }}</td>
                 <td>{{ rushee.name }}</td>
                 {% if not request.user_agent.is_mobile %}
