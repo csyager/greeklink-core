@@ -8,7 +8,7 @@ from .tokens import *
 from django.conf import settings
 
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.admin.views.decorators import staff_member_required
 
 from django.contrib.sites.shortcuts import get_current_site
@@ -72,6 +72,7 @@ def index(request):
     }
     return HttpResponse(template.render(context, request))
 
+@login_required
 def all_announcements(request):
     template = loader.get_template('core/all_announcements.html')
     announcements = Announcement.objects.order_by('-date')
@@ -296,7 +297,7 @@ def resources(request):
     template = loader.get_template('core/resources.html')
     return HttpResponse(template.render(context, request))
 
-@staff_member_required
+@permission_required('core.add_resourcefile')
 def upload_file(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
@@ -313,7 +314,7 @@ def upload_file(request):
             return HttpResponse(form.errors)
 
 
-@staff_member_required
+@permission_required('core.delete_resourcefile')
 def remove_file(request, file_id):
     obj = ResourceFile.objects.get(id=file_id)
     obj.file.delete()
@@ -321,7 +322,7 @@ def remove_file(request, file_id):
     return HttpResponseRedirect('resources')
 
 
-@staff_member_required
+@permission_required('core.add_calendar')
 def addCal(request):
     settings = getSettings()
     settings.calendar_embed = request.POST['cal_embed_link']
@@ -329,7 +330,7 @@ def addCal(request):
     return HttpResponseRedirect('resources')
 
 
-@staff_member_required
+@permission_required('core.delete_calendar')
 def removeCal(request):
     settings = getSettings()
     settings.calendar_embed = ""
@@ -368,7 +369,7 @@ def social(request):
     return HttpResponse(template.render(context, request))
 
 
-@staff_member_required
+@permission_required('core.add_socialevent')
 def create_social_event(request):
     if request.method == 'POST':
         obj = SocialEvent()
@@ -387,7 +388,7 @@ def create_social_event(request):
 
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-@staff_member_required
+@permission_required('core.change_socialevent')
 def edit_social_event(request, event_id):
     if request.method == 'POST':
         obj = SocialEvent.objects.get(id=event_id)
@@ -419,7 +420,7 @@ def social_event(request, event_id):
     return HttpResponse(template.render(context, request))
 
 
-@staff_member_required
+@permission_required('core.delete_socialevent')
 def remove_social_event(request, event_id):
     SocialEvent.objects.filter(id=event_id).delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
@@ -491,7 +492,7 @@ def add_roster_to_events(request, roster_id):
         raise Http404
     
 
-@staff_member_required
+@permission_required('core.delete_announcement')
 def remove_announcement(request, announcement_id):
     Announcement.objects.filter(id=announcement_id).delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
@@ -568,7 +569,7 @@ def refresh_attendees(request):
         data.update({attendee.id: attendee.attended})
     return JsonResponse(data)
 
-@staff_member_required
+@permission_required('core.change_socialevent')
 def toggle_party_mode(request, event_id):
     event = SocialEvent.objects.get(id=event_id)
     if(event.party_mode):
@@ -579,7 +580,7 @@ def toggle_party_mode(request, event_id):
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
-@staff_member_required
+@permission_required('core.change_socialevent')
 def clear_list(request, event_id):
     event = SocialEvent.objects.get(id=event_id)
     for attendee in event.list.all():
@@ -588,7 +589,7 @@ def clear_list(request, event_id):
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
-@staff_member_required
+@permission_required('core.change_socialevent')
 def export_xls(request, event_id):
     event = SocialEvent.objects.get(id=event_id)
     response = HttpResponse(content_type='application/ms-excel')
@@ -654,13 +655,13 @@ def remove_roster(request, roster_id):
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
-@staff_member_required
+@permission_required('core.delete_resourcelink')
 def remove_link(request, link_id):
     link = ResourceLink.objects.get(id=link_id).delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
-@staff_member_required
+@permission_required('core.add_resourcelink')
 def add_link(request):
     if request.method == 'POST':
         form = LinkForm(request.POST)
@@ -676,7 +677,7 @@ def add_link(request):
             return HttpResponse(form.errors)
 
 
-@staff_member_required
+@permission_required('core.add_announcement')
 def add_announcement(request):
     if request.method == 'POST':
         form = AnnouncementForm(request.POST)
