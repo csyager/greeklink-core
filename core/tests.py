@@ -737,6 +737,7 @@ class ErrorsTestCase(TestCase):
     # tests custom 500 error appears on 500 error
     def test_500_custom_page(self):
         request = self.client.request()
+        request.current_app = 'core'
         response = handler500(request)
         self.assertIn("Something went wrong on our end.  We\\\'re working hard to fix it.", str(response.content))
 

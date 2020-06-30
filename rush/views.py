@@ -14,7 +14,6 @@ from .models import Rushee, RushEvent, Comment
 @login_required
 def rushee(request, num):
     """ rushee profile page """
-    
     template = loader.get_template('rush/rushee.html')
     obj = Rushee.objects.get(id=num)
     events = RushEvent.objects.all().order_by('date')
