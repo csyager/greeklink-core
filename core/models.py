@@ -17,6 +17,7 @@ class SiteSettings(models.Model):
     verification_key = models.CharField(max_length=50, default="9999")
     organization_name = models.CharField(max_length=50, default="test")
     rush_signin_active = models.BooleanField(default=False)
+    num_rush_rounds = models.IntegerField(default=3)
 
 #----------------------------------------------------------------------- block for resource file
 class ResourceFileQuerySet(models.QuerySet):

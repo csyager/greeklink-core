@@ -1,12 +1,16 @@
 {% extends 'core/base.html' %}
+{% load static %}
 {% block content %}
 <br>
 <div class="container">
+
+    <script src="{% static 'rush/js/filter_list.js' %}"></script>
+
     <h2>Current Rushees ({{ rushees|length }})</h2>
-    <table class="table table-hover">
+    <input type="text" class="form-control rounded" onkeyup="filter_list()" id="rush_signin_search" placeholder="&#xF002; Search" style="font-family:Arial, FontAwesome" ></input><br>
+    <table class="table table-hover" id="list_table">
         <thead>
         <tr>
-            <td>ID</td>
             <td>Name</td>
             {% if not request.user_agent.is_mobile %}
             <td>Email</td>
@@ -21,7 +25,6 @@
         {% for rushee in rushees %}
 
             <tr onclick="window.location='rushee{{ rushee.id }}';">
-                <td>{{ rushee.id }}</td>
                 <td>{{ rushee.name }}</td>
                 {% if not request.user_agent.is_mobile %}
                 <td>{{ rushee.email }}</td>
@@ -30,10 +33,11 @@
                 <td>{{ rushee.hometown }}</td>
                 {% endif %}
                 {% if user in rushee.endorsements.all %}
-                <td><img src="{{ MEDIA_URL }}icons/thumbs_up.png" height="30px" width="30px"></td>
-                {% endif %}
-                {% if user in rushee.oppositions.all %}
-                <td><img src="{{ MEDIA_URL }}icons/thumbs_down.png" height="30px" width="30px"></td>
+                <td><i class="fa fa-thumbs-up fa-2x" aria-hidden="true" style="color: green"></i></td>
+                {% elif user in rushee.oppositions.all %}
+                <td><i class="fa fa-thumbs-down fa-2x" aria-hidden="true" style="color: red"></i></td>
+                {% else %}
+                <td></td>
                 {% endif %}
             </tr>
         {% endfor %}

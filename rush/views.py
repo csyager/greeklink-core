@@ -52,6 +52,7 @@ def rushee(request, num):
         'settings': getSettings(),
         'next_url': next_url,
         'prev_url': prev_url,
+        'rush_page': 'active'
     }
     return HttpResponse(template.render(context, request))
 
@@ -97,7 +98,8 @@ def register(request, event_id):
         context = {
             "name": obj.name,
             "event_id": event_id,
-            'settings': getSettings()
+            'settings': getSettings(),
+            'rush_page': 'active'
         }
         return HttpResponse(template.render(context, request))
     else:
@@ -139,14 +141,60 @@ def attendance(request, rushee_id, event_id):
     context = {
         "name": name,
         "event_id": event_id,
-        'settings': getSettings()
+        'settings': getSettings(),
+        'rush_page': 'active'
     }
     return HttpResponse(template.render(context, request))
  
-
 @login_required
 def events(request):
-    return HttpResponse('Rush events page')
+    template = loader.get_template('rush/events.html')
+    events = RushEvent.objects.all().order_by('date')
+    settings = getSettings()
+    round_range = range(1, settings.num_rush_rounds + 1)
+    context = {
+        'settings': settings,
+        'round_range': round_range,
+        'events': events,
+        'rush_page': "active",
+    }
+
+    return HttpResponse(template.render(context, request))
+
+@login_required
+def event(request, event_id):
+    event = RushEvent.objects.get(id=event_id)
+    context = {
+        'event': event,
+        'settings': getSettings(),
+        'rush_page': 'active',
+    }
+    template = loader.get_template('rush/event.html')
+    return HttpResponse(template.render(context, request))
+
+
+@staff_member_required
+def create_event(request):
+    if request.method == 'POST':
+        obj = RushEvent()
+        obj.name = request.POST.get('name')
+        obj.date = request.POST.get('date')
+        obj.time = request.POST.get('time')
+        obj.round = request.POST.get('round')
+        obj.location = request.POST.get('location')
+        if len(request.POST.getlist('new_rushees')) != 0:
+            obj.new_rushees_allowed = True
+        else:
+            obj.new_rushees_allowed = False
+        obj.save()
+
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+@staff_member_required
+def remove_event(request, event_id):
+    RushEvent.objects.filter(id=event_id).delete()
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
 
 @login_required
 def current_rushees(request):

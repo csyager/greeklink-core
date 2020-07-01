@@ -28,4 +28,7 @@ urlpatterns = [
     path('clear_endorsement<int:rushee_id>', views.clear_endorsement, name="clear_endorsement"),
     path('current_rushees', views.current_rushees, name="current_rushees"),
     path('events', views.events, name="events"),
+    path('events/<int:event_id>', views.event, name="event"),
+    path('createEvent', views.create_event, name="create_event"),
+    path('removeEvent<int:event_id>', views.remove_event, name="remove_event"),
 ]
