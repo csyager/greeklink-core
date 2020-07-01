@@ -136,9 +136,9 @@
         <tr>
             {% for event in events %}
                 {% if rushee in event.attendance.all %}
-                <td style="text-align: center"><img src="{{ MEDIA_URL }}icons/check.png" style="height: 50px; width: 50px"></td>
+                <td style="text-align: center"><img src="{% static 'core/icons/check.png' %}" style="height: 50px; width: 50px"></td>
                 {% else %}
-                <td style="text-align: center"><img src="{{ MEDIA_URL }}icons/x.png" style="height: 50px; width: 50px"></td>
+                <td style="text-align: center"><img src="{% static 'core/icons/x.png' %}" style="height: 50px; width: 50px"></td>
                 {% endif %}
             {% endfor %}
         </tr>

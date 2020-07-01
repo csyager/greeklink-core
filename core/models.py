@@ -16,6 +16,7 @@ class SiteSettings(models.Model):
     calendar_embed = models.URLField(blank=True)
     verification_key = models.CharField(max_length=50, default="9999")
     organization_name = models.CharField(max_length=50, default="test")
+    rush_signin_active = models.BooleanField(default=False)
 
 #----------------------------------------------------------------------- block for resource file
 class ResourceFileQuerySet(models.QuerySet):

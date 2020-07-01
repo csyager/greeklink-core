@@ -6,9 +6,10 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from core.views import getSettings
+import re, io
 
-from .forms import CommentForm
-from .models import Rushee, RushEvent, Comment
+from .forms import CommentForm, RusheeForm
+from .models import Rushee, RushEvent, Comment, RushEvent
 
 # Create your views here.
 @login_required
@@ -55,9 +56,93 @@ def rushee(request, num):
     return HttpResponse(template.render(context, request))
 
 
+# adds a rushee to the database when they first sign in
 @login_required
-def signin(request):
-    return HttpResponse('Signin page')
+def register(request, event_id):
+    form = RusheeForm(request.POST)
+    if form.is_valid():
+        obj = Rushee()
+        obj.name = form.cleaned_data['name']
+        obj.email = form.cleaned_data['email']
+        obj.year = form.cleaned_data['year']
+        obj.major = form.cleaned_data['major']
+        obj.hometown = form.cleaned_data['hometown']
+        obj.address = form.cleaned_data['address']
+        obj.phone_number = form.cleaned_data['phone_number']
+
+        # NOTE: Please don't mess with this, I don't know how I made it work
+        # Handles saving the image as a file in media/profile_images
+        # and then storing them as a model field for Rushees
+        dataUrlPattern = re.compile('data:image/png;base64,(.*)$')
+        ImageData = request.POST.get('profile_picture_data')
+        # try/catch: catches error thrown if picture data not inputted
+        try:
+            ImageData = dataUrlPattern.match(ImageData).group(1)
+            ImageData = bytes(ImageData, 'UTF-8')
+            ImageData = base64.b64decode(ImageData)
+            img_io = io.BytesIO(ImageData)
+            # obj.profile_picture_data = ImageData
+
+            # obj.save()
+            obj.profile_picture.save(str(obj.id) + '.png', File(img_io))
+            obj.save()
+        except AttributeError:
+            obj.save()
+
+        event = RushEvent.objects.get(id=event_id)
+        event.attendance.add(obj)
+        event.save()
+
+        template = loader.get_template('rush/register.html')
+        context = {
+            "name": obj.name,
+            "event_id": event_id,
+            'settings': getSettings()
+        }
+        return HttpResponse(template.render(context, request))
+    else:
+        return HttpResponse(form.errors.as_data())
+
+
+# for rushees signing into events
+@login_required
+def signin(request, event_id=-1):
+    template = loader.get_template('rush/signin.html')
+    form = RusheeForm()
+    objects = Rushee.objects.filter(cut=0).order_by('name')
+    events = RushEvent.objects.all().order_by('date')
+    if int(event_id) != -1:
+        event = RushEvent.objects.get(id=int(event_id))
+        objects = Rushee.objects.filter(round=event.round, cut=0).exclude(rushevent=event).order_by('name')
+    else:
+        event = events.first()
+    context = {
+        "rush_page": "active",
+        "form": form,
+        "event": event,
+        "objects": objects,
+        "events": events,
+        'settings': getSettings()
+    }
+    return HttpResponse(template.render(context, request))
+
+
+# is submitted when a rushee signs into an event
+@login_required
+def attendance(request, rushee_id, event_id):
+    template = loader.get_template('rush/register.html')
+    obj = Rushee.objects.get(id=rushee_id)
+    event = RushEvent.objects.get(id=event_id)
+    event.attendance.add(obj)
+    event.save()
+    name = obj.name.split()[0]
+    context = {
+        "name": name,
+        "event_id": event_id,
+        'settings': getSettings()
+    }
+    return HttpResponse(template.render(context, request))
+ 
 
 @login_required
 def events(request):
