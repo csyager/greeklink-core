@@ -164,7 +164,8 @@ def attendance(request, rushee_id, event_id):
         'rush_page': 'active'
     }
     return HttpResponse(template.render(context, request))
-    
+
+
 @login_required
 def events(request):
     """ page showing all Rush Events """
