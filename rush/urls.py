@@ -1,10 +1,6 @@
-from django.urls import path, include
-from django.contrib import admin
-from django.conf.urls import url, handler404, handler500
-from django.conf import settings
-from django.contrib.auth.views import LoginView
-from core.forms import LoginForm
-from django.conf.urls.static import static
+""" URL paths for the rush application """
+
+from django.urls import path
 from . import views
 
 app_name = 'rush'
