@@ -74,9 +74,13 @@ class OrgEvent(models.Model):
     """ superclass for rush events and social events
         name -- name of event
         date -- date of event
+        time -- time of event
+        location -- location of event
     """
     name = models.CharField(max_length=50, default="test")
     date = models.DateField(default='2000-01-01')
+    time = models.TimeField(default='12:00')
+    location = models.CharField(max_length=100, default="")
 
     class Meta:
         abstract = True
@@ -109,14 +113,10 @@ class SocialEventManager(models.Manager):
 
 class SocialEvent(OrgEvent):
     """ OrgEvent representing a social event
-        time -- time of event
-        location -- location of event
         list_limit -- number of people each member is allowed to add to list
         party_mode -- while on enables list updates through ajax calls
                       and disables adding to the list
     """
-    time = models.TimeField(default='12:00')
-    location = models.CharField(max_length=100, default="")
     list_limit = models.IntegerField(default=-1)
     party_mode = models.BooleanField(default=False)
 
