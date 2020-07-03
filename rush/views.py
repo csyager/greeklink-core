@@ -129,10 +129,10 @@ def signin(request, event_id=-1):
     all_events = RushEvent.objects.all().order_by('date')
     if int(event_id) != -1:
         this_event = RushEvent.objects.get(id=int(event_id))
-        objects = (Rushee.objects.filter(round=event.round, cut=0)
-                   .exclude(rushevent=event).order_by('name'))
+        objects = (Rushee.objects.filter(round=this_event.round, cut=0)
+                   .exclude(rushevent=this_event).order_by('name'))
     else:
-        this_event = events.first()
+        this_event = all_events.first()
     context = {
         "rush_page": "active",
         "form": form,
