@@ -43,10 +43,8 @@ class RusheeForm(ModelForm):
         rushee.save()
         return rushee
 
-site_settings = getSettings()
-
 ROUND_CHOICES = [(0, "No filter")]
-for i in range(1, site_settings.num_rush_rounds+1):
+for i in range(1, 4):
     ROUND_CHOICES.append((i, i))
 
 
