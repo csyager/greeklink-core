@@ -9,6 +9,7 @@ sudo rm db.sqlite3
 sudo rm -rf core/migrations
 # migrations and static files
 python manage.py makemigrations core
+python manage.py makemigrations rush
 python manage.py migrate
 python manage.py collectstatic --noinput
 

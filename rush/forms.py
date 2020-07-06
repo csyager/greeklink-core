@@ -1,4 +1,5 @@
 from django import forms
+from core.models import SiteSettings
 from .models import *
 from django.forms import ModelForm
 from django.forms.widgets import TextInput
