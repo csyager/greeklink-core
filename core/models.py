@@ -2,7 +2,9 @@
 
 from django.db import models
 from django.db.models import Q
-from django.contrib.auth.models import User
+
+
+from django.contrib.auth.models import User, Group, Permission
 
 # Stores site settings in a single model
 class SiteSettings(models.Model):
@@ -25,6 +27,16 @@ class SiteSettings(models.Model):
     rush_signin_active = models.BooleanField(default=False)
     num_rush_rounds = models.IntegerField(default=3)
 
+
+# dummy model for supporting permissions
+class PermissionsSupport(models.Model):
+    class Meta:
+        managed = False
+        default_permissions = ()
+        permissions = (
+            ('add_calendar', 'Add calendar'),
+            ('delete_calendar', 'Remove calendar')
+        )
 #----------------------------------------------------------------------- block for resource file
 class ResourceFileQuerySet(models.QuerySet):
     """ Query set of ResourceFiles returned when using search function
