@@ -84,6 +84,7 @@ class ForgotCredentialsForm(forms.Form):
 
 
 class SetPasswordForm(SetPasswordForm):
+    # pylint: disable=function-redefined
     def __init__(self, *args, **kwargs):
         super(SetPasswordForm, self).__init__(self, *args, **kwargs)
 
