@@ -7,7 +7,43 @@
     <script src="{% static 'rush/js/filter_list.js' %}"></script>
 
     <h2>Current Rushees ({{ rushees|length }})</h2>
-    <input type="text" class="form-control rounded" onkeyup="filter_list()" id="rush_signin_search" placeholder="&#xF002; Search" style="font-family:Arial, FontAwesome" ></input><br>
+    <div class="row">
+        <div class="col-md-auto">
+        <a class="btn btn-primary" data-toggle="collapse" href="#collapse-filter" role="button" aria-expanded="false" aria-controls="collapse-filter">
+        <i class="fa fa-filter" aria-hidden="true"></i> Filter {{ request.session.rushee_filter | length }}
+        </a>
+        </div>
+        <div class="col-md-auto ml-auto" style="width: 90%; margin-left: 0px">
+        <input type="text" class="form-control rounded" onkeyup="filter_list()" id="rush_signin_search" placeholder="&#xF002; Search" style="font-family:Arial, FontAwesome; width: 100%"></input>
+        </div>
+    </div>
+    <div class="collapse" id="collapse-filter">
+        <br>
+        <div class="card card-body">
+        <form method="post" action="filter_rushees" method="post" class="form">
+        {% csrf_token %}
+            <div class="form-group row">
+                <div class="col-md-2">{{ filter_form.name.label }}</div>
+                <div class="col-md-8">{{ filter_form.name }}</div>
+            </div>
+            <div class="form-group row">
+                <div class="col-md-2">{{ filter_form.round.label }}</div>
+                <div class="col-md-2">{{ filter_form.round }}</div>
+            </div>
+            <div class="form-group row">
+                <div class="col-md-2">{{ filter_form.major.label }}</div>
+                <div class="col-md-8">{{ filter_form.major }}</div>
+            </div><br>
+            <div class="form-group row">
+                <div class="col-md-2">{{ filter_form.hometown.label }}</div>
+                <div class="col-md-8">{{ filter_form.hometown }}</div>
+            </div>
+            <button type="submit" class="btn btn-success">Apply Filter</button>
+        </div>
+    </div>
+
+    
+    <br>
     <table class="table table-hover" id="list_table">
         <thead>
         <tr>
