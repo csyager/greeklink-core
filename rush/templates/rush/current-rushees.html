@@ -12,6 +12,7 @@
         <thead>
         <tr>
             <td>Name</td>
+            <td>Round</td>
             {% if not request.user_agent.is_mobile %}
             <td>Email</td>
             <td>Year</td>
@@ -26,6 +27,7 @@
 
             <tr onclick="window.location='rushee{{ rushee.id }}';">
                 <td>{{ rushee.name }}</td>
+                <td>{{ rushee.round }}</td>
                 {% if not request.user_agent.is_mobile %}
                 <td>{{ rushee.email }}</td>
                 <td>{{ rushee.year }}</td>

@@ -207,7 +207,7 @@ def reset_password(request, user_id, token):
         template = loader.get_template('core/reset_password.html')
         context = {
             'settings': getSettings(),
-            'form': SetPasswordForm()
+            'form': SetPasswordForm(user=user)
         }
         return HttpResponse(template.render(context, request))
     

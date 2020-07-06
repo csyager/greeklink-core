@@ -42,8 +42,8 @@ class Rushee(models.Model):
     hometown = models.CharField(max_length=75)
     address = models.CharField(max_length=75)
     phone_number = models.CharField(max_length=10)
-    endorsements = models.ManyToManyField(User, related_name="endorsed_rushees")
-    oppositions = models.ManyToManyField(User, related_name="opposed_rushees")
+    endorsements = models.ManyToManyField(User, related_name="endorsed_rushees", blank=True)
+    oppositions = models.ManyToManyField(User, related_name="opposed_rushees", blank=True)
 
     profile_picture = models.ImageField(upload_to='media/rush/profile_pictures',
                                         default="", null=True, blank=True)
@@ -54,7 +54,7 @@ class Rushee(models.Model):
     a = models.IntegerField(default=0)
     b = models.IntegerField(default=0)
 
-    blackball_list = models.ManyToManyField(User, related_name="blackballed_rushees")
+    blackball_list = models.ManyToManyField(User, related_name="blackballed_rushees", blank=True)
 
     round = models.IntegerField(default=1)
     cut = models.IntegerField(default=0)

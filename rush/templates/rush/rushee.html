@@ -35,9 +35,9 @@
             <br>
             <br>
             {% if user.is_superuser %}
-            <a href="/votepage{{ rushee.id }}"><button class="btn btn-primary" style="width: 183">Open Voting</button></a><br><br>
-            <a href="/rushee{{ rushee.id }}/push"><button class="btn btn-success">Send Through</button></a>
-            <a href="/rushee{{ rushee.id }}/cut"><button class="btn btn-danger">Cut</button></a><br><br>
+            <a href="/rush/votepage{{ rushee.id }}"><button class="btn btn-primary" style="width: 183">Open Voting</button></a><br><br>
+            <a href="/rush/rushee{{ rushee.id }}/push"><button class="btn btn-success">Send Through</button></a>
+            <a href="/rush/rushee{{ rushee.id }}/cut"><button class="btn btn-danger">Cut</button></a><br><br>
             {% endif %}
         </div>
         <div class="col-md-4">
@@ -76,18 +76,30 @@
         <a href="/rush/clear_endorsement{{ rushee.id }}"><button class="btn btn-primary">Reset</button></a>
     </div><br>
     <div class="row">
-        <a href="/vote{{ rushee.id }}/y"><button class="btn btn-success" style="width: 183px">Yes</button></a>&nbsp;
-        <a href="/vote{{ rushee.id }}/n"><button class="btn btn-danger" style="width: 183px">No</button></a><br>&nbsp;
+        <a href="/rush/vote{{ rushee.id }}/y"><button class="btn btn-success" style="width: 183px">Yes</button></a>&nbsp;
+        <a href="/rush/vote{{ rushee.id }}/n"><button class="btn btn-danger" style="width: 183px">No</button></a><br>&nbsp;
     </div>
     <div class="row">
-        <a href="/vote{{ rushee.id }}/a"><button class="btn btn-primary" style="width: 183px">Abstain</button></a>&nbsp;
-        <a href="/vote{{ rushee.id }}/b"><button class="btn btn-warning" style="width: 183px">Blackball</button></a>
+        <a href="/rush/vote{{ rushee.id }}/a"><button class="btn btn-primary" style="width: 183px">Abstain</button></a>&nbsp;
+        <a href="/rush/vote{{ rushee.id }}/b"><button class="btn btn-warning" style="width: 183px">Blackball</button></a>
     </div>
     <p style="margin-left: -15px"><i>Note that votes will not be tallied until voting on this rushee is opened by an admin!</i></p>
     <br>
     
-    
 </div>
+
+<!-- alerts for when user casts a vote -->
+{% if messages %}
+{% for message in messages %}
+<script>
+    {% if 'safe' in message.tags %}
+    alert('{{ message|safe }}');
+    {% else %}
+    alert('{{ message }}');
+    {% endif %}
+</script>
+{% endfor %}
+{% endif %}
 
 <!-- endorsement and opposition tables -->
 <div class="container">
@@ -212,13 +224,13 @@
             {% if user.is_superuser %}
             <br>
             <br>
-            <a href="/votepage{{ rushee.id }}"><button class="btn btn-primary" style="width: 183">Open Voting</button></a><br><br>
-            <a href="/rushee{{ rushee.id }}/push"><button class="btn btn-success">Send Through</button></a>
-            <a href="/rushee{{ rushee.id }}/cut"><button class="btn btn-danger">Cut</button></a><br><br>
+            <a href="/rush/votepage{{ rushee.id }}"><button class="btn btn-primary" style="width: 183">Open Voting</button></a><br><br>
+            <a href="/rush/rushee{{ rushee.id }}/push"><button class="btn btn-success">Send Through</button></a>
+            <a href="/rush/rushee{{ rushee.id }}/cut"><button class="btn btn-danger">Cut</button></a><br><br>
             {% endif %}
-            <a href="/endorse{{ rushee.id }}"><button class="btn btn-success">Endorse</button></a>&nbsp;&nbsp;
-            <a href="/oppose{{ rushee.id }}"><button class="btn btn-danger">Oppose</button></a><br><br>
-            <a href="/clear_endorsement{{ rushee.id }}"><button class="btn btn-primary">Reset</button></a>
+            <a href="/rush/endorse{{ rushee.id }}"><button class="btn btn-success">Endorse</button></a>&nbsp;&nbsp;
+            <a href="/rush/oppose{{ rushee.id }}"><button class="btn btn-danger">Oppose</button></a><br><br>
+            <a href="/rush/clear_endorsement{{ rushee.id }}"><button class="btn btn-primary">Reset</button></a>
         </div>
         <div class="col-md-4">
             {% if from_voting %}
@@ -335,8 +347,6 @@
     <span class="sr-only">Next</span>
   </a>
 </div>
-
-
 
 {% endif %}
 

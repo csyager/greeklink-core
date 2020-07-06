@@ -3,12 +3,12 @@
 import re
 import io
 import base64
-from urllib import parse
 from django.core.files import File
 from django.template import loader
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from core.views import getSettings
 from .forms import CommentForm, RusheeForm
 from .models import Rushee, RushEvent, Comment
@@ -29,26 +29,20 @@ def rushee(request, num):
     form = CommentForm()
     current_round = obj.round
 
-     # get next rushee
-    referer = request.META.get('HTTP_REFERER')
-    path = parse.urlparse(referer).path
-    if 'search' not in path:
-        try:
-            next_rushee = (Rushee.objects.filter(name__gt=obj.name, cut=0, round=current_round)
-                           .order_by('name')[0].id)
-            next_url = '/rush/rushee' + str(next_rushee)
-        except IndexError:
-            next_url = ""
-
-        try:
-            prev_rushee = (Rushee.objects.filter(name__lt=obj.name, cut=0, round=current_round)
-                           .order_by('-name')[0].id)
-            prev_url = '/rush/rushee' + str(prev_rushee)
-        except IndexError:
-            prev_url = ""
-
-    else:
+     # get next rushee for next button
+    try:
+        next_rushee = (Rushee.objects.filter(name__gt=obj.name, cut=0, round=current_round)
+                       .order_by('name')[0].id)
+        next_url = '/rush/rushee' + str(next_rushee)
+    except IndexError:
         next_url = ""
+    # get previous rushee for back button
+    try:
+        prev_rushee = (Rushee.objects.filter(name__lt=obj.name, cut=0, round=current_round)
+                       .order_by('-name')[0].id)
+        prev_url = '/rush/rushee' + str(prev_rushee)
+    except IndexError:
+        prev_url = ""
 
     context = {
         "rushee": obj,
@@ -94,7 +88,7 @@ def register(request, event_id):
             # immoralize this line for all time as the line that made our first
             # rush session take 7 hours instead of 4
             # obj.profile_picture_data = image_data
-
+            obj.save()
             obj.profile_picture.save(str(obj.id) + '.png', File(img_io))
             obj.save()
         except AttributeError:
@@ -299,4 +293,152 @@ def clear_endorsement(request, rushee_id):
     user = request.user
     this_rushee.oppositions.remove(user)
     this_rushee.endorsements.remove(user)
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+# stores a list of users who have already voted.  Is reset whenever voting is opened
+# TODO: it would be really cool if there was an efficient way to have this persist so
+#       even when voting is reopened only people who haven't voted yet get to vote
+#       unless results are reset.  Problem is this requires the user to strictly follow
+#       expected behavior, which they won't
+vote_list = []
+
+@login_required
+def vote(request, rushee_id, value):
+    """ casts a vote for a rushee
+        rushee_id -- primary key of rushee being voted on
+        value -- what type of vote is being cast
+            y -- yes vote
+            n -- no vote
+            a -- abstain vote
+            b -- blackball vote
+    """
+    this_rushee = Rushee.objects.get(id=rushee_id)
+    user = request.user
+    if this_rushee.voting_open and user not in vote_list:
+        if value == 'y':
+            this_rushee.y += 1
+            messages.info(request, ("Vote cast successfully!  You have voted yes on "
+                                    + this_rushee.name), extra_tags="safe")
+        if value == 'n':
+            this_rushee.n += 1
+            messages.info(request, ("Vote cast successfully!  You have voted "
+                                    "no on " + this_rushee.name), extra_tags="safe")
+        if value == 'a':
+            this_rushee.a += 1
+            messages.info(request, ("Vote cast successfully!  You have voted "
+                                    "to abstain on " + this_rushee.name), extra_tags="safe")
+        if value == 'b':
+            this_rushee.b += 1
+            this_rushee.blackball_list.add(user)
+            messages.info(request, ("Vote cast successfully!  You have voted "
+                                    "to blackball " + this_rushee.name), extra_tags="safe")
+        this_rushee.save()
+        vote_list.append(user)
+    elif user in vote_list:
+        messages.error(request, ("Vote was not cast, because you have already cast your vote"))
+    else:
+        messages.error(request, ("Vote was not cast, because voting is not open.  Voting must be "
+                                 "opened by an admin before votes will be recorded."))
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+@staff_member_required
+def push_rushee(request, rushee_id):
+    """ push a rushee from the current voting round to the next one
+        rushee_id -- primary key of rushee being pushed
+    """
+    this_rushee = Rushee.objects.get(id=rushee_id)
+    this_rushee.y = 0
+    this_rushee.n = 0
+    this_rushee.a = 0
+    this_rushee.b = 0
+    current_round = this_rushee.round
+    current_round += 1
+    this_rushee.round = current_round
+    this_rushee.save()
+
+    # get next rushee
+    try:
+        next_rushee = (Rushee.objects.filter(name__gt=this_rushee.name, cut=0,
+                                             round=current_round-1).order_by('name')[0].id)
+        next_url = '/rush/rushee' + str(next_rushee)
+    except IndexError:
+        next_url = '/rush/current_rushees'
+
+    return HttpResponseRedirect(next_url)
+
+
+@staff_member_required
+def cut_rushee(request, rushee_id):
+    """ cut a rushee, setting cut equal to the round they were cut in
+        rushee_id -- primary key of rushee being cut
+    """
+    this_rushee = Rushee.objects.get(id=rushee_id)
+    this_rushee.y = 0
+    this_rushee.n = 0
+    this_rushee.a = 0
+    this_rushee.b = 0
+    current_round = this_rushee.round
+    this_rushee.cut = current_round
+    this_rushee.save()
+
+    # get next rushee
+    try:
+        next_rushee = (Rushee.objects.filter(name__gt=this_rushee.name, cut=0, round=current_round)
+                       .order_by('name')[0].id)
+        next_url = '/rush/rushee' + str(next_rushee)
+    except IndexError:
+        next_url = '/rush/current_rushees'
+
+    return HttpResponseRedirect(next_url)
+
+@staff_member_required
+def votepage(request, rushee_id):
+    """ opens voting, displays a timer to show that voting is open, then redirects to results
+        rushee_id -- primary key of rushee being voted on
+    """
+    # reset vote list
+    vote_list.clear()
+    this_rushee = Rushee.objects.get(id=rushee_id)
+    this_rushee.voting_open = True
+    this_rushee.save()
+    # add additional data here if needed
+
+    template = loader.get_template('rush/votepage.html')
+    context = {
+        "rushee": this_rushee,
+        'settings': getSettings()
+    }
+    return HttpResponse(template.render(context, request))
+
+@staff_member_required
+def results(request, rushee_id):
+    """ shows results of voting on a rushee
+        rushee_id -- primary key of rushee whose results are being viewed
+    """
+    vote_list.clear()
+    this_rushee = Rushee.objects.get(id=rushee_id)
+    this_rushee.voting_open = False
+    this_rushee.save()
+
+    template = loader.get_template('rush/results.html')
+    context = {
+        "rushee": this_rushee,
+        'settings': getSettings()
+    }
+    return HttpResponse(template.render(context, request))
+
+@staff_member_required
+def reset(request, rushee_id):
+    """ resets votes cast on a rushee
+        rushee_id -- primary key of rushee whose votes are being reset
+    """
+    this_rushee = Rushee.objects.get(id=rushee_id)
+    this_rushee.y = 0
+    this_rushee.n = 0
+    this_rushee.a = 0
+    this_rushee.b = 0
+    this_rushee.blackball_list.clear()
+
+    this_rushee.save()
+
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
