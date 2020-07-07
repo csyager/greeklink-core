@@ -3,7 +3,8 @@ from core.models import SiteSettings
 from .models import *
 from django.forms import ModelForm
 from django.forms.widgets import TextInput
-from core.views import getSettings
+from django.apps import apps
+
 
 # form for leaving comments
 class CommentForm(ModelForm):
@@ -43,17 +44,13 @@ class RusheeForm(ModelForm):
         rushee.save()
         return rushee
 
-ROUND_CHOICES = [(0, "No filter")]
-for i in range(1, 4):
-    ROUND_CHOICES.append((i, i))
-
 
 class FilterForm(forms.Form):
     name = forms.CharField(max_length=50, label='Name', required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control rounded', 'placeholder': 'Name'}))
-    round = forms.ChoiceField(choices=ROUND_CHOICES, label='Round Number',
+        widget=forms.TextInput(attrs={'class': 'form-control rounded', 'placeholder': 'No filter selected'}))
+    round = forms.ChoiceField(label='Round Number', required=False,
         widget=forms.Select(attrs={'class': 'form-control rounded'}))
     major = forms.CharField(max_length=20, label='Major', required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control rounded', 'placeholder': 'Major'}))
+        widget=forms.TextInput(attrs={'class': 'form-control rounded', 'placeholder': 'No filter selected'}))
     hometown = forms.CharField(max_length=50, label='Hometown', required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control rounded', 'placeholder': 'Hometown'}))
+        widget=forms.TextInput(attrs={'class': 'form-control rounded', 'placeholder': 'No filter selected'}))

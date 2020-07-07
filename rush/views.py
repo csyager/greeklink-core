@@ -11,6 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import Http404
 from core.views import getSettings
+from core.models import SiteSettings
 from .forms import CommentForm, RusheeForm, FilterForm
 from .models import Rushee, RushEvent, Comment
 
@@ -224,16 +225,30 @@ def current_rushees(request):
     """ page containing list of rushees who haven't been cut """
     template = loader.get_template('rush/current-rushees.html')
     rushees = Rushee.objects.filter(cut=0).order_by('name')
-    if request.session['rushee_filter']:
-        for filter in request.session['rushee_filter']:
-            variable_column = filter
-            search_type = 'contains'
-            filter_string = variable_column + '__' + search_type
-            rushees = rushees.filter(**{ filter_string: request.session['rushee_filter'][filter]})
+    settings = getSettings()
+    ROUND_CHOICES = [(0, "No filter")]
+    num_rounds = settings.num_rush_rounds
+    for i in range(1, num_rounds+1):
+        ROUND_CHOICES.append((i, i))
+    try:
+        if request.session['rushee_filter']:
+            for filter in request.session['rushee_filter']:
+                variable_column = filter
+                search_type = 'contains'
+                filter_string = variable_column + '__' + search_type
+                rushees = rushees.filter(**{ filter_string: request.session['rushee_filter'][filter]})
+                filter_form = FilterForm(initial=request.session['rushee_filter'])
+                filter_form.fields['round'].choices = ROUND_CHOICES
+        else:
+            filter_form = FilterForm()
+            filter_form.fields['round'].choices = ROUND_CHOICES
+    except KeyError:
+        filter_form = FilterForm()
+        filter_form.fields['round'].choices = ROUND_CHOICES
     context = {
         "rush_page": "active",
         "rushees": rushees,
-        "filter_form": FilterForm(initial=request.session['rushee_filter']),
+        "filter_form": filter_form,
         "settings": getSettings(),
     }
     return HttpResponse(template.render(context, request))
@@ -456,8 +471,15 @@ def filter_rushees(request):
     """ filters the current rushees page and saves filter choices
         in session
     """
+
     if request.method == 'POST':
         form = FilterForm(request.POST)
+        settings = getSettings()
+        ROUND_CHOICES = [(0, "No filter")]
+        num_rounds = settings.num_rush_rounds
+        for i in range(1, num_rounds+1):
+            ROUND_CHOICES.append((i, i))
+        form.fields['round'].choices = ROUND_CHOICES
         if form.is_valid():
             filters = {}
             for field in form.fields:
@@ -467,5 +489,8 @@ def filter_rushees(request):
             request.session['rushee_filter'] = filters
             print(request.session['rushee_filter'])
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        else:
+            print(form.errors)
+            return HttpResponse(form.errors)
     else:
         raise Http404
