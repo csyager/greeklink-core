@@ -31,21 +31,55 @@ def rushee(request, num):
     form = CommentForm()
     current_round = obj.round
 
-     # get next rushee for next button
+    # get next rushee for next button
+    next_url = ""
+    prev_url = ""
+
+    # check for filter in session variables
     try:
-        next_rushee = (Rushee.objects.filter(name__gt=obj.name, cut=0, round=current_round)
-                       .order_by('name')[0].id)
-        next_url = '/rush/rushee' + str(next_rushee)
+        for filter in request.session['rushee_filter']:
+            variable_column = filter
+            search_type = 'contains'
+            filter_string = variable_column + '__' + search_type
+            next_rushee = (Rushee.objects.filter(**{ filter_string: request.session['rushee_filter'][filter]})
+                            .filter(name__gt=obj.name, cut=0).order_by('name')[0].id)
+            next_url = '/rush/rushee' + str(next_rushee)
+    # filter found but this is last rushee alphabetically that filter applies to
     except IndexError:
         next_url = ""
-    # get previous rushee for back button
+
+    # filter is not set in session
+    except KeyError:
+        # get next rushee alphabetically
+        try:
+            next_rushee = Rushee.objects.filter(name__gt=obj.name, cut=0, round=current_round).order_by('name')[0].id
+            next_url = '/rush/rushee' + str(next_rushee)
+        # this is last rushee alphabetically
+        except IndexError:
+            next_url = ""
+
+    # check for filter in session variables
     try:
-        prev_rushee = (Rushee.objects.filter(name__lt=obj.name, cut=0, round=current_round)
-                       .order_by('-name')[0].id)
-        prev_url = '/rush/rushee' + str(prev_rushee)
+        for filter in request.session['rushee_filter']:
+            variable_column = filter
+            search_type = 'contains'
+            filter_string = variable_column + '__' + search_type
+            prev_rushee = (Rushee.objects.filter(**{ filter_string: request.session['rushee_filter'][filter]})
+                            .filter(name__lt=obj.name, cut=0).order_by('-name')[0].id)
+            prev_url = '/rush/rushee' + str(prev_rushee)
+    # filter found but this is first rushee alphabetically that filter applies to
     except IndexError:
         prev_url = ""
 
+    # filter is not set in session
+    except KeyError:
+        # get previous rushee alphabetically
+        try:
+            prev_rushee = Rushee.objects.filter(name__lt=obj.name, cut=0, round=current_round).order_by('-name')[0].id
+            prev_url = '/rush/rushee' + str(prev_rushee)
+        # this is first rushee alphabetically
+        except IndexError:
+            prev_url = ""
     context = {
         "rushee": obj,
         "comments": comments,
