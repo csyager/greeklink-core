@@ -16,3 +16,4 @@ python manage.py collectstatic --noinput
 
 # load fixtures
 python manage.py loaddata auth.json
+python manage.py loaddata settings.json

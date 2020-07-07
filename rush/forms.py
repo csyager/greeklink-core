@@ -44,6 +44,13 @@ class RusheeForm(ModelForm):
         rushee.save()
         return rushee
 
+year_choices = [
+    (0, 'No filter'),
+    (1, 'Freshman'),
+    (2, 'Sophomore'),
+    (3, 'Junior'),
+    (4, 'Senior')
+]
 
 class FilterForm(forms.Form):
     name = forms.CharField(max_length=50, label='Name', required=False,
@@ -52,5 +59,7 @@ class FilterForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control rounded'}))
     major = forms.CharField(max_length=20, label='Major', required=False,
         widget=forms.TextInput(attrs={'class': 'form-control rounded', 'placeholder': 'No filter selected'}))
+    year = forms.ChoiceField(label='Year', required=False, choices=year_choices,
+        widget=forms.Select( attrs={'class': 'form-control rounded'}))
     hometown = forms.CharField(max_length=50, label='Hometown', required=False,
         widget=forms.TextInput(attrs={'class': 'form-control rounded', 'placeholder': 'No filter selected'}))

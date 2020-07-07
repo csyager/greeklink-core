@@ -27,5 +27,6 @@ urlpatterns = [
     path('events/<int:event_id>', views.event, name="event"),
     path('createEvent', views.create_event, name="create_event"),
     path('removeEvent<int:event_id>', views.remove_event, name="remove_event"),
-    path('filter_rushees', views.filter_rushees, name="filter_rushees")
+    path('filter_rushees', views.filter_rushees, name="filter_rushees"),
+    path('clear_rushees_filter', views.clear_rushees_filter, name="clear_rushees_filter"),
 ]

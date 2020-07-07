@@ -494,3 +494,9 @@ def filter_rushees(request):
             return HttpResponse(form.errors)
     else:
         raise Http404
+
+@login_required
+def clear_rushees_filter(request):
+    """ clears the filter session variable """
+    del request.session['rushee_filter']
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
