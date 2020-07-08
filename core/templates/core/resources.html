@@ -62,7 +62,7 @@
                         <div class="card-body">
                             <h4 class="card-title">{{ file.name }}</h4>
                             <p class="card-text">{{ file.description }}</p>
-                            <a href="{{ file.file.url }}" class="btn btn-primary" target="_blank">Open File</a>
+                            <a href="{{ file.file.url }}" class="btn btn-primary" target="_blank"><i class="fa fa-folder-open" aria-hidden="true"></i> Open File</a>
                             {% if perms.core.delete_resourcefile %}
                             <br>
                             <br>
@@ -90,13 +90,19 @@
                                             </button>
                                         </div>
                                         <div class="modal-body">
-                                            <form style="margin-left: 20%; margin-right:20%" method="post" action="uploadfile" enctype="multipart/form-data">
+                                            <form method="post" action="uploadfile" enctype="multipart/form-data">
                                                 {% csrf_token %}
-                                                {% load crispy_forms_tags %}
-                                                <div class="form-group">
-                                                    {{ form.name|as_crispy_field }}
-                                                    {{ form.file|as_crispy_field }}
-                                                    {{ form.description|as_crispy_field }}
+                                                <div class="form-group row">
+                                                    <div class="col-3">{{ form.name.label }}</div>
+                                                    <div class="col-9">{{ form.name }}</div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <div class="col-3">{{ form.file.label }}</div>
+                                                    <div class="col-9">{{ form.file }}</div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <div class="col-3">{{ form.description.label }}</div>
+                                                    <div class="col-9">{{ form.description }}</div>
                                                 </div>
                                         </div>
                                         <div class="modal-footer">
@@ -125,7 +131,7 @@
                         <div class="card-body">
                             <h4 class="card-title">{{ link.name }}</h4>
                             <p class="card-text">{{ link.description }}</p>
-                            <a href="{{ link.url }}" class="btn btn-primary" target="_blank">Open Link</a>
+                            <a href="{{ link.url }}" class="btn btn-primary" target="_blank"><i class="fa fa-external-link" aria-hidden="true"></i> Open Link</a>
                             {% if perms.core.delete_resourcelink %}
                             <br>
                             <br>
@@ -153,11 +159,20 @@
                                             </button>
                                         </div>
                                         <div class="modal-body">
-                                            <form style="margin-left: 20%; margin-right:20%" method="post" action="addLink" enctype="multipart/form-data">
+                                            <form method="post" action="addLink" enctype="multipart/form-data">
                                                 {% csrf_token %}
-                                                {{ linkForm.name|as_crispy_field }}
-                                                {{ linkForm.url|as_crispy_field }}
-                                                {{ linkForm.description|as_crispy_field }}
+                                                <div class="form-group row">
+                                                    <div class="col-3">{{ linkForm.name.label }}</div>
+                                                    <div class="col-9">{{ linkForm.name }}</div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <div class="col-3">{{ linkForm.url.label }}</div>
+                                                    <div class="col-9">{{ linkForm.url }}</div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <div class="col-3">{{ linkForm.description.label }}</div>
+                                                    <div class="col-9">{{ linkForm.description }}</div>
+                                                </div>
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

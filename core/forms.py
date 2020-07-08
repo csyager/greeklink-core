@@ -97,9 +97,12 @@ class SetPasswordForm(SetPasswordForm):
 
 
 class UploadFileForm(ModelForm):
-    name = forms.CharField(max_length=50)
-    file = forms.FileField()
-    description = forms.CharField(max_length=280, widget=forms.Textarea)
+    name = forms.CharField(max_length=50, label='Name', 
+        widget=forms.TextInput(attrs={'class': 'form-control rounded'}))
+    file = forms.FileField(label="File",
+        widget=forms.FileInput(attrs={'class': 'form-control-file rounded'}))
+    description = forms.CharField(max_length=280, label='Description',
+        widget=forms.Textarea(attrs={'class': 'form-control rounded'}))
 
     class Meta:
         model = ResourceFile
@@ -112,9 +115,12 @@ class LinkForm(ModelForm):
         super(LinkForm, self).__init__(*args, **kwargs)
         self.fields['url'].label = "URL"
 
-    name = forms.CharField(max_length=50)
-    url = forms.URLField()
-    description = forms.CharField(max_length=280, widget=forms.Textarea)
+    name = forms.CharField(max_length=50, label="Name",
+        widget=forms.TextInput(attrs={'class': 'form-control rounded'}))
+    url = forms.URLField(label="URL",
+        widget=forms.URLInput(attrs={'class': 'form-control rounded'}))
+    description = forms.CharField(max_length=280, label="Description",
+        widget=forms.Textarea(attrs={'class': 'form-control rounded'}))
 
     class Meta:
         model = ResourceLink
@@ -122,9 +128,12 @@ class LinkForm(ModelForm):
 
 
 class AnnouncementForm(ModelForm):
-    title = forms.CharField(max_length=50)
-    target = forms.URLField(required=False)
-    body = forms.CharField(max_length=280, widget=forms.Textarea)
+    title = forms.CharField(max_length=50, label='Title',
+        widget=forms.TextInput(attrs={'class': 'form-control rounded'}))
+    target = forms.URLField(required=False, label='Target',
+        widget=forms.URLInput(attrs={'class': 'form-control rounded'}))
+    body = forms.CharField(max_length=280, label='Body',
+        widget=forms.Textarea(attrs={'class': 'form-control rounded'}))
 
     class Meta:
         model = Announcement
