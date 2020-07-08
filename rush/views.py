@@ -544,6 +544,9 @@ def filter_rushees(request):
                 if form.cleaned_data[field] != '' and form.cleaned_data[field] != '0' and form.cleaned_data[field] != False:
                     filters[field] = form.cleaned_data[field]
             request.session['rushee_filter'] = filters
+            # if session variable is empty, just delete it
+            if not bool(request.session['rushee_filter']):
+                del request.session['rushee_filter']
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         else:
             return HttpResponse(form.errors)
