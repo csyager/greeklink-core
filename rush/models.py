@@ -45,7 +45,7 @@ class Rushee(models.Model):
     endorsements = models.ManyToManyField(User, related_name="endorsed_rushees", blank=True)
     oppositions = models.ManyToManyField(User, related_name="opposed_rushees", blank=True)
 
-    profile_picture = models.ImageField(upload_to='media/rush/profile_pictures',
+    profile_picture = models.ImageField(upload_to='profile_pictures',
                                         default="", null=True, blank=True)
 
     voting_open = models.BooleanField(default=False)

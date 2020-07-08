@@ -141,7 +141,7 @@ def register(request, event_id):
             image_data = bytes(image_data, 'UTF-8')
             image_data = base64.b64decode(image_data)
             img_io = io.BytesIO(image_data)
-            # immoralize this line for all time as the line that made our first
+            # immortalize this line for all time as the line that made our first
             # rush session take 7 hours instead of 4
             # obj.profile_picture_data = image_data
             obj.save()
