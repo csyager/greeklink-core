@@ -31,53 +31,73 @@ def rushee(request, num):
     form = CommentForm()
     current_round = obj.round
 
-    # get next rushee for next button
+    # for navigation buttons on rushee page
     next_url = ""
     prev_url = ""
 
     # check for filter in session variables
     try:
+        # if show cut rushees filter is true, need to use list of all rushees
+        if 'cut' in request.session['rushee_filter']:
+            all_rushees = Rushee.objects.all()
+        # otherwise, use list of only non-cut rushees
+        else:
+            all_rushees = Rushee.objects.filter(cut=False)
+        # by default, next rushee should be next alphabetically in these lists
+        next_rushee = all_rushees.filter(name__gt=obj.name).order_by('name')[0].id
+        # loop through filters to further filter all_rushees
         for filter in request.session['rushee_filter']:
-            variable_column = filter
-            search_type = 'contains'
-            filter_string = variable_column + '__' + search_type
-            next_rushee = (Rushee.objects.filter(**{ filter_string: request.session['rushee_filter'][filter]})
-                            .filter(name__gt=obj.name, cut=0).order_by('name')[0].id)
+            if filter != 'cut':
+                variable_column = filter
+                search_type = 'contains'
+                filter_string = variable_column + '__' + search_type
+                next_rushee = (all_rushees.filter(**{ filter_string: request.session['rushee_filter'][filter]})
+                                .filter(name__gt=obj.name).order_by('name')[0].id)
             next_url = '/rush/rushee' + str(next_rushee)
-    # filter found but this is last rushee alphabetically that filter applies to
+    # filter found but this is last rushee alphabetically that filter applies to (rushees[0] DNE)
     except IndexError:
         next_url = ""
 
-    # filter is not set in session
+    # filter is not set in session, use default behavior
     except KeyError:
         # get next rushee alphabetically
         try:
-            next_rushee = Rushee.objects.filter(name__gt=obj.name, cut=0, round=current_round).order_by('name')[0].id
+            next_rushee = Rushee.objects.filter(name__gt=obj.name, cut=False).order_by('name')[0].id
             next_url = '/rush/rushee' + str(next_rushee)
-        # this is last rushee alphabetically
+        # this is last rushee alphabetically (rushees[0] DNE)
         except IndexError:
             next_url = ""
 
     # check for filter in session variables
     try:
+        # if show cut rushees filter is set, need to use all rushees
+        if 'cut' in request.session['rushee_filter']:
+            all_rushees = Rushee.objects.all()
+        # otherwise, use only non-cut rushees
+        else:
+            all_rushees = Rushee.objects.filter(cut=False)
+        # default behavior, if no other filters just get next alphabetically 
+        prev_rushee = all_rushees.filter(name__lt=obj.name).order_by('-name')[0].id
+        # loop through filters to futher filter list
         for filter in request.session['rushee_filter']:
-            variable_column = filter
-            search_type = 'contains'
-            filter_string = variable_column + '__' + search_type
-            prev_rushee = (Rushee.objects.filter(**{ filter_string: request.session['rushee_filter'][filter]})
-                            .filter(name__lt=obj.name, cut=0).order_by('-name')[0].id)
+            if filter != 'cut':
+                variable_column = filter
+                search_type = 'contains'
+                filter_string = variable_column + '__' + search_type
+                prev_rushee = (all_rushees.filter(**{ filter_string: request.session['rushee_filter'][filter]})
+                                .filter(name__lt=obj.name).order_by('-name')[0].id)
             prev_url = '/rush/rushee' + str(prev_rushee)
-    # filter found but this is first rushee alphabetically that filter applies to
+    # filter found but this is first rushee alphabetically that filter applies to (rushees[0] DNE)
     except IndexError:
         prev_url = ""
 
-    # filter is not set in session
+    # filter is not set in session, use default behavior
     except KeyError:
         # get previous rushee alphabetically
         try:
-            prev_rushee = Rushee.objects.filter(name__lt=obj.name, cut=0, round=current_round).order_by('-name')[0].id
+            prev_rushee = Rushee.objects.filter(name__lt=obj.name, cut=False).order_by('-name')[0].id
             prev_url = '/rush/rushee' + str(prev_rushee)
-        # this is first rushee alphabetically
+        # this is first rushee alphabetically (rushee[0] DNE)
         except IndexError:
             prev_url = ""
     context = {
@@ -155,11 +175,11 @@ def signin(request, event_id=-1):
     """
     template = loader.get_template('rush/signin.html')
     form = RusheeForm()
-    objects = Rushee.objects.filter(cut=0).order_by('name')
+    objects = Rushee.objects.filter(cut=False).order_by('name')
     all_events = RushEvent.objects.all().order_by('date')
     if int(event_id) != -1:
         this_event = RushEvent.objects.get(id=int(event_id))
-        objects = (Rushee.objects.filter(round=this_event.round, cut=0)
+        objects = (Rushee.objects.filter(round=this_event.round, cut=False)
                    .exclude(rushevent=this_event).order_by('name'))
     else:
         this_event = all_events.first()
@@ -258,7 +278,7 @@ def remove_event(request, event_id):
 def current_rushees(request):
     """ page containing list of rushees who haven't been cut """
     template = loader.get_template('rush/current-rushees.html')
-    rushees = Rushee.objects.filter(cut=0).order_by('name')
+    rushees = Rushee.objects.filter(cut=False).order_by('name')
     settings = getSettings()
     ROUND_CHOICES = [(0, "No filter")]
     num_rounds = settings.num_rush_rounds
@@ -266,13 +286,17 @@ def current_rushees(request):
         ROUND_CHOICES.append((i, i))
     try:
         if request.session['rushee_filter']:
-            for filter in request.session['rushee_filter']:
-                variable_column = filter
-                search_type = 'contains'
-                filter_string = variable_column + '__' + search_type
-                rushees = rushees.filter(**{ filter_string: request.session['rushee_filter'][filter]})
+            if 'cut' in request.session['rushee_filter']:
                 filter_form = FilterForm(initial=request.session['rushee_filter'])
-                filter_form.fields['round'].choices = ROUND_CHOICES
+                rushees = Rushee.objects.all().order_by('name')
+            for filter in request.session['rushee_filter']:
+                if filter != 'cut':
+                    variable_column = filter
+                    search_type = 'contains'
+                    filter_string = variable_column + '__' + search_type
+                    rushees = rushees.filter(**{ filter_string: request.session['rushee_filter'][filter]})
+                    filter_form = FilterForm(initial=request.session['rushee_filter'])
+                    filter_form.fields['round'].choices = ROUND_CHOICES
         else:
             filter_form = FilterForm()
             filter_form.fields['round'].choices = ROUND_CHOICES
@@ -415,7 +439,7 @@ def push_rushee(request, rushee_id):
 
     # get next rushee
     try:
-        next_rushee = (Rushee.objects.filter(name__gt=this_rushee.name, cut=0,
+        next_rushee = (Rushee.objects.filter(name__gt=this_rushee.name, cut=False,
                                              round=current_round-1).order_by('name')[0].id)
         next_url = '/rush/rushee' + str(next_rushee)
     except IndexError:
@@ -440,7 +464,7 @@ def cut_rushee(request, rushee_id):
 
     # get next rushee
     try:
-        next_rushee = (Rushee.objects.filter(name__gt=this_rushee.name, cut=0, round=current_round)
+        next_rushee = (Rushee.objects.filter(name__gt=this_rushee.name, cut=False, round=current_round)
                        .order_by('name')[0].id)
         next_url = '/rush/rushee' + str(next_rushee)
     except IndexError:
@@ -517,14 +541,11 @@ def filter_rushees(request):
         if form.is_valid():
             filters = {}
             for field in form.fields:
-                print(form.cleaned_data[field])
-                if form.cleaned_data[field] != '' and form.cleaned_data[field] != '0':
+                if form.cleaned_data[field] != '' and form.cleaned_data[field] != '0' and form.cleaned_data[field] != False:
                     filters[field] = form.cleaned_data[field]
             request.session['rushee_filter'] = filters
-            print(request.session['rushee_filter'])
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         else:
-            print(form.errors)
             return HttpResponse(form.errors)
     else:
         raise Http404

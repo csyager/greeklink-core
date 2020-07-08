@@ -60,6 +60,8 @@ class FilterForm(forms.Form):
     major = forms.CharField(max_length=20, label='Major', required=False,
         widget=forms.TextInput(attrs={'class': 'form-control rounded', 'placeholder': 'No filter selected'}))
     year = forms.ChoiceField(label='Year', required=False, choices=year_choices,
-        widget=forms.Select( attrs={'class': 'form-control rounded'}))
+        widget=forms.Select(attrs={'class': 'form-control rounded'}))
     hometown = forms.CharField(max_length=50, label='Hometown', required=False,
         widget=forms.TextInput(attrs={'class': 'form-control rounded', 'placeholder': 'No filter selected'}))
+    cut = forms.BooleanField(label='Show cut rushees', required=False,
+        widget=forms.CheckboxInput())

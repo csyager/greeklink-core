@@ -57,7 +57,7 @@ class Rushee(models.Model):
     blackball_list = models.ManyToManyField(User, related_name="blackballed_rushees", blank=True)
 
     round = models.IntegerField(default=1)
-    cut = models.IntegerField(default=0)
+    cut = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name

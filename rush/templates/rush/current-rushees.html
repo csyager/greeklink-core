@@ -42,6 +42,13 @@
                 <div class="col-md-2">{{ filter_form.hometown.label }}</div>
                 <div class="col-md-8">{{ filter_form.hometown }}</div>
             </div>
+            <div class="form-group row">
+                <div class="col-md-2"></div>
+                <div class="col-md-8">
+                    {{ filter_form.cut.label }}
+                    {{ filter_form.cut }}
+                </div>
+            </div>
             <button type="submit" class="btn btn-success">Apply Filter</button>&nbsp;&nbsp;
             <a href="/rush/clear_rushees_filter"><button type="button" class="btn btn-danger">Clear Filter</button></a>
         </div>
@@ -66,7 +73,7 @@
         <tbody>
         {% for rushee in rushees %}
 
-            <tr onclick="window.location='rushee{{ rushee.id }}';">
+            <tr onclick="window.location='rushee{{ rushee.id }}';" {% if rushee.cut %}class="table-danger"{% endif %}>
                 <td>{{ rushee.name }}</td>
                 <td>{{ rushee.round }}</td>
                 {% if not request.user_agent.is_mobile %}
