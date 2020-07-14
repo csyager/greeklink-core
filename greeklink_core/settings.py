@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core.apps.CoreConfig',
+    'cal.apps.CalConfig',
     'crispy_forms',
     'django_user_agents',
     'storages',
