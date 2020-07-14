@@ -39,6 +39,11 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'greeklink-core-env.eba-7mntraig.us-w
 
 # Application definition
 
+MY_APPS = [
+    'core.apps.CoreConfig',
+    'rush.apps.RushConfig'
+]
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -52,6 +57,8 @@ INSTALLED_APPS = [
     'django_user_agents',
     'storages',
 ]
+
+INSTALLED_APPS += MY_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -70,7 +77,8 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            'core/templates'
+            'core/templates',
+            'rush/templates',
         ],
         'APP_DIRS': True,
         'OPTIONS': {

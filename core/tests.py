@@ -20,7 +20,6 @@ from django.utils.encoding import force_bytes
 # Create your tests here.
 
 # tests users signing in, out, and registering
-# TODO:  This needs to be massively expanded once we get auth figured out
 class AuthenticationTestCase(TestCase):
     def setUp(self):
         self.u = User.objects.create(username="admin", is_superuser=True)
@@ -42,7 +41,7 @@ class AuthenticationTestCase(TestCase):
     def test_activate_view(self):
         user = User.objects.create(username="test", is_active="False")
         token = account_activation_token.make_token(user)
-        path = reverse('activate', kwargs=dict(user_id = user.pk, token=token))
+        path = reverse('activate', kwargs=dict(user_id=user.pk, token=token))
         response = self.client.post(path)
         self.assertContains(response, "Your account has been verified!")
 
@@ -127,7 +126,7 @@ class SignupTestCase(TestCase):
     def test_activate_view(self):
         user = User.objects.create(username="test", is_active="False")
         token = account_activation_token.make_token(user)
-        path = reverse('activate', kwargs=dict(user_id = user.pk, token=token))
+        path = reverse('activate', kwargs=dict(user_id=user.pk, token=token))
         response = self.client.post(path)
         self.assertContains(response, "Your account has been verified!")
 
@@ -737,6 +736,7 @@ class ErrorsTestCase(TestCase):
     # tests custom 500 error appears on 500 error
     def test_500_custom_page(self):
         request = self.client.request()
+        request.current_app = 'core'
         response = handler500(request)
         self.assertIn("Something went wrong on our end.  We\\\'re working hard to fix it.", str(response.content))
 

@@ -7,10 +7,13 @@ source env/bin/activate && pip install -r requirements.txt
 # remove database and migrations
 sudo rm db.sqlite3
 sudo rm -rf core/migrations
+sudo rm -rf rush/migrations
 # migrations and static files
 python manage.py makemigrations core
+python manage.py makemigrations rush
 python manage.py migrate
 python manage.py collectstatic --noinput
 
 # load fixtures
 python manage.py loaddata auth.json
+python manage.py loaddata settings.json

@@ -82,7 +82,7 @@ class ForgotCredentialsForm(forms.Form):
     class Meta:
         fields = ('email')
 
-
+# pylint: disable=function-redefined
 class SetPasswordForm(SetPasswordForm):
     def __init__(self, *args, **kwargs):
         super(SetPasswordForm, self).__init__(self, *args, **kwargs)

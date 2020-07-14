@@ -13,13 +13,24 @@
       </li>
       <li class="{{ cal_page }} nav-item">
         <a class="nav-link" href="/cal">Calendar</a>
+      </li>
+      <li class="{{ rush_page }} nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="rushDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Rush</a>
+        <div class="dropdown-menu" aria-labelledby="rushDropdown">
+          <a class="dropdown-item" href="{% url 'rush:current_rushees' %}">Current Rushees</a>
+          {% if not request.user_agent.is_mobile %}
+          <a class="dropdown-item" href="{% url 'rush:signin' %}">Rushee Sign-in</a>
+          {% endif %}
+          <a class="dropdown-item" href="{% url 'rush:events' %}">Events</a>
+        </div>
+      </li>
       <li class="{{ resources_page }} nav-item">
         <a class="nav-link" href="/resources">Resources</a>
       </li>
     </ul>
     <ul class="navbar-nav ml-auto">
       <form class="form-inline my-2 my-lg-0" id="searchform" action="/search" method="get" accept-charset="utf-8">
-        <input class="form-control mr-md-2" style='width: 300px' name="query" type="search" placeholder="Search" aria-label="Search">
+        <input class="form-control mr-md-2" style='width: 300px; font-family:Arial, FontAwesome' name="query" type="search" placeholder="&#xF002; Search" aria-label="Search">
         <button class="btn btn-light my-2 my-sm-0" type="submit">Search</button>
       </form>
       {% if user.is_staff %}

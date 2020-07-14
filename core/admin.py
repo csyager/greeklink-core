@@ -12,7 +12,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
     form = SiteSettingsForm
     fieldsets = (
         (None, {
-            'fields': ('site_title', 'primary_color_theme', 'calendar_embed', 'verification_key', 'organization_name')
+            'fields': ('site_title', 'primary_color_theme', 'calendar_embed', 'verification_key', 'organization_name', 'rush_signin_active')
         }),
     )
     def get_model_perms(self, request):
