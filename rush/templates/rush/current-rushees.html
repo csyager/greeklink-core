@@ -1,0 +1,98 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block content %}
+<br>
+<div class="container">
+
+    <script src="{% static 'rush/js/filter_list.js' %}"></script>
+
+    <h2>Current Rushees ({{ rushees|length }})</h2>
+    <div class="row">
+        <div class="col-2" style="max-width: 100%">
+        <a class="btn btn-primary" data-toggle="collapse" href="#collapse-filter" role="button" aria-expanded="false" aria-controls="collapse-filter" style="width: 95px">
+        <i class="fa fa-filter" aria-hidden="true"></i> Filter {{ request.session.rushee_filter | length }}
+        </a>
+        </div>
+        <div class="col">
+        <input type="text" class="form-control rounded" onkeyup="filter_list()" id="rush_signin_search" placeholder="&#xF002; Search" style="font-family:Arial, FontAwesome; width: 100%"></input>
+        </div>
+    </div>
+    <div class="collapse" id="collapse-filter">
+        <br>
+        <div class="card card-body">
+        <form method="post" action="filter_rushees" method="post" class="form">
+        {% csrf_token %}
+            <div class="form-group row">
+                <div class="col-md-2">{{ filter_form.name.label }}</div>
+                <div class="col-md-8">{{ filter_form.name }}</div>
+            </div>
+            <div class="form-group row">
+                <div class="col-md-2">{{ filter_form.round.label }}</div>
+                <div class="col-md-2">{{ filter_form.round }}</div>
+            </div>
+            <div class="form-group row">
+                <div class="col-md-2">{{ filter_form.major.label }}</div>
+                <div class="col-md-8">{{ filter_form.major }}</div>
+            </div>
+            <div class="form-group row">
+                <div class="col-md-2">{{ filter_form.year.label }}</div>
+                <div class="col-md-2">{{ filter_form.year }}</div>
+            </div>
+            <div class="form-group row">
+                <div class="col-md-2">{{ filter_form.hometown.label }}</div>
+                <div class="col-md-8">{{ filter_form.hometown }}</div>
+            </div>
+            <div class="form-group row">
+                <div class="col-md-2"></div>
+                <div class="col-md-8">
+                    {{ filter_form.cut.label }}
+                    {{ filter_form.cut }}
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success">Apply Filter</button>&nbsp;&nbsp;
+            <a href="/rush/clear_rushees_filter"><button type="button" class="btn btn-danger">Clear Filter</button></a>
+        </div>
+    </div>
+
+    
+    <br>
+    <table class="table table-hover" id="list_table">
+        <thead>
+        <tr>
+            <td>Name</td>
+            <td>Round</td>
+            {% if not request.user_agent.is_mobile %}
+            <td>Email</td>
+            <td>Year</td>
+            <td>Major</td>
+            <td>Hometown</td>
+            {% endif %}
+            <td></td>
+        </tr>
+        </thead>
+        <tbody>
+        {% for rushee in rushees %}
+
+            <tr onclick="window.location='rushee{{ rushee.id }}';" {% if rushee.cut %}class="table-danger"{% endif %}>
+                <td>{{ rushee.name }}</td>
+                <td>{{ rushee.round }}</td>
+                {% if not request.user_agent.is_mobile %}
+                <td>{{ rushee.email }}</td>
+                <td>{{ rushee.year }}</td>
+                <td>{{ rushee.major }}</td>
+                <td>{{ rushee.hometown }}</td>
+                {% endif %}
+                {% if user in rushee.endorsements.all %}
+                <td><i class="fa fa-thumbs-up fa-2x" aria-hidden="true" style="color: green"></i></td>
+                {% elif user in rushee.oppositions.all %}
+                <td><i class="fa fa-thumbs-down fa-2x" aria-hidden="true" style="color: red"></i></td>
+                {% else %}
+                <td></td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

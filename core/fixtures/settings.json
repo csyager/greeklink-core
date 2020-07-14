@@ -1,0 +1,15 @@
+[
+{
+    "model": "core.sitesettings",
+    "pk": 1,
+    "fields": {
+        "site_title": "test",
+        "primary_color_theme": "#209CEE",
+        "calendar_embed": "",
+        "verification_key": "9999",
+        "organization_name": "test",
+        "rush_signin_active": false,
+        "num_rush_rounds": 3
+    }
+}
+]

@@ -38,8 +38,13 @@ from django.shortcuts import render
 import datetime
 # Create your views here.
 
-
 def getSettings():
+    """ utility function for returning SiteSettings object.  SiteSettings
+        should be a singular database object representing base settings for
+        the site.  This function makes sure the database object remains
+        singular.  Should be called in context variables of every page
+    """
+    # pylint: disable=function-redefined, invalid-name, redefined-outer-name
     settings = SiteSettings.objects.all()
     if len(settings) == 0:
         newsettings = SiteSettings(pk=1)
@@ -208,7 +213,7 @@ def reset_password(request, user_id, token):
         template = loader.get_template('core/reset_password.html')
         context = {
             'settings': getSettings(),
-            'form': SetPasswordForm()
+            'form': SetPasswordForm()   # pylint: disable=no-value-for-parameter
         }
         return HttpResponse(template.render(context, request))
     
@@ -255,7 +260,7 @@ class SearchView(ListView):
         query = request.GET.get('query', None)
         #this chains the queries together
         if query == '':
-            return SocialEvent.objects.none() #just an emptyset. Honestly I have no idea why its doing an empty string rather than None but whatever when you do it this way it works
+            return SocialEvent.objects.none() # just an emptyset. Honestly I have no idea why its doing an empty string rather than None but whatever when you do it this way it works
         elif (query is not None):
             SocialEvent_results = SocialEvent.objects.search(query)
             Announcement_results = Announcement.objects.search(query)
