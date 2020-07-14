@@ -24,10 +24,8 @@ def rushee(request, num):
     template = loader.get_template('rush/rushee.html')
     obj = Rushee.objects.get(id=num)
     all_events = RushEvent.objects.all().order_by('date')
-    try:
-        comments = Comment.objects.filter(rushee=obj)
-    except Comment.DoesNotExist:
-        comments = None
+    comments = Comment.objects.filter(rushee=obj)
+    
     form = CommentForm()
     current_round = obj.round
 
@@ -147,7 +145,7 @@ def register(request, event_id):
             obj.save()
             obj.profile_picture.save(str(obj.id) + '.png', File(img_io))
             obj.save()
-        except AttributeError:
+        except (AttributeError, TypeError) as e:
             obj.save()
 
         this_event = RushEvent.objects.get(id=event_id)
@@ -264,6 +262,8 @@ def create_event(request):
         obj.save()
 
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    else:
+        raise Http404
 
 @staff_member_required
 def remove_event(request, event_id):
@@ -297,9 +297,6 @@ def current_rushees(request):
                     rushees = rushees.filter(**{ filter_string: request.session['rushee_filter'][filter]})
                     filter_form = FilterForm(initial=request.session['rushee_filter'])
                     filter_form.fields['round'].choices = ROUND_CHOICES
-        else:
-            filter_form = FilterForm()
-            filter_form.fields['round'].choices = ROUND_CHOICES
     except KeyError:
         filter_form = FilterForm()
         filter_form.fields['round'].choices = ROUND_CHOICES
@@ -381,7 +378,7 @@ def clear_endorsement(request, rushee_id):
 #       even when voting is reopened only people who haven't voted yet get to vote
 #       unless results are reset.  Problem is this requires the user to strictly follow
 #       expected behavior, which they won't
-vote_list = []
+# vote_list = []
 
 @login_required
 def vote(request, rushee_id, value):
@@ -395,7 +392,7 @@ def vote(request, rushee_id, value):
     """
     this_rushee = Rushee.objects.get(id=rushee_id)
     user = request.user
-    if this_rushee.voting_open and user not in vote_list:
+    if this_rushee.voting_open:
         if value == 'y':
             this_rushee.y += 1
             messages.info(request, ("Vote cast successfully!  You have voted yes on "
@@ -414,9 +411,6 @@ def vote(request, rushee_id, value):
             messages.info(request, ("Vote cast successfully!  You have voted "
                                     "to blackball " + this_rushee.name), extra_tags="safe")
         this_rushee.save()
-        vote_list.append(user)
-    elif user in vote_list:
-        messages.error(request, ("Vote was not cast, because you have already cast your vote"))
     else:
         messages.error(request, ("Vote was not cast, because voting is not open.  Voting must be "
                                  "opened by an admin before votes will be recorded."))
@@ -478,7 +472,6 @@ def votepage(request, rushee_id):
         rushee_id -- primary key of rushee being voted on
     """
     # reset vote list
-    vote_list.clear()
     this_rushee = Rushee.objects.get(id=rushee_id)
     this_rushee.voting_open = True
     this_rushee.save()
@@ -496,7 +489,6 @@ def results(request, rushee_id):
     """ shows results of voting on a rushee
         rushee_id -- primary key of rushee whose results are being viewed
     """
-    vote_list.clear()
     this_rushee = Rushee.objects.get(id=rushee_id)
     this_rushee.voting_open = False
     this_rushee.save()
@@ -556,5 +548,8 @@ def filter_rushees(request):
 @login_required
 def clear_rushees_filter(request):
     """ clears the filter session variable """
-    del request.session['rushee_filter']
+    try:
+        del request.session['rushee_filter']
+    except KeyError:
+        pass
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
