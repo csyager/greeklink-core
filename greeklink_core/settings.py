@@ -41,7 +41,8 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'greeklink-core-env.eba-7mntraig.us-w
 
 MY_APPS = [
     'core.apps.CoreConfig',
-    'rush.apps.RushConfig'
+    'rush.apps.RushConfig',
+    'cal.apps.CalConfig',
 ]
 
 INSTALLED_APPS = [
@@ -51,8 +52,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core.apps.CoreConfig',
-    'cal.apps.CalConfig',
     'crispy_forms',
     'django_user_agents',
     'storages',

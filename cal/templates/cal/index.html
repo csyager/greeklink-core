@@ -1,4 +1,8 @@
 {% extends 'core/base.html' %}
 {% block content %}
-{{ calendar|safe }}
+<div class="container calendar-div">
+    <a href="/cal?month={{ prev_month }}&year={{ year }}">Previous Month</a>
+    <a href="/cal?month={{ next_month }}&year={{ year }}">Next Month</a>
+    {{ calendar|safe }}
+</div>
 {% endblock %}
