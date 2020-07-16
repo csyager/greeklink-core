@@ -1,0 +1,78 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<br>
+<div class="container">
+    <h2>Rush Events</h2>
+    <div class="list-group">
+        {% for event in events %}
+        <a href="/rush/events/{{ event.id }}" class="list-group-item">{{ event.name }} -- {{ event.date }}, {{ event.time }} <span class="badge badge-info">{{ event.attendance.count }}</span></a>
+        {% endfor %}
+    </div>
+    <br>
+    {% if user.is_superuser %}
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#eventModal">Add Event</button>
+    <!-- Modal -->
+    <div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="eventModalLabel">Create Event</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="createEvent">
+                        {% csrf_token %}
+                        <div class="form-group row">
+                            <label for="new_name" class="col-sm-2 col-form-label">Name</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="new_name" name="name">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="new_date" class="col-sm-2 col-form-label">Date</label>
+                            <div class="col-sm-10">
+                                <input type="date" class="form-control" id="new_date" name="date">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="new_event_round" class="col-sm-2 col-form-label">Round</label>
+                            <div class="col-sm-10">
+                                <select class="form-control" id="new_event_round" name="round">
+                                    {% for num in round_range %}
+                                    <option>{{ num }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="new_time" class="col-sm-2 col-form-label">Time</label>
+                            <div class="col-sm-10">
+                                <input type="time" class="form-control" id="new_time" name="time">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="new_location" class="col-sm-2 col-form-label">Location</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="new_location" name="location">
+                            </div>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="new_new_rushees" name="new_rushees" value="new_rushees">
+                            <label for="new_new_rushees" class="form-check-label">New Rushees Allowed?</label>
+                        </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <br>
+    {% endif %}
+</div>
+{% endblock %}

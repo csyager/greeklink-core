@@ -1,0 +1,9 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<br>
+    <div class="container">
+        <h1>Thank you, {{ name }}.  You're good to go!</h1>
+        <a href="/rush/signin{{ event_id }}"><button class="btn btn-success">Return to Sign-in page</button></a>
+
+    </div>
+{% endblock %}
