@@ -26,7 +26,7 @@ class Calendar(HTMLCalendar):
             time = event.time.strftime("%I:%M %p").lstrip("0")
             d += f'<div class="alert alert-success alert-calendar"><a href="/rush/events/{event.pk}">{ time } - { event.name }</a></div>'
         if day != 0:
-            return f"<td><span class='date'>{day}</span> {d}</td>"
+            return f"<td class='day-cell'><span class='date'>{day}</span> <div class='scrollable'>{d}</div></td>"
         return '<td></td>'
 
     def formatweek(self, theweek, social_events, rush_events):
