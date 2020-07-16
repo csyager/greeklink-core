@@ -78,7 +78,7 @@ body {
 
 table.calendar {
     width: 100%;
-    height: 80vh;
+    height: 75vh;
 }
 
 .month {
@@ -94,4 +94,8 @@ th.sat,
 th.sun {
     width: 14.28%;
     height: 30px;
+}
+
+div.alert-calendar {
+    padding: 5px;
 }

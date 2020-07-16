@@ -20,11 +20,13 @@ class Calendar(HTMLCalendar):
         rush_events_per_day = rush_events.filter(date__day=day)
         d = ''
         for event in social_events_per_day:
-            d += f'<li class="calendar_list"> <a href="/social_event{event.pk}">{ event.name }</a> </li>'
+            time = event.time.strftime("%I:%M %p").lstrip("0")
+            d += f'<div class="alert alert-primary alert-calendar"><a href="/social_event{event.pk}">{ time } - { event.name }</a></div>'
         for event in rush_events_per_day:
-            d += f'<li class="calendar_list"> <a href="/rush/events/{event.pk}">{ event.name }</a> </li>'
+            time = event.time.strftime("%I:%M %p").lstrip("0")
+            d += f'<div class="alert alert-success alert-calendar"><a href="/rush/events/{event.pk}">{ time } - { event.name }</a></div>'
         if day != 0:
-            return f"<td><span class='date'>{day}</span><ul> {d}</ul></td>"
+            return f"<td><span class='date'>{day}</span> {d}</td>"
         return '<td></td>'
 
     def formatweek(self, theweek, social_events, rush_events):
@@ -46,6 +48,8 @@ class Calendar(HTMLCalendar):
 def index(request):
     template = loader.get_template('cal/index.html')
     d = datetime.today()
+    curr_month = d.month
+    curr_year = d.year
     month = int(request.GET.get('month', d.month))
     year = int(request.GET.get('year', d.year))
     if month == 13:
@@ -60,6 +64,8 @@ def index(request):
         'cal_page': 'active',
         'settings': getSettings(), 
         'year': year,
+        'curr_month': curr_month,
+        'curr_year': curr_year,
         'prev_month': month -1,
         'next_month': month +1,
     }
