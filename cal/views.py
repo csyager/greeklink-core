@@ -87,33 +87,16 @@ def create_chapter_event(request):
     if request.method == 'POST':
         form = ChapterEventForm(request.POST)
         if form.is_valid():
-            event = ChapterEvent()
-            event.name = form.cleaned_data.get('name')
-            event.date = form.cleaned_data.get('date')
-            event.time = form.cleaned_data.get('time')
-            event.location = form.cleaned_data.get('location')
-            event.recurring = form.cleaned_data.get('recurring')
-            event.start_date = form.cleaned_data.get('start_date')
-            event.end_date = form.cleaned_data.get('end_date')
-            event.save()
-            if event.recurring == 'Monthly':
-                start_date = event.start_date + relativedelta(months=+1)
-                while start_date <= event.end_date:
-                    ChapterEvent.objects.create(name=event.name, date=start_date, time=event.time, location=event.location, 
-                                                is_recurrence=True)
-                    start_date += relativedelta(months=+1)
-            if event.recurring == 'Weekly':
-                start_date = event.start_date + relativedelta(weeks=+1)
-                while start_date <= event.end_date:
-                    ChapterEvent.objects.create(name=event.name, date=start_date, time=event.time, location=event.location, 
-                                                is_recurrence=True)
-                    start_date += relativedelta(weeks=+1)
-            if event.recurring == 'Daily':
-                start_date = event.start_date + relativedelta(days=+1)
-                while start_date <= event.end_date:
-                    ChapterEvent.objects.create(name=event.name, date=start_date, time=event.time, location=event.location, 
-                                                is_recurrence=True)
-                    start_date += relativedelta(days=+1)
+            name = form.cleaned_data.get('name')
+            date = form.cleaned_data.get('date')
+            time = form.cleaned_data.get('time')
+            location = form.cleaned_data.get('location')
+            recurring = form.cleaned_data.get('recurring')
+            start_date = form.cleaned_data.get('start_date')
+            end_date = form.cleaned_data.get('end_date')
+
+            ChapterEvent.objects.create_chapter_event(name, date, time, location, recurring, start_date, end_date)
+
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         else:
             return HttpResponse(form.errors)

@@ -6,6 +6,7 @@ from .forms import SiteSettingsForm
 admin.site.register(ResourceFile)
 admin.site.register(SocialEvent)
 admin.site.register(Announcement)
+admin.site.register(ResourceLink)
 
 # registers SiteSettings object without adding to admin page
 class SiteSettingsAdmin(admin.ModelAdmin):
