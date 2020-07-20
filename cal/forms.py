@@ -15,18 +15,13 @@ class ChapterEventForm(ModelForm):
         widget=forms.TextInput(attrs={'class': 'form-control rounded'}))
     recurring = forms.ChoiceField(choices=RECURRENCE_CHOICES, label="Recurring",
         widget=forms.Select(attrs={'id': 'recurring_selection', 'class': 'form-control rounded'}))
-    start_date = forms.DateField(label='Start Date', required=False, initial=datetime.date.today,
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control rounded'}))
     end_date = forms.DateField(label='End Date', required=False, initial=datetime.date.today,
         widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control rounded'}))
 
     def clean(self):
         recurring = self.cleaned_data.get('recurring')
         if recurring != 'None':
-            start_date = self.cleaned_data.get('start_date')
             end_date = self.cleaned_data.get('end_date')
-            if start_date in EMPTY_VALUES:
-                self._errors['start_date'] = self.error_class(['Start date required'])
             if end_date in EMPTY_VALUES:
                 self._errors['end_date'] = self.error_class(['End date required'])
         return self.cleaned_data

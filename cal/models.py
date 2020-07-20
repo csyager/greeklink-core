@@ -13,22 +13,22 @@ RECURRENCE_CHOICES = [
 ]
 
 class ChapterEventManager(models.Manager):
-    def create_chapter_event(self, name, date, time, location, recurring, start_date, end_date):
-        event = self.create(name=name, date=date, time=time, location=location, recurring=recurring, start_date=start_date, end_date=end_date)
+    def create_chapter_event(self, name, date, time, location, recurring, end_date):
+        event = self.create(name=name, date=date, time=time, location=location, recurring=recurring, end_date=end_date)
         if event.recurring == 'Monthly' and not event.is_recurrence:
-            start_date = event.start_date + relativedelta(months=+1)
+            start_date = event.date + relativedelta(months=+1)
             while start_date <= event.end_date:
                 ChapterEvent.objects.create(name=event.name, date=start_date, time=event.time, location=event.location, 
                                             recurring='Monthly', is_recurrence=True, base_event=event)
                 start_date += relativedelta(months=+1)
         if event.recurring == 'Weekly' and not event.is_recurrence:
-            start_date = event.start_date + relativedelta(weeks=+1)
+            start_date = event.date + relativedelta(weeks=+1)
             while start_date <= event.end_date:
                 ChapterEvent.objects.create(name=event.name, date=start_date, time=event.time, location=event.location, 
                                             recurring='Weekly', is_recurrence=True, base_event=event)
                 start_date += relativedelta(weeks=+1)
         if event.recurring == 'Daily' and not event.is_recurrence:
-            start_date = event.start_date + relativedelta(days=+1)
+            start_date = event.date + relativedelta(days=+1)
             while start_date <= event.end_date:
                 ChapterEvent.objects.create(name=event.name, date=start_date, time=event.time, location=event.location, 
                                             recurring='Daily', is_recurrence=True, base_event=event)
@@ -43,7 +43,6 @@ class ChapterEvent(OrgEvent):
                          otherwise false
     """
     recurring = models.CharField(choices=RECURRENCE_CHOICES, max_length=10, default='None')
-    start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     is_recurrence = models.BooleanField(default=False)
     base_event = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL)

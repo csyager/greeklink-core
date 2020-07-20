@@ -93,10 +93,9 @@ def create_chapter_event(request):
             time = form.cleaned_data.get('time')
             location = form.cleaned_data.get('location')
             recurring = form.cleaned_data.get('recurring')
-            start_date = form.cleaned_data.get('start_date')
             end_date = form.cleaned_data.get('end_date')
 
-            ChapterEvent.objects.create_chapter_event(name, date, time, location, recurring, start_date, end_date)
+            ChapterEvent.objects.create_chapter_event(name, date, time, location, recurring, end_date)
 
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         else:
