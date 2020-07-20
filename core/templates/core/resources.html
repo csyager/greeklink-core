@@ -54,17 +54,15 @@
                 <div class="col-md-auto">
                     <div class="card resource-card">
                         {% if not request.user_agent.is_mobile %}
-                        <img class="card-img-top"
-                            {% if file.extension == "txt" %}src="{% static 'core/icons/text_doc_icon.png' %}"
-                            {% elif file.extension == "doc" or file.extension == "docx" %}src="{% static 'core/icons/word_icon.jpg' %}"
-                            {% elif file.extension == "pdf" %}src="{% static 'core/icons/pdf_icon.png' %}"
-                            {% else %}src="{% static 'core/icons/file_icon.png' %}"{% endif %}
-                            alt="No document icon">
+                            {% if file.extension == "txt" %}<i class="fa fa-file-text" aria-hidden="true" style="color: {{ settings.primary_color_theme }}"></i>
+                            {% elif file.extension == "doc" or file.extension == "docx" %}<i class="fa fa-file-word-o" aria-hidden="true" style="color: {{ settings.primary_color_theme }}"></i>
+                            {% elif file.extension == "pdf" %}<i class="fa fa-file-pdf-o" aria-hidden="true" style="color: {{ settings.primary_color_theme }}"></i>
+                            {% else %}<i class="fa fa-file" aria-hidden="true" style="color: {{ settings.primary_color_theme }}"></i>{% endif %}
                         {% endif %}
                         <div class="card-body">
                             <h4 class="card-title">{{ file.name }}</h4>
                             <p class="card-text">{{ file.description }}</p>
-                            <a href="{{ file.file.url }}" class="btn btn-primary" target="_blank">Open File</a>
+                            <a href="{{ file.file.url }}" class="btn btn-primary" target="_blank"><i class="fa fa-folder-open" aria-hidden="true"></i> Open File</a>
                             {% if perms.core.delete_resourcefile %}
                             <br>
                             <br>
@@ -77,12 +75,9 @@
             {% if perms.core.add_resourcefile %}
                 <div class="col-md-auto">
                     <div class="card resource-card">
-                        {% if not request.user_agent.is_mobile %}
-                        <img class="card-img-top" src = "{% static 'core/icons/add_file_icon.png' %}" alt="Add file">
-                        {% endif %}
                         <div class="card-body">
                             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#fileModal">
-                                Upload File
+                                <i class="fa fa-upload" aria-hidden="true"></i> Upload File
                             </button>
                             <!-- Modal -->
                             <div class="modal fade" id="fileModal" tabindex="-1" role="dialog" aria-labelledby="fileModal" aria-hidden="true">
@@ -95,13 +90,19 @@
                                             </button>
                                         </div>
                                         <div class="modal-body">
-                                            <form style="margin-left: 20%; margin-right:20%" method="post" action="uploadfile" enctype="multipart/form-data">
+                                            <form method="post" action="uploadfile" enctype="multipart/form-data">
                                                 {% csrf_token %}
-                                                {% load crispy_forms_tags %}
-                                                <div class="form-group">
-                                                    {{ form.name|as_crispy_field }}
-                                                    {{ form.file|as_crispy_field }}
-                                                    {{ form.description|as_crispy_field }}
+                                                <div class="form-group row">
+                                                    <div class="col-3">{{ form.name.label }}</div>
+                                                    <div class="col-9">{{ form.name }}</div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <div class="col-3">{{ form.file.label }}</div>
+                                                    <div class="col-9">{{ form.file }}</div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <div class="col-3">{{ form.description.label }}</div>
+                                                    <div class="col-9">{{ form.description }}</div>
                                                 </div>
                                         </div>
                                         <div class="modal-footer">
@@ -125,12 +126,12 @@
                 <div class="col-md-auto">
                     <div class="card resource-card">
                         {% if not request.user_agent.is_mobile %}
-                        <img class="card-img-top" src="{% static 'core/icons/url_icon.png' %}" alt="No link icon">
+                        <i class="fa fa-link" aria-hidden="true" style="color: {{ settings.primary_color_theme }}"></i>
                         {% endif %}
                         <div class="card-body">
                             <h4 class="card-title">{{ link.name }}</h4>
                             <p class="card-text">{{ link.description }}</p>
-                            <a href="{{ link.url }}" class="btn btn-primary" target="_blank">Open Link</a>
+                            <a href="{{ link.url }}" class="btn btn-primary" target="_blank"><i class="fa fa-external-link" aria-hidden="true"></i> Open Link</a>
                             {% if perms.core.delete_resourcelink %}
                             <br>
                             <br>
@@ -143,12 +144,9 @@
             {% if perms.core.add_resourcelink %}
                 <div class="col-md-auto">
                     <div class="card resource-card">
-                        {% if not request.user_agent.is_mobile %}
-                        <img class="card-img-top" src = "{% static 'core/icons/add_file_icon.png' %}" alt="Add link">
-                        {% endif %}
                         <div class="card-body">
                             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#linkModal">
-                                Add link
+                                <i class="fa fa-plus-square" aria-hidden="true"></i> Add link
                             </button>
                             <!-- Modal -->
                             <div class="modal fade" id="linkModal" tabindex="-1" role="dialog" aria-labelledby="linkModal" aria-hidden="true">
@@ -161,11 +159,20 @@
                                             </button>
                                         </div>
                                         <div class="modal-body">
-                                            <form style="margin-left: 20%; margin-right:20%" method="post" action="addLink" enctype="multipart/form-data">
+                                            <form method="post" action="addLink" enctype="multipart/form-data">
                                                 {% csrf_token %}
-                                                {{ linkForm.name|as_crispy_field }}
-                                                {{ linkForm.url|as_crispy_field }}
-                                                {{ linkForm.description|as_crispy_field }}
+                                                <div class="form-group row">
+                                                    <div class="col-3">{{ linkForm.name.label }}</div>
+                                                    <div class="col-9">{{ linkForm.name }}</div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <div class="col-3">{{ linkForm.url.label }}</div>
+                                                    <div class="col-9">{{ linkForm.url }}</div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <div class="col-3">{{ linkForm.description.label }}</div>
+                                                    <div class="col-9">{{ linkForm.description }}</div>
+                                                </div>
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

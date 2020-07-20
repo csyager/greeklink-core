@@ -68,6 +68,19 @@ body {
     z-index: 0;
 }
 
+
+/*
+* font-awesome tags from resources page
+*/
+.fa-file-text,
+.fa-file-word-o,
+.fa-file-pdf-o,
+.fa-file,
+.fa-link {
+    font-size: 200px;
+    text-align: center;
+}
+
 .anchor {
     display: block;
     position: relative;
