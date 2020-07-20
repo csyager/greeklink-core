@@ -103,7 +103,7 @@
                 </ul>
                 <br>
                 {% if perms.core.add_socialevent %}
-                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#eventModal">Add Event</button>
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#eventModal"><i class="fa fa-plus" aria-hidden="true"></i> Add Event</button>
                 {% endif %}
             </div>
             <div class="tab-pane fade" id="rosters" role="tabpanel" aria-labelledby="rosters-tab">
@@ -141,7 +141,7 @@
                     {% endfor %}
                 </ul><br>
                 {% if perms.core.add_roster %}
-                <button class="btn btn-primary" data-toggle="modal" data-target="#roster_modal">Add Roster</button>
+                <button class="btn btn-primary" data-toggle="modal" data-target="#roster_modal"><i class="fa fa-plus" aria-hidden="true"></i> Add Roster</button>
                 <!-- add roster modal -->
                 <div class="modal fade" id="roster_modal" tabindex="-1" role="dialog" aria-labelledby="roster_modal_label" aria-hidden="true">
                     <div class="modal-dialog" role="document">
