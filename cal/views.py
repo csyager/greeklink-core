@@ -32,7 +32,7 @@ class Calendar(HTMLCalendar):
             d += f'<div class="alert alert-success alert-calendar"><a href="/rush/events/{event.pk}">{ time } - { event.name }</a></div>'
         for event in chapter_events_per_day:
             time = event.time.strftime("%I:%M %p").lstrip("0")
-            d += f'<div class="alert alert-secondary alert-calendar">{ time } - { event.name }</div>'
+            d += f'<div class="alert alert-secondary alert-calendar"><a href="" data-toggle="modal" data-target="#detailModal_{ event.pk }">{ time } - { event.name }</a></div>'
         if day != 0:
             return f"<td class='day-cell'><span class='date'>{day}</span> <div class='scrollable'>{d}</div></td>"
         return '<td></td>'
@@ -79,6 +79,7 @@ def index(request):
         'prev_month': month -1,
         'next_month': month +1,
         'event_form': ChapterEventForm(),
+        'chapter_events': ChapterEvent.objects.filter(date__month=month)
     }
     return HttpResponse(template.render(context, request))
 
@@ -102,3 +103,11 @@ def create_chapter_event(request):
             return HttpResponse(form.errors)
     else:
         raise Http404
+
+def delete_chapter_event(request, event_id):
+    ChapterEvent.objects.get(pk=event_id).delete()
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+def delete_chapter_event_recursive(request, event_id):
+    ChapterEvent.objects.get(pk=event_id).delete_all()
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))

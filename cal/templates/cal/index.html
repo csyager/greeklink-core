@@ -123,4 +123,89 @@
     </div>
 </div>
 
+<!-- event details modal -->
+{% for event in chapter_events %}
+<div class="modal fade" id="detailModal_{{ event.pk }}" tabindex="-1" role="dialog" aria-labelledby="detailModal_{{ event.pk }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="detailModalLabel_{{ event.pk }}">{{ event.name }}</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-2">
+                        Name
+                    </div>
+                    <div class="col-sm-10">
+                        {{ event.name }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        Date
+                    </div>
+                    <div class="col-sm-10">
+                        {{ event.date }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        Time
+                    </div>
+                    <div class="col-sm-10">
+                        {{ event.time }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        Location
+                    </div>
+                    <div class="col-sm-10">
+                        {{ event.location }}
+                    </div>
+                </div>
+                {% if event.recurring != 'None' %}
+                <div class="row">
+                    <div class="col-sm-2">
+                        Repeats
+                    </div>
+                    <div class="col-sm-10">
+                        {{ event.recurring }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        Starts
+                    </div>
+                    <div class="col-sm-10">
+                        {{ event.start_date }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        Ends
+                    </div>
+                    <div class="col-sm-10">
+                        {{ event.end_date }}
+                    </div>
+                </div>
+                {% endif %}   
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                {% if perms.cal.remove_chapterevent%}
+                <a href="/cal/delete_chapter_event{{ event.pk }}"><button type="button" class="btn btn-warning">Delete event</button></a>
+                {% if event.recurring != 'None' %}
+                <a href="/cal/delete_chapter_event_recursive{{ event.pk }}"><button type="button" class="btn btn-danger">Delete all recurrences</button></a>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
 {% endblock %}
