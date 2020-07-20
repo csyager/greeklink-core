@@ -6,7 +6,7 @@
     <a href="/cal?month={{ curr_month }}&year={{ curr_year }}"><button class="btn btn-secondary btn-sm">Today</button></a>
     <a href="/cal?month={{ next_month }}&year={{ year }}"><button class="btn btn-primary btn-sm"><i class="fa fa-chevron-right" aria-hidden="true"></i></button></a>&nbsp;&nbsp;
     <i class="fa fa-question-circle-o fa-lg" aria-hidden="true" data-toggle="modal" data-target="#helpModal"></i>
-    {% if request.user.is_staff %}
+    {% if perms.cal.add_chapterevent %}
     <span style="float: right">
         <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#eventModal">New Event</button>
     </span>
@@ -15,7 +15,7 @@
     {{ calendar|safe }}
 </div>
 
-{% if request.user.is_staff %}
+{% if perms.cal.add_chapterevent %}
 <!-- new event modal -->
 <div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModal" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -114,7 +114,7 @@
                 <p><span class="alert alert-success calendar-key"> </span> &nbsp;&nbsp;Rush Event</p>
                 <p><span class="alert alert-primary calendar-key"> </span> &nbsp;&nbsp;Social Event</p>
                 <p><span class="alert alert-secondary calendar-key"> </span> &nbsp;&nbsp;Chapter Event</p>
-                <p>Rush and Social Events are added to this calendar automatically as they are created by admins in the Rush and Social tabs.  Click on any event on this page to be redirected to the corresponding event.</p>
+                <p>Rush and Social Events are added to this calendar automatically as they are created by admins in the Rush and Social tabs.  Click on any of these events to be redirected to the corresponding event.  Chapter events are events not associated with rush or social.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
