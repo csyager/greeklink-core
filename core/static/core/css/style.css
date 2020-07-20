@@ -124,14 +124,17 @@ div.alert-calendar {
     white-space: nowrap;
 }
 
-td.day-cell {
-    
-}
-
 div.scrollable {
     width: 100%;
     height: 80%;
     margin: 0;
     padding: 0;
     overflow: auto;    
+}
+
+.calendar-key {
+    padding-top: 0px;
+    padding-bottom: 0px;
+    padding-left: 10px;
+    padding-right: 10px;
 }
