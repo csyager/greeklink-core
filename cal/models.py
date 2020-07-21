@@ -19,19 +19,19 @@ class ChapterEventManager(models.Manager):
             start_date = event.date + relativedelta(months=+1)
             while start_date <= event.end_date:
                 ChapterEvent.objects.create(name=event.name, date=start_date, time=event.time, location=event.location, 
-                                            recurring='Monthly', is_recurrence=True, base_event=event)
+                                            recurring='Monthly', is_recurrence=True, end_date=event.end_date, base_event=event)
                 start_date += relativedelta(months=+1)
         if event.recurring == 'Weekly' and not event.is_recurrence:
             start_date = event.date + relativedelta(weeks=+1)
             while start_date <= event.end_date:
                 ChapterEvent.objects.create(name=event.name, date=start_date, time=event.time, location=event.location, 
-                                            recurring='Weekly', is_recurrence=True, base_event=event)
+                                            recurring='Weekly', is_recurrence=True, end_date=event.end_date, base_event=event)
                 start_date += relativedelta(weeks=+1)
         if event.recurring == 'Daily' and not event.is_recurrence:
             start_date = event.date + relativedelta(days=+1)
             while start_date <= event.end_date:
                 ChapterEvent.objects.create(name=event.name, date=start_date, time=event.time, location=event.location, 
-                                            recurring='Daily', is_recurrence=True, base_event=event)
+                                            recurring='Daily', is_recurrence=True, end_date=event.end_date, base_event=event)
                 start_date += relativedelta(days=+1)
         return event
 
@@ -46,17 +46,20 @@ class ChapterEvent(OrgEvent):
     recurring = models.CharField(choices=RECURRENCE_CHOICES, max_length=10, default='None')
     end_date = models.DateField(null=True, blank=True)
     is_recurrence = models.BooleanField(default=False)
-    base_event = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL)
+    base_event = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='children')
 
     def delete(self, *args, **kwargs):
         """ overrides delete method to fit recurrence """
         if self.recurring != 'None' and not self.is_recurrence:     # is base event
-            new_base = ChapterEvent.objects.filter(base_event=self).order_by('date')[0]
-            new_base.is_recurrence = False
-            new_base.save()
-            for event in ChapterEvent.objects.filter(base_event=self):
-                event.base_event = new_base
-                event.save()
+            try:
+                new_base = ChapterEvent.objects.filter(base_event=self).order_by('date')[0]
+                new_base.is_recurrence = False
+                new_base.save()
+                for event in ChapterEvent.objects.filter(base_event=self):
+                    event.base_event = new_base
+                    event.save()
+            except IndexError:
+                pass
         super().delete(*args, **kwargs)
 
     def delete_all(self, *args, **kwargs):

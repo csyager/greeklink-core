@@ -128,11 +128,19 @@
             </div>
             <div class="modal-body">
                 <div class="row">
+                    {% if perms.cal.change_chapterevent %}
+                    <form method="post" action="/cal/edit_chapter_event{{ event.pk }}">
+                    {% csrf_token %}
+                    {% endif %}
                     <div class="col-sm-2">
                         Name
                     </div>
                     <div class="col-sm-10">
+                        {% if perms.cal.change_chapterevent %}
+                        <input type="text" name="name" class="form-control rounded" value="{{ event.name }}">
+                        {% else %}
                         {{ event.name }}
+                        {% endif %}
                     </div>
                 </div>
                 <div class="row">
@@ -140,7 +148,11 @@
                         Date
                     </div>
                     <div class="col-sm-10">
+                        {% if perms.cal.change_chapterevent %}
+                        <input type="date" name="date" class="form-control rounded" value="{{ event.date|date:"Y-m-d" }}">
+                        {% else %}
                         {{ event.date }}
+                        {% endif %}
                     </div>
                 </div>
                 <div class="row">
@@ -148,7 +160,11 @@
                         Time
                     </div>
                     <div class="col-sm-10">
+                        {% if perms.cal.change_chapterevent %}
+                        <input type="time" name="time" class="form-control rounded" value="{{ event.time|time:"H:i:s" }}">
+                        {% else %}
                         {{ event.time }}
+                        {% endif %}
                     </div>
                 </div>
                 <div class="row">
@@ -156,10 +172,14 @@
                         Location
                     </div>
                     <div class="col-sm-10">
+                        {% if perms.cal.change_chapterevent %}
+                        <input type="text" name="location" class="form-control rounded" value="{{ event.location }}">
+                        {% else %}
                         {{ event.location }}
+                        {% endif %}
                     </div>
                 </div>
-                {% if event.recurring != 'None' %}
+                {% if event.recurring != 'None' and not perms.cal.change_chapterevent %}
                 <div class="row">
                     <div class="col-sm-2">
                         Repeats
@@ -176,11 +196,40 @@
                         {{ event.end_date }}
                     </div>
                 </div>
+                {% elif perms.cal.change_chapterevent %}
+                <div class="row">
+                    <div class="col-sm-2">
+                        Repeats
+                    </div>
+                    <div class="col-sm-10">
+                        <select name="recurring" class='form-control rounded' value="{{ event.recurring }}">
+                            <option value="None" {% if event.recurring == 'None' %}selected{% endif %}>None</option>
+                            <option value="Monthly"{% if event.recurring == 'Monthly' %}selected{% endif %}>Monthly</option>
+                            <option value="Weekly"{% if event.recurring == 'Weekly' %}selected{% endif %}>Weekly</option>
+                            <option value="Daily"{% if event.recurring == 'Daily' %}selected{% endif %}>Daily</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        Ends 
+                    </div>
+                    <div class="col-sm-10">
+                        <input type="date" name="end_date" class="form-control rounded" value="{{ event.end_date|date:"Y-m-d" }}">
+                    </div>
+                </div>
                 {% endif %}   
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                {% if perms.cal.remove_chapterevent%}
+                {% if perms.cal.change_chapterevent %}
+                <button type="submit" name="action" value="singular" class="btn btn-primary">Edit event</button>
+                {% if event.recurring != 'None' %}
+                <button type="submit" name="action" value="recursive" class="btn btn-success">Edit all recurrences</button></a>
+                {% endif %}
+                </form>
+                {% endif %}
+                {% if perms.cal.remove_chapterevent %}
                 <a href="/cal/delete_chapter_event{{ event.pk }}"><button type="button" class="btn btn-warning">Delete event</button></a>
                 {% if event.recurring != 'None' %}
                 <a href="/cal/delete_chapter_event_recursive{{ event.pk }}"><button type="button" class="btn btn-danger">Delete all recurrences</button></a>
