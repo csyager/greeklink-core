@@ -7,7 +7,7 @@ from django.core.files import File
 from django.template import loader
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponse, HttpResponseRedirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
 from django.http import Http404
 from core.views import getSettings
@@ -245,7 +245,7 @@ def event(request, event_id):
     return HttpResponse(template.render(context, request))
 
 
-@staff_member_required
+@permission_required('rush.add_rushevent')
 def create_event(request):
     """ creates a new RushEvent object """
     if request.method == 'POST':
@@ -265,7 +265,7 @@ def create_event(request):
     else:
         raise Http404
 
-@staff_member_required
+@permission_required('rush.delete_rushevent')
 def remove_event(request, event_id):
     """ deletes a RushEvent object
         event_id -- primary key of event being deleted
@@ -327,7 +327,7 @@ def post_comment(request, rushee_id):
         return HttpResponse("Comment not recorded.")
 
 
-@staff_member_required
+@permission_required('rush.delete_comment')
 def remove_comment(request, comment_id):
     """ deletes a comment, removing it from the rushee's page
         comment_id -- primary key of comment being delete
@@ -416,7 +416,7 @@ def vote(request, rushee_id, value):
                                  "opened by an admin before votes will be recorded."))
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-@staff_member_required
+@permission_required('rush.change_rushee')
 def push_rushee(request, rushee_id):
     """ push a rushee from the current voting round to the next one
         rushee_id -- primary key of rushee being pushed
@@ -442,7 +442,7 @@ def push_rushee(request, rushee_id):
     return HttpResponseRedirect(next_url)
 
 
-@staff_member_required
+@permission_required('rush.change_rushee')
 def cut_rushee(request, rushee_id):
     """ cut a rushee, setting cut equal to the round they were cut in
         rushee_id -- primary key of rushee being cut
@@ -466,7 +466,7 @@ def cut_rushee(request, rushee_id):
 
     return HttpResponseRedirect(next_url)
 
-@staff_member_required
+@permission_required('rush.change_rushee')
 def votepage(request, rushee_id):
     """ opens voting, displays a timer to show that voting is open, then redirects to results
         rushee_id -- primary key of rushee being voted on
@@ -484,7 +484,7 @@ def votepage(request, rushee_id):
     }
     return HttpResponse(template.render(context, request))
 
-@staff_member_required
+@permission_required('rush.view_rushee')
 def results(request, rushee_id):
     """ shows results of voting on a rushee
         rushee_id -- primary key of rushee whose results are being viewed
@@ -500,7 +500,7 @@ def results(request, rushee_id):
     }
     return HttpResponse(template.render(context, request))
 
-@staff_member_required
+@permission_required('rush.change_rushee')
 def reset(request, rushee_id):
     """ resets votes cast on a rushee
         rushee_id -- primary key of rushee whose votes are being reset
