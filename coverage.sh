@@ -3,7 +3,7 @@
 # erase existing coverage report
 coverage erase
 # run new coverage report
-coverage run manage.py test core rush
+coverage run manage.py test core rush cal
 coverage html
 # open results in web browser
 python -m webbrowser htmlcov/index.html

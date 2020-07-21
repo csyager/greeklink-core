@@ -1,0 +1,244 @@
+{% extends 'core/base.html' %}
+{% block content %}
+{% load static %}
+<div class="container calendar-div"><br>
+    <a href="/cal?month={{ prev_month }}&year={{ year }}"><button class="btn btn-primary btn-sm"><i class="fa fa-chevron-left" aria-hidden="true"></i></button></a>
+    <a href="/cal?month={{ curr_month }}&year={{ curr_year }}"><button class="btn btn-secondary btn-sm">Today</button></a>
+    <a href="/cal?month={{ next_month }}&year={{ year }}"><button class="btn btn-primary btn-sm"><i class="fa fa-chevron-right" aria-hidden="true"></i></button></a>&nbsp;&nbsp;
+    <i class="fa fa-question-circle-o fa-lg" aria-hidden="true" data-toggle="modal" data-target="#helpModal"></i>
+    {% if perms.cal.add_chapterevent %}
+    <span style="float: right">
+        <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#eventModal">New Event</button>
+    </span>
+    {% endif %}
+    <br>
+    {{ calendar|safe }}
+</div>
+
+{% if perms.cal.add_chapterevent %}
+<!-- new event modal -->
+<div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="eventModalLabel">New Chapter Event</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="/cal/create_chapter_event" method="post">
+                    {% csrf_token %}
+                    <div class="form-group row">
+                        <div class="col-sm-2 col-form-label">
+                            {{ event_form.name.label }}
+                        </div>
+                        <div class="col-sm-10">
+                            {{ event_form.name }}
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-2 col-form-label">
+                            {{ event_form.date.label }}
+                        </div>
+                        <div class="col-sm-10">
+                            {{ event_form.date }}
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-2 col-form-label">
+                            {{ event_form.time.label }}
+                        </div>
+                        <div class="col-sm-10">
+                            {{ event_form.time }}
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-2 col-form-label">
+                            {{ event_form.location.label }}
+                        </div>
+                        <div class="col-sm-10">
+                            {{ event_form.location }}
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-2 col-form-label">
+                            {{ event_form.recurring.label }}
+                        </div>
+                        <div class="col-sm-10">
+                            {{ event_form.recurring }}
+                        </div>
+                    </div>
+                    <div id="recurrence_options_div" class="collapse">
+                        <div class="form-group row">
+                            <div class="col-sm-2 col-form-label">
+                                {{ event_form.end_date.label }}
+                            </div>
+                            <div class="col-sm-10">
+                                {{ event_form.end_date }}
+                            </div>
+                        </div>
+                    </div>    
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Save changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{% static 'cal/js/reveal_recurrence_options.js' %}"></script>
+
+{% endif %}
+
+<!-- help modal -->
+<div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="helpModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="helpModalLabel">Calendar Help</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><span class="alert alert-success calendar-key"> </span> &nbsp;&nbsp;Rush Event</p>
+                <p><span class="alert alert-primary calendar-key"> </span> &nbsp;&nbsp;Social Event</p>
+                <p><span class="alert alert-secondary calendar-key"> </span> &nbsp;&nbsp;Chapter Event</p>
+                <p>Rush and Social Events are added to this calendar automatically as they are created by admins in the Rush and Social tabs.  Click on any of these events to be redirected to the corresponding event.  Chapter events are events not associated with rush or social.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- event details modal -->
+{% for event in chapter_events %}
+<div class="modal fade" id="detailModal_{{ event.pk }}" tabindex="-1" role="dialog" aria-labelledby="detailModal_{{ event.pk }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="detailModalLabel_{{ event.pk }}">{{ event.name }}</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    {% if perms.cal.change_chapterevent %}
+                    <form method="post" action="/cal/edit_chapter_event{{ event.pk }}">
+                    {% csrf_token %}
+                    {% endif %}
+                    <div class="col-sm-2">
+                        Name
+                    </div>
+                    <div class="col-sm-10">
+                        {% if perms.cal.change_chapterevent %}
+                        <input type="text" name="name" class="form-control rounded" value="{{ event.name }}">
+                        {% else %}
+                        {{ event.name }}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        Date
+                    </div>
+                    <div class="col-sm-10">
+                        {% if perms.cal.change_chapterevent %}
+                        <input type="date" name="date" class="form-control rounded" value="{{ event.date|date:"Y-m-d" }}">
+                        {% else %}
+                        {{ event.date }}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        Time
+                    </div>
+                    <div class="col-sm-10">
+                        {% if perms.cal.change_chapterevent %}
+                        <input type="time" name="time" class="form-control rounded" value="{{ event.time|time:"H:i:s" }}">
+                        {% else %}
+                        {{ event.time }}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        Location
+                    </div>
+                    <div class="col-sm-10">
+                        {% if perms.cal.change_chapterevent %}
+                        <input type="text" name="location" class="form-control rounded" value="{{ event.location }}">
+                        {% else %}
+                        {{ event.location }}
+                        {% endif %}
+                    </div>
+                </div>
+                {% if event.recurring != 'None' and not perms.cal.change_chapterevent %}
+                <div class="row">
+                    <div class="col-sm-2">
+                        Repeats
+                    </div>
+                    <div class="col-sm-10">
+                        {{ event.recurring }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        Ends
+                    </div>
+                    <div class="col-sm-10">
+                        {{ event.end_date }}
+                    </div>
+                </div>
+                {% elif perms.cal.change_chapterevent %}
+                <div class="row">
+                    <div class="col-sm-2">
+                        Repeats
+                    </div>
+                    <div class="col-sm-10">
+                        <select name="recurring" class='form-control rounded' value="{{ event.recurring }}">
+                            <option value="None" {% if event.recurring == 'None' %}selected{% endif %}>None</option>
+                            <option value="Monthly"{% if event.recurring == 'Monthly' %}selected{% endif %}>Monthly</option>
+                            <option value="Weekly"{% if event.recurring == 'Weekly' %}selected{% endif %}>Weekly</option>
+                            <option value="Daily"{% if event.recurring == 'Daily' %}selected{% endif %}>Daily</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        Ends 
+                    </div>
+                    <div class="col-sm-10">
+                        <input type="date" name="end_date" class="form-control rounded" value="{{ event.end_date|date:"Y-m-d" }}">
+                    </div>
+                </div>
+                {% endif %}   
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                {% if perms.cal.change_chapterevent %}
+                <button type="submit" name="action" value="singular" class="btn btn-primary">Edit event</button>
+                {% if event.recurring != 'None' %}
+                <button type="submit" name="action" value="recursive" class="btn btn-success">Edit all recurrences</button></a>
+                {% endif %}
+                </form>
+                {% endif %}
+                {% if perms.cal.remove_chapterevent %}
+                <a href="/cal/delete_chapter_event{{ event.pk }}"><button type="button" class="btn btn-warning">Delete event</button></a>
+                {% if event.recurring != 'None' %}
+                <a href="/cal/delete_chapter_event_recursive{{ event.pk }}"><button type="button" class="btn btn-danger">Delete all recurrences</button></a>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
