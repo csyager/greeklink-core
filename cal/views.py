@@ -144,21 +144,3 @@ def edit_chapter_event(request, event_id):
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
     else:
         raise Http404
-
-# @permission_required('cal.change_chapterevet')
-# def edit_chapter_event_recursive(request, event_id):
-#     """ edits all events in a recursion chain by deleting all and recreating them
-#         event_id -- primary key of event being edited
-#     """
-#     if request.method == "POST":
-#         ChapterEvent.objects.get(pk=event_id).delete_all()
-#         name = request.POST.get('name')
-#         date = request.POST.get('date')
-#         time = request.POST.get('time')
-#         location = request.POST.get('location')
-#         recurring = request.POST.get('recurring')
-#         end_date = request.POST.get('end_date')
-#         ChapterEvent.objects.create_chapter_event(name=name, date=date, time=time, location=location, recurring=recurring, end_date=end_date)
-#         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-#     else:
-#         raise Http404
