@@ -11,11 +11,11 @@ from .forms import ChapterEventForm
 class CalendarTestCase(TestCase):
     """ tests basic appearance and functionality of calendar """
     def setUp(self):
-        self.user = User.objects.create(username='test')
+        self.user = User.objects.create(username='test', is_superuser=True, is_staff=True)
         self.client.force_login(self.user)
         self.rush_event = RushEvent.objects.create(name="rush_test", date=datetime.today(), time=datetime.now(), location="test")
         self.social_event = SocialEvent.objects.create(name="social_test", date=datetime.today(), time=datetime.now(), location="test")
-        self.chapter_event = ChapterEvent.objects.create(name="chapter_test", date=datetime.today(), time=datetime.now(), location="test")
+        self.chapter_event = ChapterEvent.objects.create_chapter_event(name="chapter_test", date=datetime.today(), time=datetime.now(), location="test")
     
     def test_calendar_template(self):
         """ tests that the current month appears by default """
@@ -44,10 +44,10 @@ class CalendarTestCase(TestCase):
 
     def test_chapter_event_recurrence(self):
         """ tests that chapter events are recurring properly """
-        ChapterEvent.objects.create_chapter_event(name="recurrence_test", date=datetime.today(), time=datetime.now(), location="test", recurring='Daily', start_date=datetime.today(), end_date=datetime.today()+relativedelta(days=+1))
+        event = ChapterEvent.objects.create_chapter_event(name="recurrence_test", date=datetime.today(), time=datetime.now(), location="test", recurring='Daily', end_date=datetime.today()+relativedelta(days=+1))
         path = reverse('cal:index')
         response = self.client.post(path)
-        self.assertContains(response, "recurrence_test", count=2)
+        self.assertContains(response, 'recurrence_test', count=6)   # 2 events on calendar, 2 modal titles, 2 in modal details
 
     def test_month_overlap(self):
         """ tests that going to next month from december will run back to january """
@@ -77,7 +77,6 @@ class CalendarTestCase(TestCase):
             'date': datetime.date(datetime.today()),
             'time': '12:00',
             'recurring': 'None',
-            'start_date': '',
             'end_date': ''
         }
         path = reverse('cal:create_chapter_event')
@@ -93,7 +92,6 @@ class CalendarTestCase(TestCase):
             'date': '',
             'time': '12:00',
             'recurring': 'None',
-            'start_date': '',
             'end_date': ''
         }   # date is a required field
         form = ChapterEventForm(post_data)
@@ -111,7 +109,6 @@ class CalendarTestCase(TestCase):
             'date': datetime.date(datetime.today()),
             'time': '12:00',
             'recurring': 'Daily',
-            'start_date': '',
             'end_date': ''
         }   # end date is required if event is recurrent
         form = ChapterEventForm(post_data)
@@ -119,7 +116,7 @@ class CalendarTestCase(TestCase):
         path = reverse('cal:create_chapter_event')
         referer = reverse('cal:index')
         response = self.client.post(path, post_data, HTTP_REFERER=referer, follow=True)
-        self.assertContains(response, b'start_dateend_date')
+        self.assertContains(response, b'end_date')
 
     def test_create_chapter_event_get(self):
         """ test using get method on create_chapter_event """
@@ -127,3 +124,68 @@ class CalendarTestCase(TestCase):
         referer = reverse('cal:index')
         response = self.client.get(path, HTTP_REFERER=referer, follow=True)
         self.assertEqual(response.status_code, 404)
+
+
+class DeleteChapterEventsTestCase(TestCase):
+    """ tests deleting Chapter Events, both singularly and recursively """
+    def setUp(self):
+        self.user = User.objects.create(username="test", is_superuser=True, is_staff=True)
+        self.client.force_login(self.user)
+        self.singular = ChapterEvent.objects.create_chapter_event(name="singular event", date=datetime.today(), time=datetime.now(), location="test")
+        self.recurring = ChapterEvent.objects.create_chapter_event(name="recurring event", date=datetime.today(), time=datetime.now(), location="test",
+                                                     recurring='Daily', end_date=datetime.today()+relativedelta(days=+5))
+
+
+    def test_single_delete(self):
+        """ tests deleting single event """
+        path = reverse('cal:delete_chapter_event', kwargs=dict(event_id=self.singular.pk))
+        referer = reverse('cal:index')
+        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        self.assertNotContains(response, 'singular event')
+        try:
+            ChapterEvent.objects.get(id=self.singular.pk)
+            self.fail('event matching query should have been deleted')
+        except ChapterEvent.DoesNotExist:
+            pass
+
+    def test_recursive_delete_first(self):
+        """ tests deleting multiple events recursively by deleting first """
+        path = reverse('cal:delete_chapter_event_recursive', kwargs=dict(event_id=self.recurring.pk))
+        referer = reverse('cal:index')
+        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        self.assertNotContains(response, 'recurring event')
+        try:
+            ChapterEvent.objects.get(name='recurring event')
+            self.fail('event matching query should have been deleted')
+        except ChapterEvent.DoesNotExist:
+            pass
+
+    def test_recursive_delete_middle(self):
+        """ tests deleting multiple events recursively by deleting non-first event """
+        event = ChapterEvent.objects.filter(name="recurring event")[1]
+        path = reverse('cal:delete_chapter_event_recursive', kwargs=dict(event_id=event.pk))
+        referer = reverse('cal:index')
+        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        self.assertNotContains(response, 'recurring event')
+        try:
+            ChapterEvent.objects.get(name='recurring event')
+            self.fail('event matching query should have been deleted')
+        except ChapterEvent.DoesNotExist:
+            pass
+
+    def test_single_delete_then_recursive(self):
+        """ tests deleting the first element singularly, then the rest recursively """
+        event = ChapterEvent.objects.filter(name="recurring event")[0]
+        path = reverse('cal:delete_chapter_event', kwargs=dict(event_id=event.pk))
+        referer = reverse('cal:index')
+        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        new_first = ChapterEvent.objects.filter(name="recurring event")[0]
+        path = reverse('cal:delete_chapter_event_recursive', kwargs=dict(event_id=new_first.pk))
+        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        self.assertNotContains(response, 'recurring event')
+        try:
+            ChapterEvent.objects.get(name='recurring event')
+            self.fail('event matching query should have been deleted')
+        except ChapterEvent.DoesNotExist:
+            pass
+

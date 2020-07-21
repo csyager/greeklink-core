@@ -83,7 +83,7 @@ def index(request):
     }
     return HttpResponse(template.render(context, request))
 
-
+@permission_required('cal.add_chapterevent')
 def create_chapter_event(request):
     if request.method == 'POST':
         form = ChapterEventForm(request.POST)
@@ -103,10 +103,12 @@ def create_chapter_event(request):
     else:
         raise Http404
 
+@permission_required('cal.delete_chapterevent')
 def delete_chapter_event(request, event_id):
     ChapterEvent.objects.get(pk=event_id).delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
+@permission_required('cal.delete_chapterevent')
 def delete_chapter_event_recursive(request, event_id):
     ChapterEvent.objects.get(pk=event_id).delete_all()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))

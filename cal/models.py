@@ -13,7 +13,7 @@ RECURRENCE_CHOICES = [
 ]
 
 class ChapterEventManager(models.Manager):
-    def create_chapter_event(self, name, date, time, location, recurring, end_date):
+    def create_chapter_event(self, name, date, time, location, recurring='None', end_date=None):
         event = self.create(name=name, date=date, time=time, location=location, recurring=recurring, end_date=end_date)
         if event.recurring == 'Monthly' and not event.is_recurrence:
             start_date = event.date + relativedelta(months=+1)
@@ -33,6 +33,7 @@ class ChapterEventManager(models.Manager):
                 ChapterEvent.objects.create(name=event.name, date=start_date, time=event.time, location=event.location, 
                                             recurring='Daily', is_recurrence=True, base_event=event)
                 start_date += relativedelta(days=+1)
+        return event
 
 class ChapterEvent(OrgEvent):
     """ OrgEvent representing a miscellaneous chapter event.
