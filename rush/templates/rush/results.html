@@ -9,7 +9,7 @@
         </div>
         <div class="col-md-8">
             <h1 class="display-4">{{ rushee.name }}</h1>
-            {% if user.is_superuser %}
+            {% if perms.rush.change_rushee %}
             <br>
             <br>
             <a href="/rush/votepage{{ rushee.id }}"><button class="btn btn-primary" style="width: 183px">Re-Open Voting</button></a><br><br>
@@ -61,7 +61,7 @@
     </table>
     {% endfor %}
     {% endif %}
-    {% if user.is_superuser %}
+    {% if perms.rush.change_rushee %}
     <a href="/rush/voting/reset{{ rushee.id }}"><button class="btn btn-danger">Reset votes</button></a>
     {% endif %}
 
