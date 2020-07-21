@@ -444,7 +444,7 @@ def roster(request, roster_id):
     template = loader.get_template('core/roster.html')    
     return HttpResponse(template.render(context, request))
 
-@staff_member_required
+@permission_required('core.change_roster')
 def edit_roster(request, roster_id):
     if request.method == 'POST':
         roster = Roster.objects.get(id=roster_id)
@@ -465,14 +465,14 @@ def edit_roster(request, roster_id):
     else:
         raise Http404
 
-@staff_member_required
+@permission_required('core.change_roster')
 def remove_from_roster(request, roster_id, member_id):
     roster = Roster.objects.get(id=roster_id)
     roster.members.filter(pk=member_id).delete()
     roster.save()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-@staff_member_required
+@permission_required('core.change_roster')
 def add_roster_to_events(request, roster_id):
     if request.method == 'POST':
         roster = Roster.objects.get(id=roster_id)
@@ -618,7 +618,7 @@ def export_xls(request, event_id):
     wb.save(response)
     return response
 
-@staff_member_required
+@permission_required('core.add_roster')
 def save_as_roster(request, event_id):
     if request.method == 'POST':
         event = SocialEvent.objects.get(id=event_id)
@@ -636,7 +636,7 @@ def save_as_roster(request, event_id):
         raise Http404
 
 
-@staff_member_required
+@permission_required('core.add_roster')
 def create_roster(request):
     if request.method == 'POST':
         title = request.POST.get('title')
@@ -654,7 +654,7 @@ def create_roster(request):
     else:
         return HttpResponseNotFound(request)
 
-@staff_member_required
+@permission_required('core.delete_roster')
 def remove_roster(request, roster_id):
     Roster.objects.get(pk=roster_id).delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))

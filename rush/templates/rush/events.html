@@ -9,7 +9,7 @@
         {% endfor %}
     </div>
     <br>
-    {% if user.is_superuser %}
+    {% if perms.rush.add_rushevent %}
     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#eventModal">Add Event</button>
     <!-- Modal -->
     <div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModal" aria-hidden="true">

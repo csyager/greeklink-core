@@ -432,7 +432,7 @@ class VotingTestCase(TestCase):
     """ tests voting functions """
     def setUp(self):
         self.rushee = Rushee.objects.create(name="test_rushee", voting_open=True)
-        self.user = User.objects.create(username="test_user", is_staff=True)
+        self.user = User.objects.create(username="test_user", is_staff=True, is_superuser=True)
         self.client.force_login(self.user)
 
     def test_vote_function_y(self):
