@@ -161,7 +161,7 @@
                     </div>
                     <div class="col-sm-10">
                         {% if perms.cal.change_chapterevent %}
-                        <input type="time" name="time" class="form-control rounded" value="{{ event.time|time:"H:i:s" }}">
+                        <input type="time" name="time" class="form-control rounded" placeholder="HH:mm in 24-hour time" value="{{ event.time|time:"H:i:s" }}">
                         {% else %}
                         {{ event.time }}
                         {% endif %}
