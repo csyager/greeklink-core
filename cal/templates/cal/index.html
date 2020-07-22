@@ -149,7 +149,7 @@
                     </div>
                     <div class="col-sm-10">
                         {% if perms.cal.change_chapterevent %}
-                        <input type="date" name="date" class="form-control rounded" value="{{ event.date|date:"Y-m-d" }}">
+                        <input type="date" name="date" class="form-control rounded" placeholder="YYYY-mm-dd" value="{{ event.date|date:"Y-m-d" }}">
                         {% else %}
                         {{ event.date }}
                         {% endif %}
@@ -215,7 +215,7 @@
                         Ends 
                     </div>
                     <div class="col-sm-10">
-                        <input type="date" name="end_date" class="form-control rounded" value="{{ event.end_date|date:"Y-m-d" }}">
+                        <input type="date" name="end_date" class="form-control rounded" placeholder="YYYY-mm-dd" value="{{ event.end_date|date:"Y-m-d" }}">
                     </div>
                 </div>
                 {% endif %}   
