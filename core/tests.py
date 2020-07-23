@@ -261,21 +261,6 @@ class ResourcesTestCaseAdmin(TestCase):
         self.admin = User.objects.create(username="admin", is_superuser=True, is_staff=True)
         self.client.force_login(self.admin)
 
-    # tests that for an admin user the alert giving the option to load a google calendar appears
-    def test_admin_load_link_alert(self):
-        path = reverse('resources')
-        response = self.client.post(path)
-        self.assertContains(response, "No Google Calendar loaded!")
-
-    # tests that adding a google calendar makes the alert disappear
-    def test_google_calendar_alert_disappears(self):
-        settings = getSettings()
-        settings.calendar_embed = 'cal_link_here'
-        settings.save()
-        path = reverse('resources')
-        response = self.client.post(path)
-        self.assertNotContains(response, "No Google Calendar loaded!")
-
     # tests that all admin options appear on the resources page
     def test_admin_controls(self):
         settings = getSettings()
@@ -283,9 +268,8 @@ class ResourcesTestCaseAdmin(TestCase):
         settings.save()
         path = reverse('resources')
         response = self.client.post(path)
-        self.assertContains(response, "Remove Calendar")
         self.assertContains(response, "Upload File")
-        self.assertContains(response, "Add link")
+        self.assertContains(response, "Add Link")
         self.assertContains(response, "modal")
     
     # tests resource file upload form
