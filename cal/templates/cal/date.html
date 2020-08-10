@@ -1,0 +1,25 @@
+{% extends 'core/base.html' %}
+{% block content %}
+{% load static %}
+<br>
+<div class="container">
+    <h1>{{ date }}</h1><br>
+    <a href="/cal/date/{{prev_date.year}}/{{prev_date.month}}/{{prev_date.day}}"><button class="btn btn-primary btn-sm"><i class="fa fa-chevron-left" aria-hidden="true"></i></button></a>&nbsp;
+    <a href="/cal/date/{{today.year}}/{{today.month}}/{{today.day}}"><button class="btn btn-secondary btn-sm">Today</button></a>&nbsp;
+    <a href="/cal/date/{{next_date.year}}/{{next_date.month}}/{{next_date.day}}"><button class="btn btn-primary btn-sm"><i class="fa fa-chevron-right" aria-hidden="true"></i></button></a><br>
+    <a href="/cal"><button class="btn btn-danger btn-sm" style="margin-top: 15px">Back to calendar</button></a>
+    <hr>
+    {% if all_events %}
+        <ul class="list-group">  
+            {% for event in all_events %}
+            <li class="list-group-item">
+                <a href="{{ event.get_url }}">{{ event.name }}</a> -- {{ event.time }}<br>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <b><i>No events today</i></b>
+    {% endif %}
+</div>
+
+{% endblock %}
