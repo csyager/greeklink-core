@@ -13,7 +13,8 @@
         <ul class="list-group">  
             {% for event in all_events %}
             <li class="list-group-item">
-                <a href="{{ event.get_url }}">{{ event.name }}</a> -- {{ event.time }}<br>
+                <a href="{{ event.get_url }}">{{ event.name }}</a> -- {{ event.time }}
+                <br>
             </li>
             {% endfor %}
         </ul>

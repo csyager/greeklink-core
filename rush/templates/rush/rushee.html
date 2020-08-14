@@ -218,32 +218,38 @@
 
 <div class="jumbotron" style="padding-left: 10%">
     <div class="row">
-        <div class="col-md-4">
+        <div class="col-6">
             <div class="embed-responsive embed-responsive-4by3">
                 <img class="embed-responsive-item rounded" src="{% if rushee.profile_picture %}{{ rushee.profile_picture.url }}{% endif %}" style="background-color: grey; text-align: center" alt="No profile picture.">
             </div>
+            <div class="row" style="padding-top: 10px; margin: auto">
+                <div style="text-align: left; padding-right: 5px;">
+                    {% if prev_url != "" %}
+                    <a href="{{ prev_url }}" id="prev-rushee"><button class="btn btn-success"><i class="fa fa-arrow-left"></i></button></a>
+                    {% else %}
+                    <button class="btn btn-success disabled" disabled><i class="fa fa-arrow-left"></i></button>
+                    {% endif %}
+                </div>
+                <div style="text-align: center;">
+                    <a href="/rush/current_rushees"><button class="btn btn-secondary" style="">List</button></a>
+                </div>
+                <div style="text-align: right; padding-left: 5px;">
+                    {% if next_url != "" %}
+                    <a href="{{ next_url }}" id="next-rushee"><button class="btn btn-success"><i class="fa fa-arrow-right"></i></button></a>
+                    {% else %}
+                    <button class="btn btn-success disabled" disabled><i class="fa fa-arrow-right"></i></button>
+                    {% endif %}
+                </div>
+            </div>
 
         </div>
-        <div class="col-md-4">
-            <h1 class="display-4">{{ rushee.name }}</h1>
-            {% if perms.rush.change_rushee %}
-            <br>
-            <br>
-            <a href="/rush/votepage{{ rushee.id }}"><button class="btn btn-primary" style="width: 183">Open Voting</button></a><br><br>
-            <a href="/rush/rushee{{ rushee.id }}/push"><button class="btn btn-success">Send Through</button></a>
-            <a href="/rush/rushee{{ rushee.id }}/cut"><button class="btn btn-danger">Cut</button></a><br><br>
-            {% endif %}
-            <a href="/rush/endorse{{ rushee.id }}"><button class="btn btn-success">Endorse</button></a>&nbsp;&nbsp;
-            <a href="/rush/oppose{{ rushee.id }}"><button class="btn btn-danger">Oppose</button></a><br><br>
+        <div class="col-6">
+            <h3>{{ rushee.name }}</h3>
+            <a href="/rush/endorse{{ rushee.id }}"><button class="btn btn-success" style="width: 45%; font-size: 15px; padding-left: 5px; padding-right: 5px">Endorse</button></a>
+            <a href="/rush/oppose{{ rushee.id }}"><button class="btn btn-danger" style="width: 45%; font-size: 15px; padding-left: 5px; padding-right: 5px">Oppose</button></a><br><br>
             <a href="/rush/clear_endorsement{{ rushee.id }}"><button class="btn btn-primary">Reset</button></a>
         </div>
-        <div class="col-md-4">
-            {% if from_voting %}
-            <a href="{{ next_url }}"><button class="btn btn-success">Next rushee </button></a>
-            {% endif %}
-            <br>
-            <br>
-            <br>
+        <div class="">
             <br>
             <h2>Endorsements:  {{ rushee.endorsements.count }}</h2>
             <h2>Opposition:  {{ rushee.oppositions.count }}</h2>
@@ -262,7 +268,27 @@
 {% endif %}
 <div id="rusheeCarousel" class="carousel slide" data-ride="carousel" data-interval="false">
   <div class="carousel-inner">
+    {% if perms.rush.change_rushee %}
     <div class="carousel-item active">
+        <div class="container">
+            <div class="row">
+                <div class="col col-md-6">
+                    <a href="/rush/votepage{{ rushee.id }}"><button class="btn btn-primary btn-block"><br><br><br><h1 style="font-size: 8vw"><b>Open Voting</b></h1><br><br><br></button></a>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col col-md-6">
+                    <a href="/rush/rushee{{ rushee.id }}/push"><button class="btn btn-success btn-block"><br><br><br><h1 style="font-size: 6.7vw"><b>Send Through</b></h1><br><br></button></a>
+                </div>
+                <div class="col col-md-6">
+                    <a href="/rush/rushee{{ rushee.id }}/cut"><button class="btn btn-danger btn-block"><br><br><br><h1 style="font-size: 8vw"><b>Cut</b></h1><br><br><br></button></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <div class="carousel-item {% if not perms.rush.change_rushee %} active {% endif %}">
       <div class="container">
           <div class="row">
               <div class="col col-md-6">
@@ -272,7 +298,6 @@
                   <a href="/vote{{ rushee.id }}/n"><button class="btn btn-danger btn-block"><br><br><br><h1><b>No</b></h1><br><br><br></button></a>
               </div>
           </div>
-          <br>
           <br>
           <div class="row">
               <div class="col col-md-6" style="width: 42vw">
@@ -352,6 +377,8 @@
     <span class="sr-only">Next</span>
   </a>
 </div>
+<br>
+<br>
 
 {% endif %}
 

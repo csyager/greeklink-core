@@ -103,9 +103,13 @@
                 </button>
             </div>
             <div class="modal-body">
+                {% if not request.user_agent.is_mobile %}
                 <p><span class="alert alert-success calendar-key"> </span> &nbsp;&nbsp;Rush Event</p>
                 <p><span class="alert alert-primary calendar-key"> </span> &nbsp;&nbsp;Social Event</p>
                 <p><span class="alert alert-secondary calendar-key"> </span> &nbsp;&nbsp;Chapter Event</p>
+                {% else %}
+                <p>Days with a grey highlight have an event scheduled.  Click on the date to view them!</p>
+                {% endif %}
                 <p>Rush and Social Events are added to this calendar automatically as they are created by admins in the Rush and Social tabs.  Click on any of these events to be redirected to the corresponding event.  Chapter events are events not associated with rush or social.</p>
             </div>
             <div class="modal-footer">
