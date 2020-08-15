@@ -32,12 +32,9 @@
             
                     </script>
                     {% for event in page_obj %}
-                    <li class="list-group-item"> <a href="social_event{{ event.id }}">{{ event.name }} -- {{ event.date }}, {{ event.time }} <span class="badge badge-info">{{ event.list.count }}</span> </a>
-                        {% if perms.core.change_socialevent %}
-                        
+                    <li class="list-group-item"><a href="social_event{{ event.id }}">{{ event.name }} -- {{ event.date }}, {{ event.time }} <span class="badge badge-info">{{ event.list.count }}</span> </a>
+                        {% if perms.core.change_socialevent %}    
                         <a href="removeSocialEvent{{ event.id }}" class="btn btn-danger btn-sm float-right">Remove</a>
-
-
                         <button type="button" class="btn btn-secondary btn-sm float-right mr-1" data-toggle="modal" data-target="#editeventModal{{ event.id }}">Edit</button>
                         <!-- Edit Event Modal -->
                         <div class="modal fade" id="editeventModal{{ event.id }}" tabindex="-1" role="dialog" aria-labelledby="editeventModal" aria-hidden="true">
