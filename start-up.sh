@@ -11,6 +11,7 @@ sudo rm -rf rush/migrations
 # migrations and static files
 python manage.py makemigrations core
 python manage.py makemigrations rush
+python manage.py makemigrations cal
 python manage.py migrate
 python manage.py collectstatic --noinput
 

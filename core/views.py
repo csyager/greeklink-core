@@ -90,13 +90,12 @@ def all_announcements(request):
     announcementscount = len(announcements)
 
     context = {
-    "home_page": "active",
-    'settings': getSettings(),
-    "announcements": announcements,
-    "announcement_form": announcement_form,
-    'page_obj': page_obj,
-    'announcementscount' : announcementscount
-
+        "home_page": "active",
+        'settings': getSettings(),
+        "announcements": announcements,
+        "announcement_form": announcement_form,
+        'page_obj': page_obj,
+        'announcementscount' : announcementscount
     }
     return HttpResponse(template.render(context, request))
 
