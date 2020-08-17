@@ -131,11 +131,11 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div class="row">
-                    {% if perms.cal.change_chapterevent %}
-                    <form method="post" action="/cal/edit_chapter_event{{ event.pk }}">
-                    {% csrf_token %}
-                    {% endif %}
+                {% if perms.cal.change_chapterevent %}
+                <form method="post" action="/cal/edit_chapter_event{{ event.pk }}">
+                {% csrf_token %}
+                {% endif %}
+                <div class="form-group row">
                     <div class="col-sm-2">
                         Name
                     </div>
@@ -147,7 +147,7 @@
                         {% endif %}
                     </div>
                 </div>
-                <div class="row">
+                <div class="form-group row">
                     <div class="col-sm-2">
                         Date
                     </div>
@@ -159,7 +159,7 @@
                         {% endif %}
                     </div>
                 </div>
-                <div class="row">
+                <div class="form-group row">
                     <div class="col-sm-2">
                         Time
                     </div>
@@ -171,7 +171,7 @@
                         {% endif %}
                     </div>
                 </div>
-                <div class="row">
+                <div class="form-group row">
                     <div class="col-sm-2">
                         Location
                     </div>
@@ -184,7 +184,7 @@
                     </div>
                 </div>
                 {% if event.recurring != 'None' and not perms.cal.change_chapterevent %}
-                <div class="row">
+                <div class="form-group row">
                     <div class="col-sm-2">
                         Repeats
                     </div>
@@ -192,7 +192,7 @@
                         {{ event.recurring }}
                     </div>
                 </div>
-                <div class="row">
+                <div class="form-group row">
                     <div class="col-sm-2">
                         Ends
                     </div>
@@ -201,7 +201,7 @@
                     </div>
                 </div>
                 {% elif perms.cal.change_chapterevent %}
-                <div class="row">
+                <div class="form-group row">
                     <div class="col-sm-2">
                         Repeats
                     </div>
@@ -214,7 +214,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="row">
+                <div class="form-group row">
                     <div class="col-sm-2">
                         Ends 
                     </div>
