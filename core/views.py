@@ -90,6 +90,7 @@ def all_announcements(request):
     announcementscount = len(announcements)
 
     context = {
+    "home_page": "active",
     'settings': getSettings(),
     "announcements": announcements,
     "announcement_form": announcement_form,
