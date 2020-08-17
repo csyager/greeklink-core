@@ -2,6 +2,7 @@
 
 from django.db import models
 from django.db.models import Q
+from django.urls import reverse
 
 
 from django.contrib.auth.models import User, Group, Permission
@@ -136,6 +137,9 @@ class SocialEvent(OrgEvent):
 
     def __str__(self):
         return self.name
+
+    def get_url(self):
+        return reverse('social_event', kwargs=dict(event_id=self.pk))
 
 #------------------------------------------------------------------------ block for resource link
 

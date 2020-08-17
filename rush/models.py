@@ -2,6 +2,7 @@
 
 from django.db import models
 from core.models import User, OrgEvent
+from django.urls import reverse
 
 YEAR_CHOICES = (
     (1, 'Freshman'),
@@ -94,3 +95,6 @@ class RushEvent(OrgEvent):
 
     def __str__(self):
         return self.name
+
+    def get_url(self):
+        return reverse('rush:event', kwargs=dict(event_id=self.pk))

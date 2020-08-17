@@ -103,9 +103,13 @@
                 </button>
             </div>
             <div class="modal-body">
+                {% if not request.user_agent.is_mobile %}
                 <p><span class="alert alert-success calendar-key"> </span> &nbsp;&nbsp;Rush Event</p>
                 <p><span class="alert alert-primary calendar-key"> </span> &nbsp;&nbsp;Social Event</p>
                 <p><span class="alert alert-secondary calendar-key"> </span> &nbsp;&nbsp;Chapter Event</p>
+                {% else %}
+                <p>Days with a grey highlight have an event scheduled.  Click on the date to view them!</p>
+                {% endif %}
                 <p>Rush and Social Events are added to this calendar automatically as they are created by admins in the Rush and Social tabs.  Click on any of these events to be redirected to the corresponding event.  Chapter events are events not associated with rush or social.</p>
             </div>
             <div class="modal-footer">
@@ -127,11 +131,11 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div class="row">
-                    {% if perms.cal.change_chapterevent %}
-                    <form method="post" action="/cal/edit_chapter_event{{ event.pk }}">
-                    {% csrf_token %}
-                    {% endif %}
+                {% if perms.cal.change_chapterevent %}
+                <form method="post" action="/cal/edit_chapter_event{{ event.pk }}">
+                {% csrf_token %}
+                {% endif %}
+                <div class="form-group row">
                     <div class="col-sm-2">
                         Name
                     </div>
@@ -143,7 +147,7 @@
                         {% endif %}
                     </div>
                 </div>
-                <div class="row">
+                <div class="form-group row">
                     <div class="col-sm-2">
                         Date
                     </div>
@@ -155,19 +159,19 @@
                         {% endif %}
                     </div>
                 </div>
-                <div class="row">
+                <div class="form-group row">
                     <div class="col-sm-2">
                         Time
                     </div>
                     <div class="col-sm-10">
                         {% if perms.cal.change_chapterevent %}
-                        <input type="time" name="time" class="form-control rounded" placeholder="HH:mm in 24-hour time" value="{{ event.time|time:"H:i:s" }}">
+                        <input type="time" name="time" class="form-control rounded" placeholder="HH:mm:ss in 24-hour time" value="{{ event.time|time:"H:i:s" }}">
                         {% else %}
                         {{ event.time }}
                         {% endif %}
                     </div>
                 </div>
-                <div class="row">
+                <div class="form-group row">
                     <div class="col-sm-2">
                         Location
                     </div>
@@ -180,7 +184,7 @@
                     </div>
                 </div>
                 {% if event.recurring != 'None' and not perms.cal.change_chapterevent %}
-                <div class="row">
+                <div class="form-group row">
                     <div class="col-sm-2">
                         Repeats
                     </div>
@@ -188,7 +192,7 @@
                         {{ event.recurring }}
                     </div>
                 </div>
-                <div class="row">
+                <div class="form-group row">
                     <div class="col-sm-2">
                         Ends
                     </div>
@@ -197,7 +201,7 @@
                     </div>
                 </div>
                 {% elif perms.cal.change_chapterevent %}
-                <div class="row">
+                <div class="form-group row">
                     <div class="col-sm-2">
                         Repeats
                     </div>
@@ -210,7 +214,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="row">
+                <div class="form-group row">
                     <div class="col-sm-2">
                         Ends 
                     </div>
@@ -240,5 +244,4 @@
     </div>
 </div>
 {% endfor %}
-
 {% endblock %}

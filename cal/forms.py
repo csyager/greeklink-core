@@ -10,7 +10,7 @@ class ChapterEventForm(ModelForm):
     date = forms.DateField(initial=datetime.date.today, label='Date',
         widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control rounded', 'placeholder': 'YYYY-mm-dd'}))
     time = forms.TimeField(label="Time",
-        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control rounded', 'placeholder': "HH:mm in 24 hour time"}))
+        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control rounded', 'placeholder': "HH:mm:ss in 24 hour time"}))
     location = forms.CharField(max_length=50, label='Location',
         widget=forms.TextInput(attrs={'class': 'form-control rounded'}))
     recurring = forms.ChoiceField(choices=RECURRENCE_CHOICES, label="Recurring",

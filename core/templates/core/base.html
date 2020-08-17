@@ -28,6 +28,12 @@
     
     <!-- base css file -->
     <link rel="stylesheet" type="text/css" href="{% static 'core/css/style.css' %}">
+    
+    <!-- mobile styles -->
+    {% if request.user_agent.is_mobile %}
+    <link rel="stylesheet" type="text/css" href="{% static 'core/css/mobile_style.css' %}">
+    {% endif %}
+
 </head>
 <body>
     {% include 'core/navigation.html' %}

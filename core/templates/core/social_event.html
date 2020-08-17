@@ -16,7 +16,7 @@
     }
 </script>
 
-<div class="container" style="margin-left: 5%">
+<div class="container">
     <h1 style="display: inline">{{ event.name }}</h1>
     <h3>{{ event.date }}, {{ event.time }}</h3>
     <h3>{{ event.location }}</h3>
@@ -27,8 +27,8 @@
       <!-- text input to add names to the list -->
       <form class="form-inline my-2 my-lg-0" id="listform" action="/add_to_list{{ event.id }}" method="post" accept-charset="utf-8">
           {% csrf_token %}
-            <input class="form-control mr-sm-2" id="single_name" name="name" type="search" placeholder="Type Full Name Here" aria-label="add" style="width: 80%">
-            <textarea class="form-control mr-sm-2" style="width:100%" rows="5" id="multiple_names" name="multiple_names" placeholder="Separate names by a newline" hidden></textarea><br>
+            <input class="form-control mr-sm-2" id="single_name" name="name" type="search" placeholder="Type Full Name Here" aria-label="add" style="width: 65%; margin-right: 5px">
+            <textarea class="form-control mr-sm-2" {% if request.user_agent.is_mobile %}style="width:90%"{% else %}style="width:100%"{% endif %} rows="5" id="multiple_names" name="multiple_names" placeholder="Separate names by a newline" hidden></textarea><br>
             <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Add to list</button>
       </form>
       <br>
@@ -63,13 +63,13 @@
       <input type="checkbox" class="custom-control-input" id="party_mode_switch" {% if event.party_mode %}checked{% endif %} onclick="window.location = 'toggle_party_mode' + {{ event.id }}">
       <label class="custom-control-label" for="party_mode_switch"><b>Party mode {% if event.party_mode %}on{% else %}off{% endif %}</b>:  turning on disables adding to the list and enables checking attendance</label>
     </div><br>
-    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#clear_modal">
+    <button type="button" class="btn btn-danger {% if request.user_agent.is_mobile %} btn-sm {% endif %}" data-toggle="modal" data-target="#clear_modal" style="margin-top: 5px">
       Clear list
     </button>
-    <a href="export_xls{{ event.id }}"><button type="button" class="btn btn-primary">Export Spreadsheet</button></a>
+    <a href="export_xls{{ event.id }}"><button type="button" class="btn btn-primary {% if request.user_agent.is_mobile %} btn-sm {% endif %}" style="margin-top: 5px">Export Spreadsheet</button></a>
     {% endif %}
     {% if perms.core.add_roster %}
-    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#roster_modal">Save list as roster</button>
+    <button type="button" class="btn btn-success {% if request.user_agent.is_mobile %} btn-sm {% endif %}" style="margin-top: 5px" data-toggle="modal" data-target="#roster_modal">Save list as roster</button>
     
     <!-- roster modal -->
     <div class="modal fade" id="roster_modal" tabindex="-1" role="dialog" aria-labelledby="roster_modal" aria-hidden="true">
@@ -129,7 +129,7 @@
                 {% if event.party_mode %}
                 <td class="col-4" style="text-align: center"><input type="checkbox" id="attendance_checkbox_{{ attendee.id }}" onclick="cross_off_list({{ attendee.id }})" {% if attendee.attended %}checked{% endif %}></td>
                 {% elif perms.core.change_socialevent %}
-                <td class="col-4" style="text-align: right"><a href="/remove_from_list{{ event.id }}/{{ attendee.id }}"><button type="button" class="btn btn-danger">Remove from list</button></a></td>
+                <td class="col-4" style="text-align: right"><a href="/remove_from_list{{ event.id }}/{{ attendee.id }}"><button type="button" class="btn btn-danger">Remove</button></a></td>
                 {% else %}
                 <td class="col-4"></td>
                 {% endif %}

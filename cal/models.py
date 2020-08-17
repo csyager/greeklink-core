@@ -4,6 +4,7 @@ from django.db import models
 from core.models import OrgEvent
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+from django.urls import reverse
 
 RECURRENCE_CHOICES = [
     ('None', 'None'),
@@ -71,3 +72,6 @@ class ChapterEvent(OrgEvent):
         super().delete(*args, **kwargs)
 
     objects = ChapterEventManager()
+
+    def get_url(self):
+        return reverse('cal:index') + "?month=" + str(self.date.month) + "&year=" + str(self.date.year)

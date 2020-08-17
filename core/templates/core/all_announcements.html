@@ -14,10 +14,11 @@
 </style>
 
 {% load static %}
-<br>
-<div class="container" style="width: 90%; max-width: 2000px">
+<div class="jumbotron">
     <h1 class="display-4">Welcome, {{ user.get_short_name }}</h1>
     <p class="lead">{{ settings.organization_name }}</p>
+</div>
+<div class="container" style="max-width: 2000px">
     <br>
     <div class="row">
         <div class="col-lg-9">
@@ -47,7 +48,7 @@
                 {% endfor %}
             </ul><br>
             {% if perms.core.add_announcement %}
-            <button class="btn btn-primary" data-toggle="modal" data-target="#announcementModal"><i class="fa fa-plus" aria-hidden="true"></i>Add Announcement</button>
+            <button class="btn btn-primary" data-toggle="modal" data-target="#announcementModal"><i class="fa fa-plus" aria-hidden="true"></i> Add Announcement</button>
           <!-- Modal -->
             <div class="modal fade" id="announcementModal" tabindex="-1" role="dialog" aria-labelledby="announcementModal" aria-hidden="true">
                 <div class="modal-dialog" role="document">

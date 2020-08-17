@@ -4,189 +4,119 @@
 <br>
 <div class="container">
     <h1>Resources</h1><br>
-    {% if calendar_embed == "" and perms.core.add_calendar %}
-    <div class="alert alert-warning" role="alert">
-        <a data-toggle="modal" data-target="#calModal">No Google Calendar loaded!  Click here to add one!</a>
-    </div>
-    <div class="modal fade" id="calModal" tabindex="-1" role="dialog" aria-labelledby="calModal" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title" id="calModalLabel">Embed Google Calendar</h4>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form style="margin-left: 20%; margin-right:20%" method="post" action="addCal">
-                        {% csrf_token %}
-                        {% load crispy_forms_tags %}
-                        <div class="form-group">
-                            <label for="cal_embed_link" class="requiredField">Google Calendar Embed Link</label>
-                            <input id="cal_embed_link" type="url" class="rounded" name="cal_embed_link" required="required">
-                        </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save changes</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% elif calendar_embed != "" %}
-    <div class="container embed-responsive embed-responsive-4by3">
-        <iframe class="embed-responsive-item" src="{{ calendar_embed }}" style="border: 0" width="800" height="600" frameborder="0" scrolling="no"></iframe>
-    </div>
-    <br>
-    {% if perms.core.delete_calendar %}
-    <div class="container">
-        <a href="removeCal"><button class="btn btn-danger">Remove Calendar</button></a>
-    </div>
-    <br>
-    {% endif %}
-    {% endif %}
-
-    <div class="container">
+    <div>
         <h2>Files</h2>
-        <div class="row">
+        <ul class="list-group">
             {% for file in files %}
-                <div class="col-md-auto">
-                    <div class="card resource-card">
-                        {% if not request.user_agent.is_mobile %}
-                            {% if file.extension == "txt" %}<i class="fa fa-file-text" aria-hidden="true" style="color: {{ settings.primary_color_theme }}"></i>
-                            {% elif file.extension == "doc" or file.extension == "docx" %}<i class="fa fa-file-word-o" aria-hidden="true" style="color: {{ settings.primary_color_theme }}"></i>
-                            {% elif file.extension == "pdf" %}<i class="fa fa-file-pdf-o" aria-hidden="true" style="color: {{ settings.primary_color_theme }}"></i>
-                            {% else %}<i class="fa fa-file" aria-hidden="true" style="color: {{ settings.primary_color_theme }}"></i>{% endif %}
-                        {% endif %}
-                        <div class="card-body">
-                            <h4 class="card-title">{{ file.name }}</h4>
-                            <p class="card-text">{{ file.description }}</p>
-                            <a href="{{ file.file.url }}" class="btn btn-primary" target="_blank"><i class="fa fa-folder-open" aria-hidden="true"></i> Open File</a>
-                            {% if perms.core.delete_resourcefile %}
-                            <br>
-                            <br>
-                            <a href="removeFile{{ file.id }}" class="btn btn-danger">Remove File</a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
+            <li class="list-group-item">
+                {% if file.extension == "txt" %}<i class="fa fa-file-text" aria-hidden="true" style="color: {{ settings.primary_color_theme }}"></i>
+                {% elif file.extension == "doc" or file.extension == "docx" %}<i class="fa fa-file-word-o" aria-hidden="true" style="color: {{ settings.primary_color_theme }}"></i>
+                {% elif file.extension == "pdf" %}<i class="fa fa-file-pdf-o" aria-hidden="true" style="color: {{ settings.primary_color_theme }}"></i>
+                {% else %}<i class="fa fa-file" aria-hidden="true" style="color: {{ settings.primary_color_theme }}"></i>
+                {% endif %}
+                <a href="{{ file.file.url }}" target="_blank">{{ file.name }}</a> - {{ file.description }}
+                {% if perms.core.delete_resourcefile %}
+                <span style="float:right"><a href="removeFile{{ file.id }}">(remove)</a></span>
+                {% endif %}
+            </li>
             {% endfor %}
             {% if perms.core.add_resourcefile %}
-                <div class="col-md-auto">
-                    <div class="card resource-card">
-                        <div class="card-body">
-                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#fileModal">
-                                <i class="fa fa-upload" aria-hidden="true"></i> Upload File
+            <li class="list-group-item">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#fileModal">
+                    <i class="fa fa-upload" aria-hidden="true"></i> Upload File
+                </button>
+            </li>
+            <!-- Modal -->
+            <div class="modal fade" id="fileModal" tabindex="-1" role="dialog" aria-labelledby="fileModal" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title" id="fileModalLabel">Upload File</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
                             </button>
-                            <!-- Modal -->
-                            <div class="modal fade" id="fileModal" tabindex="-1" role="dialog" aria-labelledby="fileModal" aria-hidden="true">
-                                <div class="modal-dialog" role="document">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h4 class="modal-title" id="fileModalLabel">Upload File</h4>
-                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <form method="post" action="uploadfile" enctype="multipart/form-data">
-                                                {% csrf_token %}
-                                                <div class="form-group row">
-                                                    <div class="col-3">{{ form.name.label }}</div>
-                                                    <div class="col-9">{{ form.name }}</div>
-                                                </div>
-                                                <div class="form-group row">
-                                                    <div class="col-3">{{ form.file.label }}</div>
-                                                    <div class="col-9">{{ form.file }}</div>
-                                                </div>
-                                                <div class="form-group row">
-                                                    <div class="col-3">{{ form.description.label }}</div>
-                                                    <div class="col-9">{{ form.description }}</div>
-                                                </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                            <button type="submit" class="btn btn-primary">Save changes</button>
-                                            </form>
-                                        </div>
-                                    </div>
+                        </div>
+                        <div class="modal-body">
+                            <form method="post" action="uploadfile" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="form-group row">
+                                    <div class="col-3">{{ form.name.label }}</div>
+                                    <div class="col-9">{{ form.name }}</div>
                                 </div>
-                            </div>
+                                <div class="form-group row">
+                                    <div class="col-3">{{ form.file.label }}</div>
+                                    <div class="col-9">{{ form.file }}</div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-3">{{ form.description.label }}</div>
+                                    <div class="col-9">{{ form.description }}</div>
+                                </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Upload</button>
+                            </form>
                         </div>
                     </div>
                 </div>
+            </div>
             {% endif %}
-        </div>
+        </ul>
     </div><br>
-    <div class="container">
+    <div>
         <h2>Links</h2>
-        <div class="row">
+        <ul class="list-group">
             {% for link in links %}
-                <div class="col-md-auto">
-                    <div class="card resource-card">
-                        {% if not request.user_agent.is_mobile %}
-                        <i class="fa fa-link" aria-hidden="true" style="color: {{ settings.primary_color_theme }}"></i>
-                        {% endif %}
-                        <div class="card-body">
-                            <h4 class="card-title">{{ link.name }}</h4>
-                            <p class="card-text">{{ link.description }}</p>
-                            <a href="{{ link.url }}" class="btn btn-primary" target="_blank"><i class="fa fa-external-link" aria-hidden="true"></i> Open Link</a>
-                            {% if perms.core.delete_resourcelink %}
-                            <br>
-                            <br>
-                            <a href="removeLink{{ link.id }}" class="btn btn-danger">Remove Link</a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
+            <li class="list-group-item">
+                <i class="fa fa-link" aria-hidden="true" style="color: {{ settings.primary_color_theme }}"></i>
+                <a href="{{ link.url }}" target="_blank">{{ link.name }}</a> - {{ link.description }}
+                {% if perms.core.delete_resourcelink %}
+                <span style="float:right"><a href="removeLink{{ link.id }}">(remove)</a></span>
+                {% endif %}
+            </li>
             {% endfor %}
             {% if perms.core.add_resourcelink %}
-                <div class="col-md-auto">
-                    <div class="card resource-card">
-                        <div class="card-body">
-                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#linkModal">
-                                <i class="fa fa-plus-square" aria-hidden="true"></i> Add link
+            <li class="list-group-item">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#linkModal">
+                    <i class="fa fa-plus-square" aria-hidden="true"></i> Add Link
+                </button>
+            </li>
+            <!-- Modal -->
+            <div class="modal fade" id="linkModal" tabindex="-1" role="dialog" aria-labelledby="linkModal" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title" id="linkModalLabel">Add Link</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
                             </button>
-                            <!-- Modal -->
-                            <div class="modal fade" id="linkModal" tabindex="-1" role="dialog" aria-labelledby="linkModal" aria-hidden="true">
-                                <div class="modal-dialog" role="document">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h4 class="modal-title" id="linkModalLabel">Add Link</h4>
-                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <form method="post" action="addLink" enctype="multipart/form-data">
-                                                {% csrf_token %}
-                                                <div class="form-group row">
-                                                    <div class="col-3">{{ linkForm.name.label }}</div>
-                                                    <div class="col-9">{{ linkForm.name }}</div>
-                                                </div>
-                                                <div class="form-group row">
-                                                    <div class="col-3">{{ linkForm.url.label }}</div>
-                                                    <div class="col-9">{{ linkForm.url }}</div>
-                                                </div>
-                                                <div class="form-group row">
-                                                    <div class="col-3">{{ linkForm.description.label }}</div>
-                                                    <div class="col-9">{{ linkForm.description }}</div>
-                                                </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                            <button type="submit" class="btn btn-primary">Save changes</button>
-                                            </form>
-                                        </div>
-                                    </div>
+                        </div>
+                        <div class="modal-body">
+                            <form method="post" action="addLink" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="form-group row">
+                                    <div class="col-3">{{ linkForm.name.label }}</div>
+                                    <div class="col-9">{{ linkForm.name }}</div>
                                 </div>
-                            </div>
+                                <div class="form-group row">
+                                    <div class="col-3">{{ linkForm.url.label }}</div>
+                                    <div class="col-9">{{ linkForm.url }}</div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-3">{{ linkForm.description.label }}</div>
+                                    <div class="col-9">{{ linkForm.description }}</div>
+                                </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save changes</button>
+                            </form>
                         </div>
                     </div>
                 </div>
+            </div>
             {% endif %}
-        </div>
+        </ul>
     </div>
 </div>
 {% endblock %}

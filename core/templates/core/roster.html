@@ -2,7 +2,7 @@
 {% block content %}
 {% load static %}
 <br>
-<div class="container" style="margin-left: 5%">
+<div class="container">
     <h1 style="display: inline">{{ roster.title }}</h1><br>
     <h3 style="display: inline">Last updated:  {{ roster.last_updated }}</h3><br><br>
     {% if perms.core.change_roster %}
@@ -89,7 +89,7 @@
             <tr class="d-flex" id="members_row_{{ member.id }}">
                 <td class="col-8">{{ member.name }}</td>
                 {% if perms.core.change_roster %}
-                <td class="col-4" style="text-align: right"><a href="/remove_from_roster{{ roster.id }}/{{ member.id }}"><button type="button" class="btn btn-danger">Remove from roster</button></a></td>
+                <td class="col-4" style="text-align: right"><a href="/remove_from_roster{{ roster.id }}/{{ member.id }}"><button type="button" class="btn btn-danger">Remove</button></a></td>
                 {% else %}
                 <td class="col-4"></td>
                 {% endif %}
