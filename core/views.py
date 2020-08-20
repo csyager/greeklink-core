@@ -26,7 +26,7 @@ import xlwt
 from datetime import date, timedelta
 from django.utils import timezone
 from itertools import chain
-from django.core.mail import send_mail
+from django.core.mail import send_mail, BadHeaderError
 from urllib import parse
 from django.urls import reverse
 from django.db import IntegrityError, transaction
@@ -697,3 +697,22 @@ def add_announcement(request):
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         else:
             return HttpResponse(form.errors)
+
+def contactView(request):
+    template = loader.get_template('core/base.html')
+    supportform = SupportForm()
+
+    if request.method == 'GET':
+        supportform = SupportForm()
+    else:
+        supportform = SupportForm(request.POST)
+        if supportform.is_valid():
+            subject = supportform.cleaned_data['subject']
+            from_email = supportform.cleaned_data['from_email']
+            message = supportform.cleaned_data['message']
+            try:
+                send_mail(subject, message, 'verify@greeklink.com', ['Greeklink@virginia.edu'])
+            except BadHeaderError:
+                return HttpResponse('Invalid header found.')
+            return redirect('success')
+    return render(request, "core/base.html", {'supportform': supportform})
