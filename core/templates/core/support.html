@@ -38,12 +38,49 @@
 <body>
     {% include 'core/navigation.html' %}
     {% block content %}
-    {% endblock %} 
+    {% endblock %}
+  <div class="container h-100">
+    <div class="row align-items-center h-100 py-5">
+      <div class="col-{% if not request.user_agent.is_mobile %}6{% else %}10{% endif %} mx-auto">
+        <div class="card">
+          <div class="card-body">
+              <h5 class="card-title" style="text-align: center">Support</h5>
+              <form method="post">
+                {% csrf_token %}
+                {% if supportform.errors %}
+                  <div class="alert alert-danger" role="alert">
+                    {% for field in supportform %}
+                      {% for error in field.errors %}
+                        {{ error }}<br>
+                      {% endfor %}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+                
+                <div class="form-group">
+                    {{ supportform.from_email.label }}
+                    {{ supportform.from_email }}
+                </div>
+                <div class="form-group">
+                    {{ supportform.subject.label }}
+                    {{ supportform.subject }}
+                    <small class="form-text text-muted">Let us know if you are reporting a bug or requesting a feature.</small>
+                </div>
+                <div class="form-group">
+                    {{ supportform.message.label }}
+                    {{ supportform.message }}
+                </div>
+        </div>
+        <div class="modal-footer border-0">
+            <button type="submit" class="btn btn-primary btn-lg">Send</button>
+              </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 <div class="container text-center footer bg-light">
     <img src="{% static 'core/icons/logo.png' %}">
-    <div class= "container text-right footer py-4 px-5">
-        <a href="support">Support</a>
-    </div>
 </div>
 </html>

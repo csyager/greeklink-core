@@ -45,7 +45,7 @@ urlpatterns = [
     path('all_announcements', views.all_announcements, name='all_announcements'),
     path('removeAnnouncement<int:announcement_id>', views.remove_announcement, name="remove_announcement"),
     path('editSocialEvent<int:event_id>', views.edit_social_event, name="edit_social_event"),
-    path('contact', views.contactView, name='contact'),
+    path('support/', views.support_request, name='support'),
 ]
 
 

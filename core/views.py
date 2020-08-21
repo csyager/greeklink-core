@@ -698,9 +698,14 @@ def add_announcement(request):
         else:
             return HttpResponse(form.errors)
 
-def contactView(request):
-    template = loader.get_template('core/base.html')
+def support_request(request):
+    template = loader.get_template('core/support.html')
+    settings = getSettings()
     supportform = SupportForm()
+    context = {
+                'settings': settings,
+                'supportform' : supportform
+            }
 
     if request.method == 'GET':
         supportform = SupportForm()
@@ -710,9 +715,12 @@ def contactView(request):
             subject = supportform.cleaned_data['subject']
             from_email = supportform.cleaned_data['from_email']
             message = supportform.cleaned_data['message']
+            template2 = loader.get_template('core/supportConfirmation.html')
+
             try:
                 send_mail(subject, message, 'verify@greeklink.com', ['Greeklink@virginia.edu'])
             except BadHeaderError:
                 return HttpResponse('Invalid header found.')
-            return redirect('success')
-    return render(request, "core/base.html", {'supportform': supportform})
+            return HttpResponse(template2.render(context, request))
+
+    return render(request, "core/support.html", context)

@@ -38,12 +38,17 @@
 <body>
     {% include 'core/navigation.html' %}
     {% block content %}
-    {% endblock %} 
-</body>
-<div class="container text-center footer bg-light">
-    <img src="{% static 'core/icons/logo.png' %}">
-    <div class= "container text-right footer py-4 px-5">
-        <a href="support">Support</a>
+    {% endblock %}
+    <br>
+    <div class="container h-100" style="text-align: center">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Thank you for contacting GreekLink!</h5>
+                <p><b>We will look into this immediately. We may contact you for additional questions or clarification.</b></p><br>
+                <p><b>If you you would like to send another message, please click here:</b></p>
+                <!-- TODO: implement this feature -->
+                <a href="" class="btn btn-info" role="button">Support</a><br>
+            </div>
+        </div>
     </div>
-</div>
-</html>
+</body>
