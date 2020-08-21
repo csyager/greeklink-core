@@ -12,6 +12,7 @@ sudo rm -rf organizations/migrations
 sudo rm -rf cal/migrations
 # migrations and static files
 createdb greeklinkdb
+psql -d postgres -c "GRANT ALL PRIVILEGES ON DATABASE greeklinkdb TO greeklinkuser;"
 python manage.py makemigrations core
 python manage.py makemigrations organizations
 python manage.py makemigrations rush
@@ -20,5 +21,6 @@ python manage.py migrate_schemas
 python manage.py collectstatic --noinput
 
 # load fixtures
-python manage.py loaddata auth.json
-python manage.py loaddata settings.json
+echo "from organizations.models import Client; Client.objects.create(domain_url='test.localhost', schema_name='test', name='Test Tenant', community='test_community', paid_until='2100-12-31'); exit();" | python manage.py shell
+python manage.py tenant_command loaddata --schema=test auth.json
+python manage.py tenant_command loaddata --schema=test settings.json 

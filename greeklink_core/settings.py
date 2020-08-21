@@ -36,7 +36,7 @@ if ENV == 'testing':
 else:
     DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'greeklink-core-env.eba-7mntraig.us-west-2.elasticbeanstalk.com', 'test.localhost']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'greeklink-core-env.eba-7mntraig.us-west-2.elasticbeanstalk.com', 'test.localhost', 'test2.localhost']
 
 
 # Application definition
@@ -44,15 +44,15 @@ SHARED_APPS = (
     'tenant_schemas',
     'organizations',
     'django.contrib.contenttypes',
-    'django.contrib.auth',
     'django.contrib.sites',
     'django.contrib.staticfiles',
     'django.contrib.sessions',
-    
 )
 
 TENANT_APPS = (
     'django.contrib.contenttypes',
+    'django.contrib.auth',
+    'django.contrib.admin',
     'core',
     'rush',
     'cal',
