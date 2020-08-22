@@ -13,6 +13,6 @@ class Client(TenantMixin):
     """
     name = models.CharField(max_length=100)
     community = models.CharField(max_length=100)
-    paid_until = models.DateField()
+    paid_until = models.DateField(blank=True, null=True)
     created_on = models.DateField(auto_now_add=True)
     auto_create_schema = True

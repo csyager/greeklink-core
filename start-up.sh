@@ -10,6 +10,10 @@ sudo rm -rf core/migrations
 sudo rm -rf rush/migrations
 sudo rm -rf organizations/migrations
 sudo rm -rf cal/migrations
+
+# delete everything from media
+sudo rm -rf media/
+
 # migrations and static files
 createdb greeklinkdb
 psql -d postgres -c "GRANT ALL PRIVILEGES ON DATABASE greeklinkdb TO greeklinkuser;"

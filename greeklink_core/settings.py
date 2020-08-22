@@ -211,7 +211,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 if ENV == 'testing':
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-    DEFAULT_FILE_STORAGE = 'tenant_schemas.storage.TenantFileSystemStorage'
+    # DEFAULT_FILE_STORAGE = 'tenant_schemas.storage.TenantFileSystemStorage'   <-- should probably be set but haven't gotten it to work yet
 
 # AWS S3 for media upload hosting
 else:
