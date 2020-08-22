@@ -7,10 +7,13 @@ from rush.models import RushEvent
 from .models import ChapterEvent
 from dateutil.relativedelta import relativedelta
 from .forms import ChapterEventForm
+from tenant_schemas.test.cases import TenantTestCase
+from tenant_schemas.test.client import TenantClient
 
-class CalendarTestCase(TestCase):
+class CalendarTestCase(TenantTestCase):
     """ tests basic appearance and functionality of calendar """
     def setUp(self):
+        self.client = TenantClient(self.tenant)
         self.user = User.objects.create(username='test', is_superuser=True, is_staff=True)
         self.client.force_login(self.user)
         self.rush_event = RushEvent.objects.create(name="rush_test", date=datetime.strptime("2020-07-20", "%Y-%m-%d").date(), time=datetime.now(), location="test")
@@ -126,9 +129,10 @@ class CalendarTestCase(TestCase):
         self.assertEqual(response.status_code, 404)
 
 
-class DeleteChapterEventsTestCase(TestCase):
+class DeleteChapterEventsTestCase(TenantTestCase):
     """ tests deleting Chapter Events, both singularly and recursively """
     def setUp(self):
+        self.client = TenantClient(self.tenant)
         self.user = User.objects.create(username="test", is_superuser=True, is_staff=True)
         self.client.force_login(self.user)
         self.singular = ChapterEvent.objects.create_chapter_event(name="singular event", date=datetime.strptime("2020-07-20", "%Y-%m-%d").date(), time=datetime.now(), location="test")
@@ -189,9 +193,10 @@ class DeleteChapterEventsTestCase(TestCase):
         except ChapterEvent.DoesNotExist:
             pass
 
-class EditChapterEventTestCase(TestCase):
+class EditChapterEventTestCase(TenantTestCase):
     """ tests editing chapter events """
     def setUp(self):
+        self.client = TenantClient(self.tenant)
         self.user = User.objects.create(username="test_user", is_superuser=True, is_staff=True)
         self.client.force_login(self.user)
         self.singular = ChapterEvent.objects.create_chapter_event(name="singular event", date=datetime.strptime("2020-07-20", "%Y-%m-%d").date(), time=datetime.now(), location="test")
