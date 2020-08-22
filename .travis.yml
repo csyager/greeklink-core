@@ -1,6 +1,12 @@
 language: python
 python:
   - "3.6"
+# postgres database
+services:
+  - postgresql
+before_script:
+  - psql -c 'create database greeklinkdb;' -U postgres
+  - psql -d postgres -c "CREATE USER greeklinkuser WITH PASSWORD 'greeklink1'; GRANT ALL PRIVILEGES ON DATABASE greeklinkdb TO greeklinkuser;"
 # command to install dependencies
 install:
   - pip install -r requirements.txt
