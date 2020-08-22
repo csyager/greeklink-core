@@ -16,7 +16,7 @@ sudo rm -rf media/
 
 # migrations and static files
 createdb greeklinkdb
-psql -d postgres -c "CREATE USER greeklinkuser WITH PASSWORD 'greeklink1'; GRANT ALL PRIVILEGES ON DATABASE greeklinkdb TO greeklinkuser;"
+psql -d postgres -c "CREATE USER greeklinkuser WITH PASSWORD 'greeklink1'; GRANT ALL PRIVILEGES ON DATABASE greeklinkdb TO greeklinkuser; ALTER USER greeklinkuser CREATEDB;"
 python manage.py makemigrations core
 python manage.py makemigrations organizations
 python manage.py makemigrations rush
