@@ -74,8 +74,13 @@
                                                 </div>
                                             </div>
                                             <div class="form-group form-check">
+                                                <input type="checkbox" class="form-check-input" id="public_checkbox_{{ event.id }}" name="public" {% if event.is_public %} checked {% endif %}>
+                                                <label class="form-check-label" for="public">Make event public?</label>
+                                                <small>Making an event public will allow other organizations in your community to see the event on their calendar.</small>
+                                            </div>
+                                            <div class="form-group form-check">
                                                 <input type="checkbox" class="form-check-input" id="edit_checkbox_{{ event.id }}" name="checkbox" onclick="toggle_limit_edit({{ event.id }})" {% if event.list_limit != -1 %} checked {% endif %}>
-                                                <label class="form-check-label" for="new_checkbox">Limit list additions?</label>                            
+                                                <label class="form-check-label" for="checkbox">Limit list additions?</label>                            
                                             </div>
                                             <div class="form-group row">
                                                 <label for="new_limit" class="col-sm-2 col-form-label">List Limit</label>
@@ -231,6 +236,11 @@
                                 <div class="col-sm-10">
                                     <input type="text" class="form-control" id="new_location" name="location">
                                 </div>
+                            </div>
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" id="new_public" name="public">
+                                <label class="form-check-label" for="new_public">Make event public?</label><br>
+                                <small>Making an event public will allow other organizations in your community to see the event on their calendar.</small>
                             </div>
                             <div class="form-group form-check">
                                 <input type="checkbox" class="form-check-input" id="new_checkbox" name="checkbox" onclick="toggle_limit()">

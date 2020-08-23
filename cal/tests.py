@@ -18,7 +18,7 @@ class CalendarTestCase(TenantTestCase):
         self.client.force_login(self.user)
         self.rush_event = RushEvent.objects.create(name="rush_test", date=datetime.strptime("2020-07-20", "%Y-%m-%d").date(), time=datetime.now(), location="test")
         self.social_event = SocialEvent.objects.create(name="social_test", date=datetime.strptime("2020-07-20", "%Y-%m-%d").date(), time=datetime.now(), location="test")
-        self.chapter_event = ChapterEvent.objects.create_chapter_event(name="chapter_test", date=datetime.strptime("2020-07-20", "%Y-%m-%d").date(), time=datetime.now(), location="test")
+        self.chapter_event = ChapterEvent.objects.create_chapter_event(name="chapter_test", date=datetime.strptime("2020-07-20", "%Y-%m-%d").date(), time=datetime.now(), is_public=False, location="test")
     
     def test_calendar_template(self):
         """ tests that the current month appears by default """
@@ -47,7 +47,7 @@ class CalendarTestCase(TenantTestCase):
 
     def test_chapter_event_recurrence(self):
         """ tests that chapter events are recurring properly """
-        event = ChapterEvent.objects.create_chapter_event(name="recurrence_test", date=datetime.strptime("2020-07-20", "%Y-%m-%d").date(), time=datetime.now(), location="test", recurring='Daily', end_date=datetime.strptime("2020-07-21", "%Y-%m-%d").date())
+        event = ChapterEvent.objects.create_chapter_event(name="recurrence_test", date=datetime.strptime("2020-07-20", "%Y-%m-%d").date(), time=datetime.now(), is_public=False, location="test", recurring='Daily', end_date=datetime.strptime("2020-07-21", "%Y-%m-%d").date())
         path = "%s?month=7&year=2020" % reverse('cal:index')
         response = self.client.post(path)
         self.assertContains(response, 'recurrence_test', count=6)   # 2 events on calendar, 2 modal titles, 2 in modal details
@@ -135,8 +135,8 @@ class DeleteChapterEventsTestCase(TenantTestCase):
         self.client = TenantClient(self.tenant)
         self.user = User.objects.create(username="test", is_superuser=True, is_staff=True)
         self.client.force_login(self.user)
-        self.singular = ChapterEvent.objects.create_chapter_event(name="singular event", date=datetime.strptime("2020-07-20", "%Y-%m-%d").date(), time=datetime.now(), location="test")
-        self.recurring = ChapterEvent.objects.create_chapter_event(name="recurring event", date=datetime.strptime("2020-07-20", "%Y-%m-%d").date(), time=datetime.now(), location="test",
+        self.singular = ChapterEvent.objects.create_chapter_event(name="singular event", date=datetime.strptime("2020-07-20", "%Y-%m-%d").date(), time=datetime.now(), is_public=False, location="test")
+        self.recurring = ChapterEvent.objects.create_chapter_event(name="recurring event", date=datetime.strptime("2020-07-20", "%Y-%m-%d").date(), time=datetime.now(), is_public=False, location="test",
                                                      recurring='Daily', end_date=datetime.strptime("2020-07-25", "%Y-%m-%d").date())
 
 
@@ -199,8 +199,8 @@ class EditChapterEventTestCase(TenantTestCase):
         self.client = TenantClient(self.tenant)
         self.user = User.objects.create(username="test_user", is_superuser=True, is_staff=True)
         self.client.force_login(self.user)
-        self.singular = ChapterEvent.objects.create_chapter_event(name="singular event", date=datetime.strptime("2020-07-20", "%Y-%m-%d").date(), time=datetime.now(), location="test")
-        self.recurring = ChapterEvent.objects.create_chapter_event(name="recurring event", date=datetime.strptime("2020-07-20", "%Y-%m-%d").date(), time=datetime.now(), location="test",
+        self.singular = ChapterEvent.objects.create_chapter_event(name="singular event", date=datetime.strptime("2020-07-20", "%Y-%m-%d").date(), time=datetime.now(), is_public=False, location="test")
+        self.recurring = ChapterEvent.objects.create_chapter_event(name="recurring event", date=datetime.strptime("2020-07-20", "%Y-%m-%d").date(), time=datetime.now(), is_public=False, location="test",
                                                      recurring='Daily', end_date=datetime.strptime("2020-07-26", "%Y-%m-%d").date())
     
     def test_edit_singular(self):

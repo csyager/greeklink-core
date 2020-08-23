@@ -131,6 +131,7 @@ class SocialEvent(OrgEvent):
     """
     list_limit = models.IntegerField(default=-1)
     party_mode = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=False)
 
     objects = SocialEventManager()
 

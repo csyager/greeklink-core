@@ -382,6 +382,10 @@ def create_social_event(request):
         obj.date = request.POST.get('date')
         obj.time = request.POST.get('time')
         obj.location = request.POST.get('location')
+        if request.POST.get('public') == 'on':
+            obj.is_public = True
+        else:
+            obj.is_public = False
         if request.POST.get('limit') != None:
             if request.POST.get('limit') != '':
                 obj.list_limit = request.POST.get('limit')
@@ -401,6 +405,10 @@ def edit_social_event(request, event_id):
         obj.date = request.POST.get('date')
         obj.time = request.POST.get('time')
         obj.location = request.POST.get('location')
+        if request.POST.get('public') == 'on':
+            obj.is_public = True
+        else:
+            obj.is_public = False
         if request.POST.get('limit') != None:
             if request.POST.get('limit') != '':
                 obj.list_limit = request.POST.get('limit')
