@@ -12,7 +12,7 @@
 
     {% load static %}
     <!-- iPhone logo -->
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{% static 'core/icons/apple-touch-icon.png' %}" />
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{% static 'core/icons/apple-touch-icon.png' %}"/>
     <meta name="apple-mobile-web-app-title" content="GreekLink">
 
     <!-- favicon -->
@@ -22,15 +22,30 @@
     <link rel="stylesheet" type="text/css" href="{% static 'core/css/style.css' %}">
 </head>
 <body>
-    <br>
-    <div class="container h-100" style="text-align: center">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Your account has been verified!</h5>
-                <p><b>You can now log into your account.  Click here to login:</b></p>
-                <a href="/login"><button class="btn btn-primary" type="submit">Login</button></a><br>
+    <div class="container h-100">
+        <div class="row align-items-center h-100">
+            <div class="col-{% if not request.user_agent.is_mobile %}6{% else %}10{% endif %} mx-auto">
+                <div class="card">
+                    <div class="card-body" style="text-align: center">
+                        <h5 class="card-title">Login</h5>
+                            <form method="post">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <div style='text-align: left'>
+                                        <b>{{ form.organization.label }}</b>
+                                    </div><br>
+                                    {{ form.organization }}
+                                </div>                           
+                                <div class="form-group">
+                                <button type="submit" class="btn btn-primary">Submit</button> {% if request.user_agent.is_mobile %}<br><br>{% endif %}
+                            </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </body>
+<div class="container text-center footer bg-light">
+    <img src="{% static 'core/icons/logo.png' %}">
+</div>
 </html>

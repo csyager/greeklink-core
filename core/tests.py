@@ -15,13 +15,16 @@ from .tokens import *
 import re
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
+from tenant_schemas.test.cases import TenantTestCase
+from tenant_schemas.test.client import TenantClient
 
 
 # Create your tests here.
 
 # tests users signing in, out, and registering
-class AuthenticationTestCase(TestCase):
+class AuthenticationTestCase(TenantTestCase):
     def setUp(self):
+        self.client = TenantClient(self.tenant)
         self.u = User.objects.create(username="admin", is_superuser=True)
         self.client.force_login(self.u)
 
@@ -71,8 +74,9 @@ class AuthenticationTestCase(TestCase):
         self.assertContains(response, "Login")
 
 
-class SignupTestCase(TestCase):
+class SignupTestCase(TenantTestCase):
     def setUp(self):
+        self.client = TenantClient(self.tenant)
         self.form_data = {
             'username': 'test',
             'email': 'test@test.com',
@@ -120,7 +124,7 @@ class SignupTestCase(TestCase):
         post_data = self.form_data
         path = reverse('signup')
         response = self.client.post(path, post_data)
-        self.assertContains(response, "Thank you for signing up for GreekLink")
+        self.assertContains(response, "Thank you for signing up for GreekRho")
 
     # tests that inactive users can activate with activate view
     def test_activate_view(self):
@@ -256,8 +260,9 @@ class SignupTestCase(TestCase):
         self.assertFalse(user.check_password('xyzabc'))
         self.assertTrue(user.check_password('originalpassword'))
 
-class ResourcesTestCaseAdmin(TestCase):
+class ResourcesAdminTestCase(TenantTestCase):
     def setUp(self):
+        self.client = TenantClient(self.tenant)
         self.admin = User.objects.create(username="admin", is_superuser=True, is_staff=True)
         self.client.force_login(self.admin)
 
@@ -305,7 +310,8 @@ class ResourcesTestCaseAdmin(TestCase):
         path = reverse('upload_file')
         response = self.client.post(path, post_dict, follow=True)
         self.assertContains(response, 'filename')
-        path = reverse('remove_file', kwargs=dict(file_id=1))
+        file_object = ResourceFile.objects.get(name='filename')
+        path = reverse('remove_file', kwargs=dict(file_id=file_object.pk))
         response = self.client.post(path, follow=True)
         self.assertNotContains(response, 'filename')
 
@@ -357,15 +363,17 @@ class ResourcesTestCaseAdmin(TestCase):
     # tests remove link function
     def test_remove_link(self):
         ResourceLink.objects.create(name='test', description='test description', url='https://www.google.com')
-        path = reverse('remove_link', kwargs=dict(link_id=1))
+        link_object = ResourceLink.objects.get(name='test')
+        path = reverse('remove_link', kwargs=dict(link_id=link_object.pk))
         referer = reverse('resources')
         response = self.client.post(path, HTTP_REFERER=referer, follow=True)
         self.assertFalse(ResourceLink.objects.all())
         self.assertFalse(re.findall("<h4.*test</h4", str(response.content)))
 
 
-class ResourcesTestCaseRegular(TestCase):
+class ResourcesTestCaseRegular(TenantTestCase):
     def setUp(self):
+        self.client = TenantClient(self.tenant)
         self.regular = User.objects.create(username="regular")
         self.client.force_login(self.regular)
         self.path = reverse('resources')
@@ -384,8 +392,9 @@ class ResourcesTestCaseRegular(TestCase):
         self.assertNotContains(self.response, "modal")
 
         
-class AnnouncementsTestCase(TestCase):
+class AnnouncementsTestCase(TenantTestCase):
     def setUp(self):
+        self.client = TenantClient(self.tenant)
         u = User.objects.create(username="admin", is_staff=True, is_superuser=True)
         self.client.force_login(u)
         a = Announcement.objects.create(user=u)
@@ -439,11 +448,12 @@ class AnnouncementsTestCase(TestCase):
         self.assertContains(response, 'titlebody')
 
 
-class SocialTestCase(TestCase):
+class SocialTestCase(TenantTestCase):
     def setUp(self):
+        self.client = TenantClient(self.tenant)
         self.admin = User.objects.create(username="admin", is_staff=True, is_superuser=True)
         self.client.force_login(self.admin)
-        SocialEvent.objects.create()
+        self.event = SocialEvent.objects.create()
         
     # tests that the social page exists with the proper header
     def test_social_home_template(self):
@@ -456,7 +466,7 @@ class SocialTestCase(TestCase):
     def test_event_on_home_page(self):
         path = reverse('social')
         response = self.client.post(path)
-        self.assertContains(response, '<a href="social_event1"')
+        self.assertContains(response, '<a href="social_event' + str(self.event.pk))
     
     # tests the create event function
     def test_create_event(self):
@@ -467,13 +477,13 @@ class SocialTestCase(TestCase):
 
     # tests that the page for an individual social event exists
     def test_social_event_page_exists(self):
-        path = reverse('social_event', kwargs=dict(event_id=1))
+        path = reverse('social_event', kwargs=dict(event_id=self.event.pk))
         response = self.client.post(path)
         self.assertEqual(response.status_code, 200)
     
     # tests that the social event page populates with relevant data
     def test_social_event_page_populates(self):
-        path = reverse('social_event', kwargs=dict(event_id=1))
+        path = reverse('social_event', kwargs=dict(event_id=self.event.pk))
         response = self.client.post(path)
         content = str(response.content)
         self.assertTrue(re.findall('<h1.*test</h1>', content))
@@ -481,16 +491,16 @@ class SocialTestCase(TestCase):
 
     # tests the remove_social_event function
     def test_remove_social_event(self):
-        path = reverse('remove_social_event', kwargs=dict(event_id=1))
+        path = reverse('remove_social_event', kwargs=dict(event_id=self.event.pk))
         response = self.client.post(path, HTTP_REFERER=reverse('social'), follow=True)
         self.assertNotContains(response, "test_name -- Jan. 1, 2001, noon")
         self.assertRaises(SocialEvent.DoesNotExist, SocialEvent.objects.get, id=1)
 
     # tests that the add_to_list function works with both individual and multiple input
     def test_add_to_list_individual_and_multiple(self):
-        path = reverse('add_to_list', kwargs=dict(event_id=1))
+        path = reverse('add_to_list', kwargs=dict(event_id=self.event.pk))
         post_data = {'multiple_names': 'many_name1\nmany_name2\nmany_name3', 'name': 'individual_name'}
-        referer = reverse('social_event', kwargs=dict(event_id=1))
+        referer = reverse('social_event', kwargs=dict(event_id=self.event.pk))
         response = self.client.post(path, post_data, HTTP_REFERER=referer)
         self.assertTrue(Attendee.objects.filter(name="many_name1"))
         self.assertTrue(Attendee.objects.filter(name="many_name2"))
@@ -499,44 +509,46 @@ class SocialTestCase(TestCase):
 
     # tests that add_to_list function works with only individual input
     def test_add_to_list_individual(self):
-        path = reverse('add_to_list', kwargs=dict(event_id=1))
+        path = reverse('add_to_list', kwargs=dict(event_id=self.event.pk))
         post_data = {'multiple_names': '', 'name': 'individual_name'}
-        referer = reverse('social_event', kwargs=dict(event_id=1))
+        referer = reverse('social_event', kwargs=dict(event_id=self.event.pk))
         response = self.client.post(path, post_data, HTTP_REFERER=referer)
         self.assertTrue(Attendee.objects.filter(name="individual_name"))
         self.assertFalse(Attendee.objects.filter(name="many_name"))
 
     # tests that add_to_list function works with only multiple-name input
     def test_add_to_list_multiple(self):
-        path = reverse('add_to_list', kwargs=dict(event_id=1))
+        path = reverse('add_to_list', kwargs=dict(event_id=self.event.pk))
         post_data = {'multiple_names': 'many_name1\nmany_name2\nmany_name3', 'name': ''}
-        referer = reverse('social_event', kwargs=dict(event_id=1))
+        referer = reverse('social_event', kwargs=dict(event_id=self.event.pk))
         response = self.client.post(path, post_data, HTTP_REFERER=referer)
         self.assertTrue(Attendee.objects.filter(name="many_name1"))
         self.assertTrue(Attendee.objects.filter(name="many_name2"))
         self.assertTrue(Attendee.objects.filter(name="many_name3"))
         self.assertFalse(Attendee.objects.filter(name="individual_name"))
 
-class SocialEventTestCase(TestCase):
+class SocialEventTestCase(TenantTestCase):
     
     def setUp(self):
+        self.client = TenantClient(self.tenant)
         self.admin = User.objects.create(username="admin", is_staff=True, is_superuser=True)
         self.client.force_login(self.admin)
-        SocialEvent.objects.create()
-        self.event = SocialEvent.objects.get(id=1)
+        self.event = SocialEvent.objects.create()
+        self.attendees = []
         for i in range(1, 4):
-            a = Attendee.objects.create(name="attendee" + str(i), user=self.admin, event=self.event)
+             a = Attendee.objects.create(name="attendee" + str(i), user=self.admin, event=self.event)
+             self.attendees.append(a)
         self.event.save()
 
     # tests remove_from_list feature to make sure attendees are removed from database and UI
     def test_remove_from_list(self):
-        path = reverse('remove_from_list', kwargs=dict(event_id=1, attendee_id=1))
-        referer = reverse('social_event', kwargs=dict(event_id=1))
+        path = reverse('remove_from_list', kwargs=dict(event_id=self.event.pk, attendee_id=self.attendees[0].pk))
+        referer = reverse('social_event', kwargs=dict(event_id=self.event.pk))
         response = self.client.post(path, HTTP_REFERER=referer, follow=True)
         self.assertFalse(Attendee.objects.filter(name="attendee1"))
         self.assertFalse(re.findall("<td.*>attendee1</td>", str(response.content)))
         self.assertTrue(re.findall("<td.*>attendee2</td>", str(response.content)))
-        path = reverse('remove_from_list', kwargs=dict(event_id=1, attendee_id=2))
+        path = reverse('remove_from_list', kwargs=dict(event_id=self.event.pk, attendee_id=self.attendees[1].pk))
         response = self.client.post(path, HTTP_REFERER=referer, follow=True)
         self.assertFalse(Attendee.objects.filter(name="attendee2"))
         self.assertFalse(re.findall("<td.*>attendee2</td>", str(response.content)))
@@ -544,8 +556,8 @@ class SocialEventTestCase(TestCase):
 
     # tests clear list feature
     def test_clear_list(self):
-        path = reverse('clear_list', kwargs=dict(event_id=1))
-        referer = reverse('social_event', kwargs=dict(event_id=1))
+        path = reverse('clear_list', kwargs=dict(event_id=self.event.pk))
+        referer = reverse('social_event', kwargs=dict(event_id=self.event.pk))
         response = self.client.post(path, HTTP_REFERER=referer, follow=True)
         content = str(response.content)
         self.assertFalse(re.findall("<td>attendee[1-3]</td>", content))
@@ -553,27 +565,27 @@ class SocialEventTestCase(TestCase):
 
     # tests exporting a spreadsheet of attendees
     def test_export_xls(self):
-        path = reverse('export_xls', kwargs=dict(event_id=1))
+        path = reverse('export_xls', kwargs=dict(event_id=self.event.pk))
         response = self.client.post(path)
         self.assertEqual(response.get('Content-Type'), 'application/ms-excel')
-        self.assertEqual(response.get('Content-Disposition'), 'attachment; filename=1_attendance.xls')
+        self.assertEqual(response.get('Content-Disposition'), 'attachment; filename=' + str(self.event.pk) + '_attendance.xls')
 
     # tests adding single duplicate name to the list
     def test_add_individual_duplicate(self):
-        path = reverse('add_to_list', kwargs=dict(event_id=1))
+        path = reverse('add_to_list', kwargs=dict(event_id=self.event.pk))
         # should fail, because name is a duplicate
         post_data = {'multiple_names': '', 'name': 'attendee1'}
-        referer = reverse('social_event', kwargs=dict(event_id=1))
+        referer = reverse('social_event', kwargs=dict(event_id=self.event.pk))
         response = self.client.post(path, post_data, HTTP_REFERER=referer, follow=True)
         self.assertContains(response, " <b>The following name was not added to the list, because it is a duplicate:</b> attendee1")
         self.assertEqual(len(Attendee.objects.filter(name="attendee1")), 1)
 
     # tests adding multiple duplicate names to the list
     def test_add_multiple_duplicate(self):
-        path = reverse('add_to_list', kwargs=dict(event_id=1))
+        path = reverse('add_to_list', kwargs=dict(event_id=self.event.pk))
         # should fail, because both names are duplicates
         post_data = {'multiple_names': 'attendee1\nattendee2', 'name': ''}
-        referer = reverse('social_event', kwargs=dict(event_id=1))
+        referer = reverse('social_event', kwargs=dict(event_id=self.event.pk))
         response = self.client.post(path, post_data, HTTP_REFERER=referer, follow=True)
         self.assertContains(response, " <b>The following name was not added to the list, because it is a duplicate:</b> attendee1")
         self.assertContains(response, " <b>The following name was not added to the list, because it is a duplicate:</b> attendee2")
@@ -582,10 +594,10 @@ class SocialEventTestCase(TestCase):
     
     # tests adding multiple names where some are duplicates and some aren't
     def test_add_duplicates_and_new(self):
-        path = reverse('add_to_list', kwargs=dict(event_id=1))
+        path = reverse('add_to_list', kwargs=dict(event_id=self.event.pk))
         # one should fail, one should work
         post_data = {'multiple_names': 'attendee1\nattendee5', 'name': ''}
-        referer = reverse('social_event', kwargs=dict(event_id=1))
+        referer = reverse('social_event', kwargs=dict(event_id=self.event.pk))
         response = self.client.post(path, post_data, HTTP_REFERER=referer, follow=True)
         self.assertContains(response, "<b>The following name was not added to the list, because it is a duplicate:</b> attendee1")
         self.assertNotContains(response, "<b>The following name was not added to the list, because it is a duplicate:</b> attendee2")
@@ -595,7 +607,7 @@ class SocialEventTestCase(TestCase):
     # tests checking attendance feature
     def test_check_attendance(self):
         path = reverse('check_attendee')
-        a = Attendee.objects.get(id=1)
+        a = self.event.list.first()
         get_data = {'attendee_id': a.id}
         response = self.client.get(path, get_data)
         self.assertEqual(response.status_code, 200)
@@ -607,7 +619,7 @@ class SocialEventTestCase(TestCase):
         self.assertTrue(a.attended)
 
     def test_uncheck_attendance(self):
-        a = Attendee.objects.get(id=1)
+        a = self.event.list.first()
         a.attended = True
         a.save()
         path = reverse('check_attendee')
@@ -627,17 +639,17 @@ class SocialEventTestCase(TestCase):
         get_data = {'event_id': self.event.id}
         response = self.client.get(path, get_data)
         self.assertEqual(response.status_code, 200)
-        # response should be false for all three attendees, with ids from 1 to 3 inclusive
+        # response should be false for all three attendees
         self.assertJSONEqual(
             str(response.content, encoding='utf8'),
             {
-                str(1): False,
-                str(2): False,
-                str(3): False
+                str(self.attendees[0].pk): False,
+                str(self.attendees[1].pk): False,
+                str(self.attendees[2].pk): False
             }
         )
     
-    # tests refresh_attendees view when status of attendee changes, to ensure change is propogated
+    # tests refresh_attendees view when status of attendee changes, to ensure change is propagated
     def test_refresh_attendees_dynamic(self):
         path = reverse('refresh_attendees')
         get_data = {'event_id': self.event.id}
@@ -645,14 +657,14 @@ class SocialEventTestCase(TestCase):
         self.assertJSONEqual(
             str(response.content, encoding='utf8'),
             {
-                str(1): False,
-                str(2): False,
-                str(3): False
+                str(self.attendees[0].pk): False,
+                str(self.attendees[1].pk): False,
+                str(self.attendees[2].pk): False
             }
         )
 
         # change one of the attendees, to see if the refresh changes the JSON response
-        a = Attendee.objects.get(id=2)
+        a = Attendee.objects.get(id=self.attendees[1].pk)
         a.attended = True
         a.save()
 
@@ -660,16 +672,16 @@ class SocialEventTestCase(TestCase):
         self.assertJSONEqual(
             str(response.content, encoding='utf8'),
             {
-                str(1): False,
-                str(2): True,
-                str(3): False
+                str(self.attendees[0].pk): False,
+                str(self.attendees[1].pk): True,
+                str(self.attendees[2].pk): False
             }
         )
 
     # test toggle_party_mode view
     def test_toggle_party_mode_view(self):
         # event.party_mode is initially false, request should make it true
-        path = reverse('toggle_party_mode', kwargs=dict(event_id=1))
+        path = reverse('toggle_party_mode', kwargs=dict(event_id=self.event.pk))
         response = self.client.post(path)
         self.event.refresh_from_db()
         self.assertTrue(self.event.party_mode)
@@ -682,7 +694,7 @@ class SocialEventTestCase(TestCase):
     # test toggle_party_mode template
     def test_toggle_party_mode_template(self):
         # party mode should initially be false
-        referer = reverse('social_event', kwargs=dict(event_id=1))
+        referer = reverse('social_event', kwargs=dict(event_id=self.event.pk))
         response = self.client.post(referer)
 
         # when party mode is off, the label by the button should say off
@@ -695,7 +707,7 @@ class SocialEventTestCase(TestCase):
         self.assertNotContains(response, "Attended")
 
         # set party mode to true
-        path = reverse('toggle_party_mode', kwargs=dict(event_id=1))
+        path = reverse('toggle_party_mode', kwargs=dict(event_id=self.event.pk))
         response = self.client.post(path, HTTP_REFERER=referer, follow=True)
         
         # when party mode is on, the label by the button should say on
@@ -708,7 +720,10 @@ class SocialEventTestCase(TestCase):
         self.assertNotContains(response, "Type Full Name Here")
         
 
-class ErrorsTestCase(TestCase):
+class ErrorsTestCase(TenantTestCase):
+
+    def setUp(self):
+        self.client = TenantClient(self.tenant)
     
     # tests custom 404 page appears on 404 error
     def test_404_custom_page(self):
@@ -717,15 +732,9 @@ class ErrorsTestCase(TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertIn("The requested URL, " + path + " could not be found.", str(response.content))
 
-    # tests custom 500 error appears on 500 error
-    def test_500_custom_page(self):
-        request = self.client.request()
-        request.current_app = 'core'
-        response = handler500(request)
-        self.assertIn("Something went wrong on our end.  We\\\'re working hard to fix it.", str(response.content))
-
-class SearchTestCases(TestCase):
+class SearchTestCase(TenantTestCase):
     def setUp(self):
+        self.client = TenantClient(self.tenant)
         self.admin = User.objects.create(username="admin", is_staff=True, is_superuser=True)
         self.client.force_login(self.admin)
         file = SimpleUploadedFile("file.txt", b"file_content", content_type="text/plain")
@@ -772,15 +781,16 @@ class SearchTestCases(TestCase):
         self.assertContains(response, '0 results for <b>None</b>')
 
 
-class RosterTestCase(TestCase):
+class RosterTestCase(TenantTestCase):
     def setUp(self):
+        self.client = TenantClient(self.tenant)
         self.admin = User.objects.create(username="admin", is_superuser=True, is_staff=True)
         self.client.force_login(self.admin)
         self.roster = Roster.objects.create(title="test_roster")
     
     # tests roster view function
     def test_roster_view(self):
-        path = reverse('roster', kwargs=dict(roster_id=1))
+        path = reverse('roster', kwargs=dict(roster_id=self.roster.pk))
         response = self.client.get(path)
         self.assertContains(response, "test_roster</h1>")
 
@@ -792,8 +802,8 @@ class RosterTestCase(TestCase):
     
     # tests edit_roster view function
     def test_edit_roster_view(self):
-        path = reverse('edit_roster', kwargs=dict(roster_id=1))
-        referer = reverse('roster', kwargs=dict(roster_id=1))
+        path = reverse('edit_roster', kwargs=dict(roster_id=self.roster.pk))
+        referer = reverse('roster', kwargs=dict(roster_id=self.roster.pk))
         post_data = {
             'updated_members': 'test1\ntest2\ntest3'
         }
@@ -805,8 +815,8 @@ class RosterTestCase(TestCase):
 
     # tests editing roster with duplicates
     def test_edit_roster_duplicates(self):
-        path = reverse('edit_roster', kwargs=dict(roster_id=1))
-        referer = reverse('roster', kwargs=dict(roster_id=1))
+        path = reverse('edit_roster', kwargs=dict(roster_id=self.roster.pk))
+        referer = reverse('roster', kwargs=dict(roster_id=self.roster.pk))
         # contains duplicate of test1
         post_data = {
             'updated_members': 'test1\ntest2\ntest1'
@@ -823,9 +833,9 @@ class RosterTestCase(TestCase):
         
     # tests remove_from_roster function
     def test_remove_from_roster(self):
-        RosterMember.objects.create(name="test", roster=self.roster)
-        path = reverse('remove_from_roster', kwargs=dict(roster_id=1, member_id=1))
-        referer = reverse('roster', kwargs=dict(roster_id=1))
+        member = RosterMember.objects.create(name="test", roster=self.roster)
+        path = reverse('remove_from_roster', kwargs=dict(roster_id=self.roster.pk, member_id=member.pk))
+        referer = reverse('roster', kwargs=dict(roster_id=self.roster.pk))
         response = self.client.get(path, HTTP_REFERER=referer, follow=True)
         self.assertEqual(self.roster.members.count(), 0)
         self.assertNotContains(response, "test</td>")
@@ -925,7 +935,7 @@ class RosterTestCase(TestCase):
 
     # tests remove_roster function
     def test_remove_roster(self):
-        path = reverse('remove_roster', kwargs=dict(roster_id=1))
+        path = reverse('remove_roster', kwargs=dict(roster_id=self.roster.pk))
         referer = reverse('social')
         response = self.client.post(path, HTTP_REFERER=referer, follow=True)
         self.assertNotContains(response, "test_roster</a>")

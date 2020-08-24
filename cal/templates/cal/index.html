@@ -62,6 +62,15 @@
                         </div>
                     </div>
                     <div class="form-group row">
+                        <div class="col-sm-2">
+                            {{ event_form.public }}
+                        </div>
+                        <div class="col-sm-10">
+                            {{ event_form.public.label }}<br>
+                            <small>Making an event public will make it visible to other organizations in your community</small>
+                        </div>
+                    </div>
+                    <div class="form-group row">
                         <div class="col-sm-2 col-form-label">
                             {{ event_form.recurring.label }}
                         </div>
@@ -107,10 +116,12 @@
                 <p><span class="alert alert-success calendar-key"> </span> &nbsp;&nbsp;Rush Event</p>
                 <p><span class="alert alert-primary calendar-key"> </span> &nbsp;&nbsp;Social Event</p>
                 <p><span class="alert alert-secondary calendar-key"> </span> &nbsp;&nbsp;Chapter Event</p>
+                <p><span class="alert alert-info calendar-key"> </span> &nbsp;&nbsp;Public Event</p>
                 {% else %}
                 <p>Days with a grey highlight have an event scheduled.  Click on the date to view them!</p>
                 {% endif %}
                 <p>Rush and Social Events are added to this calendar automatically as they are created by admins in the Rush and Social tabs.  Click on any of these events to be redirected to the corresponding event.  Chapter events are events not associated with rush or social.</p>
+                <p>Public events are events that other organizations have added to their calendar and elected to make public to the community.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -181,6 +192,19 @@
                         {% else %}
                         {{ event.location }}
                         {% endif %}
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-2" style="text-align: center">
+                        {% if perms.cal.change_chapterevent %}
+                        <input type="checkbox" name="public" class="form-check-input" {% if event.is_public %}checked{% endif %}>
+                        {% else %}
+                        <input type="checkbox" name="public" class="form-check-input" {% if event.is_public %}checked{% endif %} disabled>
+                        {% endif %}
+                    </div>
+                    <div class="col-sm-10">
+                        Public?<br>
+                        <small>Public events are visible to other organizations in your community</small>
                     </div>
                 </div>
                 {% if event.recurring != 'None' and not perms.cal.change_chapterevent %}

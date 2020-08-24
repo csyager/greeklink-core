@@ -12,6 +12,8 @@ from dateutil.relativedelta import relativedelta
 from itertools import chain
 from django.contrib.auth.decorators import login_required, permission_required
 from .forms import ChapterEventForm
+from organizations.models import Client
+from tenant_schemas.utils import tenant_context
 
 class Calendar(HTMLCalendar):
     def __init__(self, request, year=None, month=None):
@@ -25,6 +27,16 @@ class Calendar(HTMLCalendar):
             social_events_per_day = social_events.filter(date__day=day)
             rush_events_per_day = rush_events.filter(date__day=day)
             chapter_events_per_day = chapter_events.filter(date__day=day)
+            public_social_events_per_day = []
+            public_chapter_events_per_day = []
+            org_community = self.request.tenant.community
+            if org_community is not None:
+                for tenant in Client.objects.filter(community=org_community).exclude(name=self.request.tenant.name).all():
+                    with tenant_context(tenant):
+                        for event in SocialEvent.objects.filter(is_public=True, date__month=self.month, date__year=self.year, date__day=day):
+                            public_social_events_per_day.append((event, tenant.name))
+                        for event in ChapterEvent.objects.filter(is_public=True, date__month=self.month, date__year=self.year, date__day=day):
+                            public_chapter_events_per_day.append((event, tenant.name))
             d = ''
             for event in social_events_per_day:
                 time = event.time.strftime("%I:%M %p").lstrip("0")
@@ -35,6 +47,12 @@ class Calendar(HTMLCalendar):
             for event in chapter_events_per_day:
                 time = event.time.strftime("%I:%M %p").lstrip("0")
                 d += f'<div class="alert alert-secondary alert-calendar"><a href="" data-toggle="modal" data-target="#detailModal_{ event.pk }">{ time } - { event.name }</a></div>'
+            for event in public_social_events_per_day:
+                time = event[0].time.strftime("%I:%M %p").lstrip("0")
+                d += f'<div class="alert alert-info alert-calendar">{ time } - { event[1] }\'s { event[0].name }</div>'
+            for event in public_chapter_events_per_day:
+                time = event[0].time.strftime("%I:%M %p").lstrip("0")
+                d += f'<div class="alert alert-info alert-calendar"> { time } - { event[1] }\'s { event[0].name }</div>'
             if day != 0 and d != '':
                 return f"<td class='day-cell table-active'><span class='date'><a href='/cal/date/{self.year}/{self.month}/{day}'>{day}</a></span> <div class='scrollable'>{d}</div></td>"
             elif day != 0:
@@ -101,9 +119,22 @@ def date(request, year, month, day):
     social_events = SocialEvent.objects.filter(date=this_date)
     rush_events = RushEvent.objects.filter(date=this_date)
     chapter_events = ChapterEvent.objects.filter(date=this_date)
+    public_social_events = []
+    public_chapter_events = []
+    org_community = request.tenant.community
+    for tenant in Client.objects.filter(community=org_community).exclude(name=request.tenant.name).all():
+                with tenant_context(tenant):
+                    for event in SocialEvent.objects.filter(is_public=True, date=this_date):
+                        public_social_events.append((event, tenant.name))
+                    for event in ChapterEvent.objects.filter(is_public=True, date=this_date):
+                        public_chapter_events.append((event, tenant.name))
     all_events = sorted(
         chain(social_events, rush_events, chapter_events),
         key=lambda instance: instance.time
+    )
+    community_events = sorted(
+        chain(public_social_events, public_chapter_events),
+        key=lambda instance: instance[0].time
     )
     context = {
         'settings': getSettings(),
@@ -114,6 +145,7 @@ def date(request, year, month, day):
         'rush_events': rush_events,
         'chapter_events': chapter_events,
         'all_events': all_events,
+        'community_events': community_events,
         'next_date': this_date + timedelta(days=1),
         'prev_date': this_date - timedelta(days=1)
     }
@@ -128,10 +160,11 @@ def create_chapter_event(request):
             date = form.cleaned_data.get('date')
             time = form.cleaned_data.get('time')
             location = form.cleaned_data.get('location')
+            is_public = form.cleaned_data.get('public')
             recurring = form.cleaned_data.get('recurring')
             end_date = form.cleaned_data.get('end_date')
 
-            ChapterEvent.objects.create_chapter_event(name, date, time, location, recurring, end_date)
+            ChapterEvent.objects.create_chapter_event(name, date, time, is_public, location, recurring, end_date)
 
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         else:
@@ -164,9 +197,13 @@ def edit_chapter_event(request, event_id):
             date = datetime.strptime(request.POST.get('date'), "%Y-%m-%d").date()
             time = request.POST.get('time')
             location = request.POST.get('location')
+            if request.POST.get('public') == 'on':
+                is_public = True
+            else:
+                is_public = False
             recurring = request.POST.get('recurring')
             end_date = datetime.strptime(request.POST.get('end_date'), "%Y-%m-%d").date()
-            new_event = ChapterEvent.objects.create(name=name, date=date, time=time, location=location, recurring=recurring, end_date=end_date)
+            new_event = ChapterEvent.objects.create(name=name, date=date, time=time, is_public=is_public, location=location, recurring=recurring, end_date=end_date)
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         else:
             ChapterEvent.objects.get(pk=event_id).delete_all()
@@ -174,9 +211,13 @@ def edit_chapter_event(request, event_id):
             date = datetime.strptime(request.POST.get('date'), "%Y-%m-%d").date()
             time = request.POST.get('time')
             location = request.POST.get('location')
+            if request.POST.get('public') == 'on':
+                is_public = True
+            else:
+                is_public = False
             recurring = request.POST.get('recurring')
             end_date = datetime.strptime(request.POST.get('end_date'), "%Y-%m-%d").date()
-            ChapterEvent.objects.create_chapter_event(name=name, date=date, time=time, location=location, recurring=recurring, end_date=end_date)
+            ChapterEvent.objects.create_chapter_event(name=name, date=date, time=time, is_public=is_public, location=location, recurring=recurring, end_date=end_date)
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
     else:
         raise Http404
