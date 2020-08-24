@@ -30,21 +30,14 @@
                         <h5 class="card-title">Login</h5>
                             <form method="post">
                                 {% csrf_token %}
-                                {% if form.errors %}
-                                <div class="alert alert-danger" role="alert">
-                                    Invalid username or password
-                                </div>
-                                {% endif %}
                                 <div class="form-group">
-                                    {{ form.username }}
-                                </div>
+                                    <div style='text-align: left'>
+                                        <b>{{ form.organization.label }}</b>
+                                    </div><br>
+                                    {{ form.organization }}
+                                </div>                           
                                 <div class="form-group">
-                                    {{ form.password }}
-                                    <small style="text-align: left"><a href="/forgot_credentials">I forgot my username or password</a></small>
-                                </div>                               
-                                <div class="form-group">
-                                <button type="submit" class="btn btn-primary">Login</button> {% if request.user_agent.is_mobile %}<br><br>{% endif %}
-                                <a href="/signup"><button class='btn btn-secondary' type="button">I don't have an account</button></a>
+                                <button type="submit" class="btn btn-primary">Submit</button> {% if request.user_agent.is_mobile %}<br><br>{% endif %}
                             </form>
                     </div>
                 </div>

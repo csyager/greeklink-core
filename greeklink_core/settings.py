@@ -18,6 +18,8 @@ environ.Env.read_env()
 
 ENV = os.environ['ENV']
 
+SITE_ID = 1
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
@@ -34,32 +36,50 @@ if ENV == 'testing':
 else:
     DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'greeklink-core-env.eba-7mntraig.us-west-2.elasticbeanstalk.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'greeklink-core-env.eba-7mntraig.us-west-2.elasticbeanstalk.com', 'test.localhost', 'test2.localhost']
 
 
 # Application definition
+SHARED_APPS = (
+    'tenant_schemas',
+    'organizations',
+    'django.contrib.contenttypes',
+    'django.contrib.sites',
+    'django.contrib.staticfiles',
+    'django.contrib.sessions',
+)
 
-MY_APPS = [
-    'core.apps.CoreConfig',
-    'rush.apps.RushConfig',
-    'cal.apps.CalConfig',
-]
+TENANT_APPS = (
+    'django.contrib.contenttypes',
+    'django.contrib.auth',
+    'django.contrib.admin',
+    'core',
+    'rush',
+    'cal',
+)
 
 INSTALLED_APPS = [
+    'tenant_schemas',
+    'organizations.apps.OrganizationsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'crispy_forms',
     'django_user_agents',
     'storages',
+    'core.apps.CoreConfig',
+    'rush.apps.RushConfig',
+    'cal.apps.CalConfig',
 ]
 
-INSTALLED_APPS += MY_APPS
+TENANT_MODEL = 'organizations.Client'
 
 MIDDLEWARE = [
+    'tenant_schemas.middleware.TenantMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -91,17 +111,21 @@ TEMPLATES = [
     },
 ]
 
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.core.context_processors.request',
+)
+
 WSGI_APPLICATION = 'greeklink_core.wsgi.application'
 
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-# aws postgres database in production
+# aws postgres database in production with multitenant support
 if 'RDS_DB_NAME' in os.environ:
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'ENGINE': 'tenant_schemas.postgresql_backend',
             'NAME': os.environ['RDS_DB_NAME'],
             'USER': os.environ['RDS_USERNAME'],
             'PASSWORD': os.environ['RDS_PASSWORD'],
@@ -113,11 +137,18 @@ if 'RDS_DB_NAME' in os.environ:
 else:
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+            'ENGINE': 'tenant_schemas.postgresql_backend',
+            'NAME': 'greeklinkdb',
+            'USER': 'greeklinkuser',
+            'PASSWORD': 'greeklink1',
+            'HOST': 'localhost',
+            'PORT': '',
         }
     }
 
+DATABASE_ROUTERS = (
+    'tenant_schemas.routers.TenantSyncRouter',
+)
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
@@ -180,6 +211,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 if ENV == 'testing':
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    # DEFAULT_FILE_STORAGE = 'tenant_schemas.storage.TenantFileSystemStorage'   <-- should probably be set but haven't gotten it to work yet
 
 # AWS S3 for media upload hosting
 else:

@@ -5,12 +5,15 @@ from django.urls import reverse
 from .forms import RusheeForm, CommentForm
 from django.http import HttpResponse
 from core.views import getSettings
+from tenant_schemas.test.cases import TenantTestCase
+from tenant_schemas.test.client import TenantClient
 
 # Create your tests here.
 
-class RusheeTestCase(TestCase):
+class RusheeTestCase(TenantTestCase):
     """ Tests the basic parts of the rushee view and template """
     def setUp(self):
+        self.client = TenantClient(self.tenant)
         self.u = User.objects.create(username="test_user", is_staff=True)
         self.client.force_login(self.u)
         self.rushee = Rushee.objects.create(name="test")
@@ -83,9 +86,10 @@ class RusheeTestCase(TestCase):
         self.assertNotContains(response, "You have <b>endorsed</b> this rushee")
 
 
-class RusheeFilterTestCase(TestCase):
+class RusheeFilterTestCase(TenantTestCase):
     """ tests the filter function for the rushee template """
     def setUp(self):
+        self.client = TenantClient(self.tenant)
         self.u = User.objects.create(username="test_user")
         self.client.force_login(self.u)
         self.r1 = Rushee.objects.create(name="test1")
@@ -205,9 +209,10 @@ class RusheeFilterTestCase(TestCase):
             pass
 
 
-class RusheeRegisterTestCase(TestCase):
+class RusheeRegisterTestCase(TenantTestCase):
     """ tests rushee register function """
     def setUp(self):
+        self.client = TenantClient(self.tenant)
         self.user = User.objects.create(username="test_user")
         self.client.force_login(self.user)
         self.event = RushEvent.objects.create(name='test_event', date='2001-01-01', time='00:00:00', round=1, new_rushees_allowed=True)
@@ -244,9 +249,10 @@ class RusheeRegisterTestCase(TestCase):
         except Rushee.DoesNotExist:
             pass
 
-class SigninTestCase(TestCase):
+class SigninTestCase(TenantTestCase):
     """ test cases for the signin module """
     def setUp(self):
+        self.client = TenantClient(self.tenant)
         self.user = User.objects.create(username="test_user")
         self.client.force_login(self.user)
         settings = getSettings()
@@ -286,14 +292,14 @@ class SigninTestCase(TestCase):
         """ tests that rush events appear as choices in the dropdown selector """
         path = reverse('rush:signin')
         response = self.client.post(path)
-        self.assertContains(response, '<a class="dropdown-item" href="signin1">')
-        self.assertContains(response, '<a class="dropdown-item" href="signin2">')
+        self.assertContains(response, '<a class="dropdown-item" href="signin' + str(self.event1.pk) + '">')
+        self.assertContains(response, '<a class="dropdown-item" href="signin' + str(self.event2.pk) + '">')
 
     def test_click_to_signin_link(self):
         """ tests that rushees can click to signin to events """
         path = reverse('rush:signin', kwargs=dict(event_id=self.event2.pk))
         response = self.client.post(path)
-        self.assertContains(response, "<tr onclick=\"window.location='/rush/attendance1/2';")
+        self.assertContains(response, "<tr onclick=\"window.location='/rush/attendance" + str(self.rushee.pk) + "/" + str(self.event2.pk) + "';")
 
     def test_attendance_view(self):
         """ tests the attendance view function """
@@ -302,9 +308,10 @@ class SigninTestCase(TestCase):
         self.assertTrue(RushEvent.objects.get(pk=2).attendance.get(name='test_rushee'))
         self.assertContains(response, "Thank you, test_rushee.  You're good to go!")
 
-class EventsTestCase(TestCase):
+class EventsTestCase(TenantTestCase):
     """ tests events and related functions """
     def setUp(self):
+        self.client = TenantClient(self.tenant)
         self.user = User.objects.create(username="test_user", is_superuser=True, is_staff=True)
         self.client.force_login(self.user)
         settings = getSettings()
@@ -319,12 +326,12 @@ class EventsTestCase(TestCase):
         """ tests the view showing all rush events """
         path = reverse('rush:events')
         response = self.client.post(path)
-        self.assertContains(response, '<a href="/rush/events/1" class="list-group-item">')
-        self.assertContains(response, '<a href="/rush/events/2" class="list-group-item">')
+        self.assertContains(response, '<a href="/rush/events/' + str(self.event1.pk) + '" class="list-group-item">')
+        self.assertContains(response, '<a href="/rush/events/' + str(self.event2.pk) + '" class="list-group-item">')
 
     def test_single_event_view(self):
         """ tests the view showing a single event """
-        path = reverse('rush:event', kwargs=dict(event_id=1))
+        path = reverse('rush:event', kwargs=dict(event_id=self.event1.pk))
         response = self.client.post(path)
         self.assertContains(response, 'first_event')
 
@@ -332,9 +339,9 @@ class EventsTestCase(TestCase):
         """ tests that rushees in attendance are listed on event page """
         self.event1.attendance.add(self.rushee1)
         self.event1.save()
-        path = reverse('rush:event', kwargs=dict(event_id=1))
+        path = reverse('rush:event', kwargs=dict(event_id=self.event1.pk))
         response = self.client.post(path)
-        self.assertContains(response, "<tr onclick=\"window.location='/rush/rushee1';")
+        self.assertContains(response, "<tr onclick=\"window.location='/rush/rushee" + str(self.rushee1.pk))
 
     def test_create_event_new_rushees(self):
         """ tests create_event view """
@@ -388,9 +395,10 @@ class EventsTestCase(TestCase):
         except RushEvent.DoesNotExist:
             pass
         
-class CurrentRusheesTestCase(TestCase):
+class CurrentRusheesTestCase(TenantTestCase):
     """ tests for the current rushees page """
     def setUp(self):
+        self.client = TenantClient(self.tenant)
         self.user = User.objects.create(username="test_user")
         self.client.force_login(self.user)
         self.rushee1 = Rushee.objects.create(name="first_rushee")
@@ -401,9 +409,9 @@ class CurrentRusheesTestCase(TestCase):
         """ tests that current rushees page displays with all rushees """
         path = reverse('rush:current_rushees')
         response = self.client.post(path)
-        self.assertContains(response, "<tr onclick=\"window.location='rushee1';")
-        self.assertNotContains(response, "<tr onclick=\"window.location='rushee2';")
-        self.assertContains(response, "<tr onclick=\"window.location='rushee3';")
+        self.assertContains(response, "<tr onclick=\"window.location='rushee" + str(self.rushee1.pk))
+        self.assertNotContains(response, "<tr onclick=\"window.location='rushee" + str(self.rushee2.pk))
+        self.assertContains(response, "<tr onclick=\"window.location='rushee" + str(self.rushee3.pk))
 
     def test_current_rushees_with_filter(self):
         """ tests current rushees page with filter set """
@@ -412,9 +420,9 @@ class CurrentRusheesTestCase(TestCase):
         session.save()
         path = reverse('rush:current_rushees')
         response = self.client.post(path)
-        self.assertContains(response, "<tr onclick=\"window.location='rushee1';")
-        self.assertNotContains(response, "<tr onclick=\"window.location='rushee2';")
-        self.assertNotContains(response, "<tr onclick=\"window.location='rushee3';")
+        self.assertContains(response, "<tr onclick=\"window.location='rushee" + str(self.rushee1.pk))
+        self.assertNotContains(response, "<tr onclick=\"window.location='rushee" + str(self.rushee2.pk))
+        self.assertNotContains(response, "<tr onclick=\"window.location='rushee" + str(self.rushee3.pk))
 
     def test_current_rushees_with_cut(self):
         """ tests current rushees with cut filter set """
@@ -423,14 +431,15 @@ class CurrentRusheesTestCase(TestCase):
         session.save()
         path = reverse('rush:current_rushees')
         response = self.client.post(path)
-        self.assertContains(response, "<tr onclick=\"window.location='rushee1';")
-        self.assertContains(response, "<tr onclick=\"window.location='rushee2';")
-        self.assertContains(response, "<tr onclick=\"window.location='rushee3';")
+        self.assertContains(response, "<tr onclick=\"window.location='rushee" + str(self.rushee1.pk))
+        self.assertContains(response, "<tr onclick=\"window.location='rushee" + str(self.rushee2.pk))
+        self.assertContains(response, "<tr onclick=\"window.location='rushee" + str(self.rushee3.pk))
 
 
-class VotingTestCase(TestCase):
+class VotingTestCase(TenantTestCase):
     """ tests voting functions """
     def setUp(self):
+        self.client = TenantClient(self.tenant)
         self.rushee = Rushee.objects.create(name="test_rushee", voting_open=True)
         self.user = User.objects.create(username="test_user", is_staff=True, is_superuser=True)
         self.client.force_login(self.user)

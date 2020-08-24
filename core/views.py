@@ -34,8 +34,9 @@ from django.contrib import messages
 from django.http import JsonResponse, Http404
 from django.views.generic import ListView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 import datetime
+from django.contrib.auth.views import LoginView
 # Create your views here.
 
 def getSettings():
@@ -52,6 +53,30 @@ def getSettings():
         settings = SiteSettings.objects.all()
     settings = settings[0]
     return settings
+
+# extends built in Django LoginView
+class CustomLoginView(LoginView):
+    def get(self, request, *args, **kwargs):
+        current_site = request.tenant.name
+        if current_site != 'public':
+            return super(CustomLoginView, self).get(request, *args, **kwargs)
+        else:
+            template = loader.get_template('core/communities.html')
+            context = {
+                'form': OrganizationSelectForm,
+            }
+            return HttpResponse(template.render(context, request))
+    def post(self, request, *args, **kwargs):
+        current_site = request.tenant.name
+        if current_site != 'public':
+            return super(CustomLoginView, self).post(request, *args, **kwargs)
+        else:
+            try:
+                port = ':' + request.build_absolute_uri('/').split(':')[2]
+            except IndexError:
+                port = ''
+            redirect_tenant_url = request.POST.get('organization')
+            return HttpResponseRedirect("http://" + redirect_tenant_url + port)
 
 # index page
 @login_required
@@ -382,6 +407,10 @@ def create_social_event(request):
         obj.date = request.POST.get('date')
         obj.time = request.POST.get('time')
         obj.location = request.POST.get('location')
+        if request.POST.get('public') == 'on':
+            obj.is_public = True
+        else:
+            obj.is_public = False
         if request.POST.get('limit') != None:
             if request.POST.get('limit') != '':
                 obj.list_limit = request.POST.get('limit')
@@ -401,6 +430,10 @@ def edit_social_event(request, event_id):
         obj.date = request.POST.get('date')
         obj.time = request.POST.get('time')
         obj.location = request.POST.get('location')
+        if request.POST.get('public') == 'on':
+            obj.is_public = True
+        else:
+            obj.is_public = False
         if request.POST.get('limit') != None:
             if request.POST.get('limit') != '':
                 obj.list_limit = request.POST.get('limit')
