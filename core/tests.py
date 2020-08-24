@@ -124,7 +124,7 @@ class SignupTestCase(TenantTestCase):
         post_data = self.form_data
         path = reverse('signup')
         response = self.client.post(path, post_data)
-        self.assertContains(response, "Thank you for signing up for GreekLink")
+        self.assertContains(response, "Thank you for signing up for GreekRho")
 
     # tests that inactive users can activate with activate view
     def test_activate_view(self):
