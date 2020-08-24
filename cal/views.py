@@ -30,12 +30,13 @@ class Calendar(HTMLCalendar):
             public_social_events_per_day = []
             public_chapter_events_per_day = []
             org_community = self.request.tenant.community
-            for tenant in Client.objects.filter(community=org_community).exclude(name=self.request.tenant.name).all():
-                with tenant_context(tenant):
-                    for event in SocialEvent.objects.filter(is_public=True, date__month=self.month, date__year=self.year, date__day=day):
-                        public_social_events_per_day.append((event, tenant.name))
-                    for event in ChapterEvent.objects.filter(is_public=True, date__month=self.month, date__year=self.year, date__day=day):
-                        public_chapter_events_per_day.append((event, tenant.name))
+            if org_community is not None:
+                for tenant in Client.objects.filter(community=org_community).exclude(name=self.request.tenant.name).all():
+                    with tenant_context(tenant):
+                        for event in SocialEvent.objects.filter(is_public=True, date__month=self.month, date__year=self.year, date__day=day):
+                            public_social_events_per_day.append((event, tenant.name))
+                        for event in ChapterEvent.objects.filter(is_public=True, date__month=self.month, date__year=self.year, date__day=day):
+                            public_chapter_events_per_day.append((event, tenant.name))
             d = ''
             for event in social_events_per_day:
                 time = event.time.strftime("%I:%M %p").lstrip("0")

@@ -36,7 +36,7 @@ if ENV == 'testing':
 else:
     DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'greeklink-core-env.eba-7mntraig.us-west-2.elasticbeanstalk.com', 'test.localhost', 'test2.localhost']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'greeklink-core-env.eba-7mntraig.us-west-2.elasticbeanstalk.com', 'test.localhost']
 
 
 # Application definition
