@@ -13,6 +13,8 @@ class ChapterEventForm(ModelForm):
         widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control rounded', 'placeholder': "HH:mm:ss in 24 hour time"}))
     location = forms.CharField(max_length=50, label='Location',
         widget=forms.TextInput(attrs={'class': 'form-control rounded'}))
+    public = forms.BooleanField(label='Make event public?', required=False,
+        widget=forms.CheckboxInput())
     recurring = forms.ChoiceField(choices=RECURRENCE_CHOICES, label="Recurring",
         widget=forms.Select(attrs={'id': 'recurring_selection', 'class': 'form-control rounded'}))
     end_date = forms.DateField(label='End Date', required=False, initial=datetime.date.today,

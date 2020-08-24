@@ -14,24 +14,24 @@ RECURRENCE_CHOICES = [
 ]
 
 class ChapterEventManager(models.Manager):
-    def create_chapter_event(self, name, date, time, location, recurring='None', end_date=None):
-        event = self.create(name=name, date=date, time=time, location=location, recurring=recurring, end_date=end_date)
+    def create_chapter_event(self, name, date, time, is_public, location, recurring='None', end_date=None):
+        event = self.create(name=name, date=date, time=time, is_public=is_public, location=location, recurring=recurring, end_date=end_date)
         if event.recurring == 'Monthly' and not event.is_recurrence:
             start_date = event.date + relativedelta(months=+1)
             while start_date <= event.end_date:
-                ChapterEvent.objects.create(name=event.name, date=start_date, time=event.time, location=event.location, 
+                ChapterEvent.objects.create(name=event.name, date=start_date, time=event.time, is_public=is_public, location=event.location, 
                                             recurring='Monthly', is_recurrence=True, end_date=event.end_date, base_event=event)
                 start_date += relativedelta(months=+1)
         if event.recurring == 'Weekly' and not event.is_recurrence:
             start_date = event.date + relativedelta(weeks=+1)
             while start_date <= event.end_date:
-                ChapterEvent.objects.create(name=event.name, date=start_date, time=event.time, location=event.location, 
+                ChapterEvent.objects.create(name=event.name, date=start_date, time=event.time, is_public=is_public, location=event.location, 
                                             recurring='Weekly', is_recurrence=True, end_date=event.end_date, base_event=event)
                 start_date += relativedelta(weeks=+1)
         if event.recurring == 'Daily' and not event.is_recurrence:
             start_date = event.date + relativedelta(days=+1)
             while start_date <= event.end_date:
-                ChapterEvent.objects.create(name=event.name, date=start_date, time=event.time, location=event.location, 
+                ChapterEvent.objects.create(name=event.name, date=start_date, time=event.time, is_public=is_public, location=event.location, 
                                             recurring='Daily', is_recurrence=True, end_date=event.end_date, base_event=event)
                 start_date += relativedelta(days=+1)
         return event
@@ -48,6 +48,7 @@ class ChapterEvent(OrgEvent):
     end_date = models.DateField(null=True, blank=True)
     is_recurrence = models.BooleanField(default=False)
     base_event = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='children')
+    is_public = models.BooleanField(default=False)
 
     def delete(self, *args, **kwargs):
         """ overrides delete method to fit recurrence """

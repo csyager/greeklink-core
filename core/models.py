@@ -4,7 +4,6 @@ from django.db import models
 from django.db.models import Q
 from django.urls import reverse
 
-
 from django.contrib.auth.models import User, Group, Permission
 
 # Stores site settings in a single model
@@ -132,6 +131,7 @@ class SocialEvent(OrgEvent):
     """
     list_limit = models.IntegerField(default=-1)
     party_mode = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=False)
 
     objects = SocialEventManager()
 

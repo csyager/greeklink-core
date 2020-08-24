@@ -13,7 +13,7 @@ urlpatterns = [
     path('activate/<int:user_id>/<str:token>', views.activate, name='activate'),
     path('forgot_credentials', views.forgot_credentials, name='forgot_credentials'),
     path('reset_password<int:user_id>/<str:token>', views.reset_password, name='reset_password'),
-    path('login/', LoginView.as_view(template_name='core/login.html', authentication_form=LoginForm), name="login"),
+    path('login/', views.CustomLoginView.as_view(template_name='core/login.html', authentication_form=LoginForm), name="login"),
     path('logout', views.logout_user, name='logout'),
     path('resources', views.resources, name="resources"),
     path('search', views.SearchView.as_view(), name="search"),

@@ -9,7 +9,7 @@
     <a href="/cal/date/{{next_date.year}}/{{next_date.month}}/{{next_date.day}}"><button class="btn btn-primary btn-sm"><i class="fa fa-chevron-right" aria-hidden="true"></i></button></a><br>
     <a href="/cal"><button class="btn btn-danger btn-sm" style="margin-top: 15px">Back to calendar</button></a>
     <hr>
-    {% if all_events %}
+    {% if all_events or community_events %}
         <ul class="list-group">  
             {% for event in all_events %}
             <li class="list-group-item">
@@ -18,6 +18,17 @@
             </li>
             {% endfor %}
         </ul>
+        {% if community_events %}
+        <h3>Community Events</h3>
+        <ul class="list-group">
+            {% for event in community_events %}
+            <!-- community_events is a list of tuples, the first element in each tuple is the event, the second is the organization it belongs to -->
+            <li class="list-group-item">
+                {{ event.1 }}'s {{ event.0.name }} -- {{ event.0.time }}
+                <br>
+            </li>
+            {% endfor %}
+        {% endif %}
     {% else %}
         <b><i>No events today</i></b>
     {% endif %}
