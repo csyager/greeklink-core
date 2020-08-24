@@ -699,13 +699,13 @@ def add_announcement(request):
             return HttpResponse(form.errors)
 
 def support_request(request):
-    
-    if request.method == 'GET':
-        template = loader.get_template('core/support.html')
-        context = {
+    context = {
             'settings': getSettings(),
             'supportform': SupportForm(),
         }
+    if request.method == 'GET':
+        template = loader.get_template('core/support.html')
+        
         return HttpResponse(template.render(context, request))
     else:
         supportform = SupportForm(request.POST)
@@ -713,9 +713,16 @@ def support_request(request):
             subject = supportform.cleaned_data['subject']
             from_email = supportform.cleaned_data['from_email']
             message = supportform.cleaned_data['message']
+
+            truemessage = render_to_string('core/support_email.html', {
+                'from_email': from_email,
+                'message': message,
+            })
+
             template2 = loader.get_template('core/supportConfirmation.html')
+            
             try:
-                send_mail(subject, message, 'verify@greeklink.com', ['Greeklink@virginia.edu'])
+                send_mail(subject, truemessage, 'verify@greeklink.com', ['Greeklink@virginia.edu'])
             except BadHeaderError:
                 return HttpResponse('Invalid header found.')
             return HttpResponse(template2.render(context, request))
@@ -726,3 +733,34 @@ def support_request(request):
                 'supportform': supportform
             }
     return HttpResponse(template.render(context, request))
+
+def signup(request):
+    template = loader.get_template('core/signup.html')
+    settings = getSettings()
+    verification_key = settings.verification_key
+    if request.method == 'POST':
+        form = SignupForm(request.POST)
+        if form.is_valid() and request.POST.get('verification_key') == verification_key:
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+            current_site = get_current_site(request)
+            mail_subject = 'Activate your blog account.'
+            template2 = loader.get_template('core/verificationWait.html')
+            context = {
+                'settings': settings,
+            }
+
+            message = render_to_string('core/acc_active_email.html', {
+                'user': user,
+                'domain': current_site.domain,
+                'uid': user.pk,
+                'token': account_activation_token.make_token(user),
+            })
+            to_email = form.cleaned_data.get('email')
+            send_mail('Activate your account', message, 'verify@greeklink.com', [to_email], fail_silently=False)
+
+            return HttpResponse(template2.render(context, request))
+    else:
+        form = SignupForm()
+    return HttpResponse(template.render({'form': form}, request))
