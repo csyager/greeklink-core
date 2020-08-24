@@ -2,9 +2,10 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, SetPasswordForm
 from django.contrib.auth.models import User
 from .models import *
-from django.forms import ModelForm
+from django.forms import ModelForm, Select
 from django.forms.widgets import TextInput
 from django.core.exceptions import ValidationError
+from organizations.models import Client, Community
 
 def getSettings():
     settings = SiteSettings.objects.all()
@@ -30,10 +31,28 @@ class LoginForm(AuthenticationForm):
     def confirm_login_allowed(self, user):   
         if not user.is_active:
             raise forms.ValidationError(
-                _("This account is inactive."),
+                ("This account is inactive."),
                 code='inactive',
             )
-        
+
+# disables first option in select to work like placeholder
+class CustomSelect(Select):
+    def create_option(self, *args, **kwargs):
+        option = super().create_option(*args, **kwargs)
+        if not option.get('value'):
+            option['attrs']['disabled'] = 'disabled'
+        return option
+
+class OrganizationSelectForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super(OrganizationSelectForm, self).__init__(*args, **kwargs)
+        self.ORG_CHOICES = [('', 'Click to select organization')]
+        for org in Client.objects.all().exclude(name='public'):
+            self.ORG_CHOICES.append((org.domain_url, org.name))
+        self.fields['organization'].choices = self.ORG_CHOICES
+
+    organization = forms.ChoiceField(label="Select your organization",
+        widget=CustomSelect(attrs={'placeholder': 'Select your organization', 'class': 'form-control rounded'}))
 
 class SignupForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
@@ -43,7 +62,7 @@ class SignupForm(UserCreationForm):
 
     username=forms.CharField(max_length=30,
         widget=forms.TextInput(attrs={'class': 'form-control rounded', 'placeholder': 'Username'}))
-    email = forms.EmailField(max_length=200, help_text='You will be asked to verify this email address in a moment.', 
+    email = forms.EmailField(max_length=200, help_text='You will be asked to verify this email address in a moment.',
         widget=forms.EmailInput(attrs={'class': 'form-control rounded', 'placeholder': 'Email'}))
     first_name = forms.CharField(max_length=30,
         widget=forms.TextInput(attrs={'class': 'form-control rounded', 'placeholder': 'First Name'}))

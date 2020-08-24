@@ -26,7 +26,7 @@ python manage.py migrate_schemas
 python manage.py collectstatic --noinput
 
 # load fixtures
-echo "from organizations.models import Client; Client.objects.create(domain_url='test.localhost', schema_name='test', name='Test Tenant', community='test_community', paid_until='2100-12-31'); exit();" | python manage.py shell
+echo "from organizations.models import Client; Client.objects.create(domain_url='test.localhost', schema_name='test', name='Test Tenant', paid_until='2100-12-31'); Client.objects.create(domain_url='localhost', schema_name='public', name='public'); exit();" | python manage.py shell
 python manage.py tenant_command loaddata --schema=test auth.json
 python manage.py tenant_command loaddata --schema=test settings.json 
 
