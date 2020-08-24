@@ -699,16 +699,14 @@ def add_announcement(request):
             return HttpResponse(form.errors)
 
 def support_request(request):
-    template = loader.get_template('core/support.html')
-    settings = getSettings()
-    supportform = SupportForm()
-    context = {
-                'settings': settings,
-                'supportform' : supportform
-            }
-
+    
     if request.method == 'GET':
-        supportform = SupportForm()
+        template = loader.get_template('core/support.html')
+        context = {
+            'settings': getSettings(),
+            'supportform': SupportForm(),
+        }
+        return HttpResponse(template.render(context, request))
     else:
         supportform = SupportForm(request.POST)
         if supportform.is_valid():
@@ -716,11 +714,15 @@ def support_request(request):
             from_email = supportform.cleaned_data['from_email']
             message = supportform.cleaned_data['message']
             template2 = loader.get_template('core/supportConfirmation.html')
-
             try:
                 send_mail(subject, message, 'verify@greeklink.com', ['Greeklink@virginia.edu'])
             except BadHeaderError:
                 return HttpResponse('Invalid header found.')
             return HttpResponse(template2.render(context, request))
-
-    return render(request, "core/support.html", context)
+        else:
+            template = loader.get_template('core/support.html')
+            context = {
+                'settings': settings,
+                'supportform': supportform
+            }
+    return HttpResponse(template.render(context, request))
