@@ -722,7 +722,7 @@ def support_request(request):
         else:
             template = loader.get_template('core/support.html')
             context = {
-                'settings': settings,
+                'settings': getSettings(),
                 'supportform': supportform
             }
     return HttpResponse(template.render(context, request))
