@@ -165,3 +165,11 @@ class SiteSettingsForm(ModelForm):
         widgets = {
             'primary_color_theme': TextInput(attrs={'type': 'color'}),
         }
+
+class SupportForm(forms.Form):
+    from_email = forms.EmailField(required=True, label='Your email:',
+        widget=forms.TextInput(attrs={'class': 'form-control rounded'})) 
+    subject = forms.CharField(required=True, label='Subject:',
+        widget=forms.TextInput(attrs={'class': 'form-control rounded'})) 
+    message = forms.CharField(required=True, max_length=280, label='Message:',
+        widget=forms.Textarea(attrs={'class': 'form-control rounded'}))
