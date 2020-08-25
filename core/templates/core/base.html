@@ -41,9 +41,15 @@
     {% endblock %} 
 </body>
 <div class="container text-center footer bg-light">
-    <img src="{% static 'core/icons/logo.png' %}">
-    <div class= "container text-right footer py-4 px-5">
-        <a href="support">Report a bug | Request a feature</a>
+    <div class="row justify-content-end">
+        <div class="col-md-6">
+            <img src="{% static 'core/icons/logo.png' %}" style="max-width: 400px; max-height: 90px;">
+        </div>
+        <div class="col-md-3">
+            <div class= "container text-right footer py-md-4" style="position: relative">
+                <a href="/support">Report a bug | Request a feature</a>
+            </div>
+        </div>
     </div>
 </div>
 </html>
