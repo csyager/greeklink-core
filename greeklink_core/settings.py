@@ -196,8 +196,8 @@ if ENV == 'testing':
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     EMAIL_USE_TLS = True
     EMAIL_HOST = 'smtp.gmail.com'
-    EMAIL_HOST_USER = 'greeklinkverify@gmail.com'
-    EMAIL_HOST_PASSWORD = 'greeklink1'
+    EMAIL_HOST_USER = 'greekrhoverify@gmail.com'
+    EMAIL_HOST_PASSWORD = 'greekrho1'
     EMAIL_PORT = 587
 
 # else:  need to configure SMTP server wherever we host it
