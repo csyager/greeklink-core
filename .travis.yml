@@ -1,25 +1,27 @@
 language: python
 python:
-  - "3.6"
-# postgres database
+- '3.6'
 services:
-  - postgresql
+- postgresql
 before_script:
-  - psql -c 'create database greeklinkdb;' -U postgres
-  - psql -d postgres -c "CREATE USER greeklinkuser WITH PASSWORD 'greeklink1'; GRANT ALL PRIVILEGES ON DATABASE greeklinkdb TO greeklinkuser; ALTER USER greeklinkuser CREATEDB;"
-# command to install dependencies
+- psql -c 'create database greeklinkdb;' -U postgres
+- psql -d postgres -c "CREATE USER greeklinkuser WITH PASSWORD 'greeklink1'; GRANT
+  ALL PRIVILEGES ON DATABASE greeklinkdb TO greeklinkuser; ALTER USER greeklinkuser
+  CREATEDB;"
 install:
-  - pip install -r requirements.txt
-# environment variables
+- pip install -r requirements.txt
 env:
-  - ENV='testing' DJANGO_SECRET_KEY='1g5rtg0b+nk3axel583k$2gvfq-9zf-80dg_vuy#=zr$-byem^' VERIFY_EMAIL='greekrhoverify@gmail.com' VERIFY_PASSWORD='level99!' ANN_EMAIL='announcementsgreekrho@gmail.com' ANN_PASSWORD='level99!'
-
-# command to run tests
+  matrix:
+  - ENV='testing' VERIFY_EMAIL='greekrhoverify@gmail.com' ANN_EMAIL='announcementsgreekrho@gmail.com'
+  global:
+  - secure: MfJO/gDfulIqhlrfLhUrvIqFxYYUO5241uuoklKFO4TIVMD8jZUM10MJ2uXowrbSzyJved6WYv5fLnBoBYkWaXOo0oC+XzLryap/srvmGjA+K5+EVfEhxHkebkpjLz75SfqCbwAFfziS4XjKr/r9ETnT7podvWNsBtz6AVe+o3h1A4xiWw/izZrMJ6c11eL4z4k5CZMdCzAjNYCGVrc3Qo2b6BZtvzdS+MUZXRORy5zZpMPfbg9U5yf0tY7VLP825Gt4BWiDQCqGoNoSlv+JFPMyIx/hJtxikFBUNXUZL5M/WAhlSCKr0WST5XT2rG+j7eTzJt8veWhvWo3rKCkSKT8ajS27gQkI6UYpjAiNCFfFLtvrnb8/P2WTuoi7r0kpLh1w47YT6sJDHgnzgmeEF5NxoZDrnkOHOA3BlYC72dGFzeDzw2tYruVIuR+FjpF19emeGqgps+M/JhFy1XFhQqRXUQRMBjAeCt34m7LBAIgg7SQ5JXpvWSUPT9sj4vz483CFHMvEU4+3GlDFuzuxq3Wd5pQUM9n4E73qvPZnn/r4O56w6WllI/niRso4aM+C5IabHfg+kH4r+gbixXjq9MezeeT+tMOiDvZPt5lL4Rqkd/uSu6+LGWq2fGSZy+SLy1vgylveU3w4iZ8i71pi4xvANfxSsMdsYUt7XJT20bU=
+  - secure: KCbZ0qS9t9PYkbfN0ggR9Djt7w3+zYsksooSNYDuTTTl/guXkGo/ZahKcAk1aoaKNiVPa3z4pWjcx6qe7NMLULHp91r/UJqXSaGr4OAg/2bzYQ0yAEnkeLZR/xAtVVhkfn3cc/2RDhHa+F511Q+sgsYbS0w9hRdUu4TtOCOpvmmtKjRpw95vGJRp+uhJ7JiTJQLcKjBUJYOS9PETE8KEHQgf5LKikATTetmHthcTZAlj/nLS6ii7N9wPzfARLrOyDRtSc7+PVVeONk+lZh7fBzy2MBr3CmBjlsKwwiIFxtZXMVNyM863iilC7stcJyeIQ5iYDmhzGd2LlaTXXM3bR1L216u6XeUC3v+ezYk2esBGWfiFoSe5ukxLg462Gf4U1MoRd1gPSZAn4bfyFUgK1FKrOPkJaD3nvmnu4tfGr2wZWCR0QfIfVDu2LwEy3p3x/RwnCVY0QZVTnb+YSUVNrbh9zJWVvVclZRtrBabFEpPkDhA8v8nB9EycCDIG7HbaLShdw5DSlO+ZOJqCwmiu+xTgCZogzsaFphkLB2zTPW8eK5VFgq0fqEFYRLfTmRyQy0en9BKYW9cvcZK4LrSvfuE9ygGtMEro9CbXnw+9kR/kVu+YOPvU0HlKxzQtsf2/bSqoRk695eHewa6CBZ9L0t06kzDlMp+DQS/reh5SgN4=
+  - secure: GM4WGtHUeugqI1hP8u++0G7YCh8PhisIXlUWGWm3m0ceDJubo1cOMiiiVoW7YaqHvS4GtZlAB0M1ZeAk5sDaXWjkCdNKa3euPe4YCF0EWXOMEI3GFumGRBalJLaZvlPtoQbVoqy8dU5i4yAw6XGvaz9cBQKAokv4M4u7QCvQ/yhsXeJOmkr1y0oQKkmSfthMmGHUDePk5xs/oCA3mi3eYFQ4/mNPpk6I/FvwjoyOwTbSusR2nytcDm40SR4Z7x48gtbIZw+O+XfgzMjL6CLtQ+qfIlAfdL+MBZ3fPLwyecXJHoUUi0IFVhEVu0fFZXx4cg7POXyiDedYy6s7cQAu2UOy1YRmIVXC/3Hkr4sNACFflrbWB/8PADb4prnaExbFaqss7/kfoFwujlJufJN2TeyINj8DtavHD/3fhIUclukaYXB1yu3D8pzzWRJWA8CM0Iwp/ASzPzOtCAWCaXW8fLGcNSmEfv/Lu/crePNuH4GwyDPbVUpLds3dp101M0ovDdhLzWw2u+Jy9PtfkQP3F1oWVXjz8NKb0kWKivF+aeJ3h+FrImo04I+k/2XN/g+Ok2EE+OceqprQ/eJR+cPSuE2TX5B0ItwGu2cCxdDHWdpacWdAXQ6WrAsgF3asRcPEs2YD2ChlsVvVoIHXiSYxkBXgIHkJikxzo/BLUzNHy/c=
 script:
-  - python manage.py makemigrations core
-  - python manage.py makemigrations organizations
-  - python manage.py makemigrations rush
-  - python manage.py makemigrations cal
-  - python manage.py migrate_schemas
-  - python manage.py collectstatic
-  - python manage.py test
+- python manage.py makemigrations core
+- python manage.py makemigrations organizations
+- python manage.py makemigrations rush
+- python manage.py makemigrations cal
+- python manage.py migrate_schemas
+- python manage.py collectstatic
+- python manage.py test
