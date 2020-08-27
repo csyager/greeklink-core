@@ -59,7 +59,9 @@ def health(request):
     """ for aws health checks, just prints a success message
     """
     if settings.EC2_PRIVATE_IP:
-        Client.objects.get(name='health').domain_url = settings.EC2_PRIVATE_IP
+        c = Client.objects.get(name='health')
+        c.domain_url = settings.EC2_PRIVATE_IP
+        c.save()
     return HttpResponse("<h1>Success! Server is healthy!")
 
 # extends built in Django LoginView
