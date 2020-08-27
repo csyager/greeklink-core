@@ -36,7 +36,7 @@ if ENV == 'testing':
 else:
     DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'greeklink-core-env.eba-7mntraig.us-west-2.elasticbeanstalk.com', '.localhost', 'greeklink-prod-env.us-east-1.elasticbeanstalk.com', '.greeklink-prod-env.us-east-1.elasticbeanstalk.com', 'awseb-awseb-1xs69vwf6dk11-1836811465.us-east-1.elb.amazonaws.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.localhost', 'greeklink-prod-env.us-east-1.elasticbeanstalk.com', '.greeklink-prod-env.us-east-1.elasticbeanstalk.com', 'greek-rho.com']
 
 
 # Application definition
