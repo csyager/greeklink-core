@@ -12,7 +12,13 @@ install:
   - pip install -r requirements.txt
 # environment variables
 env:
-  - ENV='testing' DJANGO_SECRET_KEY='1g5rtg0b+nk3axel583k$2gvfq-9zf-80dg_vuy#=zr$-byem^'
+  - ENV='testing' 
+  - DJANGO_SECRET_KEY='1g5rtg0b+nk3axel583k$2gvfq-9zf-80dg_vuy#=zr$-byem^'
+  - VERIFY_EMAIL='greekrhoverify@gmail.com'
+  - VERIFY_PASSWORD='level99!'
+  - ANN_EMAIL='announcementsgreekrho@gmail.com'
+  - ANN_PASSWORD='level99!'
+
 # command to run tests
 script:
   - python manage.py makemigrations core
