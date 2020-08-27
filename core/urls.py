@@ -9,7 +9,7 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('health', views.health, name='health'), 
+    path('health/', views.health, name='health'), 
     path('signup/', views.signup, name='signup'),
     path('activate/<int:user_id>/<str:token>', views.activate, name='activate'),
     path('forgot_credentials', views.forgot_credentials, name='forgot_credentials'),
