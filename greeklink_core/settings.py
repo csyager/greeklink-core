@@ -198,8 +198,13 @@ EMAIL_PORT = 587
 if ENV == 'testing':
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     EMAIL_HOST = 'smtp.gmail.com'
-    EMAIL_HOST_USER = 'greeklinkverify@gmail.com'
-    EMAIL_HOST_PASSWORD = 'greeklink1'
+    EMAIL_HOST_USER = os.environ['VERIFY_EMAIL']
+    EMAIL_HOST_PASSWORD = os.environ['VERIFY_PASSWORD']
+    EMAIL_PORT = 587
+
+    #other email settings
+    ANN_EMAIL = os.environ['ANN_EMAIL']
+    ANN_PASSWORD = os.environ['ANN_PASSWORD']
 
 # AWS SES access
 else:
