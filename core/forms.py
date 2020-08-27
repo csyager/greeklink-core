@@ -47,7 +47,7 @@ class OrganizationSelectForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(OrganizationSelectForm, self).__init__(*args, **kwargs)
         self.ORG_CHOICES = [('', 'Click to select organization')]
-        for org in Client.objects.all().exclude(name='public'):
+        for org in Client.objects.all().exclude(name='public').exclude(name='health'):
             self.ORG_CHOICES.append((org.domain_url, org.name))
         self.fields['organization'].choices = self.ORG_CHOICES
 
