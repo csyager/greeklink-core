@@ -192,16 +192,19 @@ LOGIN_URL = '/login'
 LOGIN_REDIRECT_URL = '/'
 
 # email settings
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+
 if ENV == 'testing':
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_USE_TLS = True
     EMAIL_HOST = 'smtp.gmail.com'
-    EMAIL_HOST_USER = 'greekrhoverify@gmail.com'
-    EMAIL_HOST_PASSWORD = 'greekrho1'
-    EMAIL_PORT = 587
+    EMAIL_HOST_USER = 'greeklinkverify@gmail.com'
+    EMAIL_HOST_PASSWORD = 'greeklink1'
 
-# else:  need to configure SMTP server wherever we host it
-
+# AWS SES access
+else:
+    EMAIL_BACKEND = 'django_ses.SESBackend'
+   
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
