@@ -124,7 +124,12 @@ def all_announcements(request):
     }
     return HttpResponse(template.render(context, request))
 
-
+def get_tenant_domain(request, domain_url):
+    try:
+        port = ':' + request.build_absolute_uri('/').split(':')[2].strip('/')
+    except IndexError:
+        port = ''
+    return domain_url + port
 
 # users signing up for site
 def signup(request):
@@ -137,26 +142,45 @@ def signup(request):
             user = form.save(commit=False)
             user.is_active = False
             user.save()
-            current_site = get_current_site(request)
-            mail_subject = 'Activate your blog account.'
+            current_site = request.tenant
+            mail_subject = 'Activate your Greek-Rho account.'
             template2 = loader.get_template('core/verificationWait.html')
             context = {
                 'settings': site_settings,
+                'user': user,
             }
 
             message = render_to_string('core/acc_active_email.html', {
                 'user': user,
-                'domain': current_site.domain,
+                'domain': get_tenant_domain(request, current_site.domain_url),
                 'uid': user.pk,
                 'token': account_activation_token.make_token(user),
             })
             to_email = form.cleaned_data.get('email')
-            send_mail('Activate your account', message, settings.EMAIL_HOST_USER, [to_email], fail_silently=False)
+            send_mail(mail_subject, message, settings.EMAIL_HOST_USER, [to_email], fail_silently=False)
 
             return HttpResponse(template2.render(context, request))
     else:
         form = SignupForm()
     return HttpResponse(template.render({'form': form}, request))
+
+def resend_verification_email(request, user_id):
+    template = loader.get_template('core/verificationWait.html')
+    user = User.objects.get(id=user_id)
+    mail_subject = 'Activate your Greek-Rho account.'
+    message = render_to_string('core/acc_active_email.html', {
+        'user': user,
+        'domain': get_tenant_domain(request, request.tenant.domain_url),
+        'uid': user.pk,
+        'token': account_activation_token.make_token(user),
+    })
+    to_email = user.email
+    send_mail(mail_subject, message, settings.EMAIL_HOST_USER, [to_email], fail_silently=False)
+    context = {
+        'settings': getSettings(),
+        'user': user,
+    }
+    return HttpResponse(template.render(context, request))
 
 # users activating accounts
 

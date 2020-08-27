@@ -10,6 +10,7 @@ from . import views
 urlpatterns = [
     path('', views.index, name='index'),   
     path('signup/', views.signup, name='signup'),
+    path('resend_verification_email<int:user_id>', views.resend_verification_email, name='resend_verification_email'),
     path('activate/<int:user_id>/<str:token>', views.activate, name='activate'),
     path('forgot_credentials', views.forgot_credentials, name='forgot_credentials'),
     path('reset_password<int:user_id>/<str:token>', views.reset_password, name='reset_password'),
