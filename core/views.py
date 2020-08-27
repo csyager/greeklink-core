@@ -129,8 +129,8 @@ def all_announcements(request):
 # users signing up for site
 def signup(request):
     template = loader.get_template('core/signup.html')
-    settings = getSettings()
-    verification_key = settings.verification_key
+    site_settings = getSettings()
+    verification_key = site_settings.verification_key
     if request.method == 'POST':
         form = SignupForm(request.POST)
         if form.is_valid() and request.POST.get('verification_key') == verification_key:
@@ -141,7 +141,7 @@ def signup(request):
             mail_subject = 'Activate your blog account.'
             template2 = loader.get_template('core/verificationWait.html')
             context = {
-                'settings': settings,
+                'settings': site_settings,
             }
 
             message = render_to_string('core/acc_active_email.html', {
