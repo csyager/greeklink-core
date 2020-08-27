@@ -54,6 +54,11 @@ def getSettings():
     settings = settings[0]
     return settings
 
+def health(request):
+    """ for aws health checks, just prints a success message
+    """
+    return HttpResponse("<h1>Success! Server is healthy!")
+
 # extends built in Django LoginView
 class CustomLoginView(LoginView):
     def get(self, request, *args, **kwargs):
