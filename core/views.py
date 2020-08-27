@@ -26,7 +26,7 @@ import xlwt
 from datetime import date, timedelta
 from django.utils import timezone
 from itertools import chain
-from django.core.mail import send_mail, BadHeaderError
+from django.core.mail import get_connection, send_mail, BadHeaderError
 from urllib import parse
 from django.urls import reverse
 from django.db import IntegrityError, transaction
@@ -129,8 +129,8 @@ def all_announcements(request):
 # users signing up for site
 def signup(request):
     template = loader.get_template('core/signup.html')
-    settings = getSettings()
-    verification_key = settings.verification_key
+    site_settings = getSettings()
+    verification_key = site_settings.verification_key
     if request.method == 'POST':
         form = SignupForm(request.POST)
         if form.is_valid() and request.POST.get('verification_key') == verification_key:
@@ -141,7 +141,7 @@ def signup(request):
             mail_subject = 'Activate your blog account.'
             template2 = loader.get_template('core/verificationWait.html')
             context = {
-                'settings': settings,
+                'settings': site_settings,
             }
 
             message = render_to_string('core/acc_active_email.html', {
@@ -151,7 +151,7 @@ def signup(request):
                 'token': account_activation_token.make_token(user),
             })
             to_email = form.cleaned_data.get('email')
-            send_mail('Activate your account', message, 'verify@greeklink.com', [to_email], fail_silently=False)
+            send_mail('Activate your account', message, settings.EMAIL_HOST_USER, [to_email], fail_silently=False)
 
             return HttpResponse(template2.render(context, request))
     else:
@@ -201,7 +201,7 @@ def forgot_credentials(request):
                 'uid': user.pk,
                 'token': account_activation_token.make_token(user),
             })
-            send_mail(mail_subject, message, 'verify@greeklink.com', [email], fail_silently=False)
+            send_mail(mail_subject, message, settings.EMAIL_HOST_USER, [email], fail_silently=False)
             messages.success(request, "Email with password reset link has been sent.")
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -727,6 +727,28 @@ def add_announcement(request):
             obj.body = form.cleaned_data['body']
             obj.save()
 
+            recievers = []
+            for user in User.objects.all():
+                recievers.append(user.email)
+
+            # send_mail(obj.title, obj.body, settings.EMAIL_HOST_USER, recievers) - can't use this function if we want to use bcc, but keep it in for now
+
+            truemessage = render_to_string('core/announcement_email.html', {
+                'user': request.user,
+                'body': form.cleaned_data['body'],
+                'target': form.cleaned_data['target']
+            })
+
+            with get_connection(
+                host='smtp.gmail.com', 
+                port=587, 
+                username=settings.ANN_EMAIL, 
+                password=settings.ANN_PASSWORD, 
+                use_tls=True
+                ) as connection:
+                    EmailMessage(obj.title, truemessage, settings.ANN_EMAIL, [], recievers,
+                 connection=connection).send(fail_silently=True)
+
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         else:
             return HttpResponse(form.errors)
@@ -755,7 +777,7 @@ def support_request(request):
             template2 = loader.get_template('core/supportConfirmation.html')
             
             try:
-                send_mail(subject, truemessage, 'verify@greeklink.com', ['Greeklink@virginia.edu'])
+                send_mail(subject, truemessage, settings.EMAIL_HOST_USER, ['Greeklink@virginia.edu'])
             except BadHeaderError:
                 return HttpResponse('Invalid header found.')
             return HttpResponse(template2.render(context, request))
@@ -766,34 +788,3 @@ def support_request(request):
                 'supportform': supportform
             }
     return HttpResponse(template.render(context, request))
-
-def signup(request):
-    template = loader.get_template('core/signup.html')
-    settings = getSettings()
-    verification_key = settings.verification_key
-    if request.method == 'POST':
-        form = SignupForm(request.POST)
-        if form.is_valid() and request.POST.get('verification_key') == verification_key:
-            user = form.save(commit=False)
-            user.is_active = False
-            user.save()
-            current_site = get_current_site(request)
-            mail_subject = 'Activate your blog account.'
-            template2 = loader.get_template('core/verificationWait.html')
-            context = {
-                'settings': settings,
-            }
-
-            message = render_to_string('core/acc_active_email.html', {
-                'user': user,
-                'domain': current_site.domain,
-                'uid': user.pk,
-                'token': account_activation_token.make_token(user),
-            })
-            to_email = form.cleaned_data.get('email')
-            send_mail('Activate your account', message, 'verify@greeklink.com', [to_email], fail_silently=False)
-
-            return HttpResponse(template2.render(context, request))
-    else:
-        form = SignupForm()
-    return HttpResponse(template.render({'form': form}, request))
