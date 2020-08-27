@@ -129,8 +129,8 @@ def all_announcements(request):
 # users signing up for site
 def signup(request):
     template = loader.get_template('core/signup.html')
-    site_settings = getSettings()
-    verification_key = site_settings.verification_key
+    settings = getSettings()
+    verification_key = settings.verification_key
     if request.method == 'POST':
         form = SignupForm(request.POST)
         if form.is_valid() and request.POST.get('verification_key') == verification_key:
@@ -141,7 +141,7 @@ def signup(request):
             mail_subject = 'Activate your blog account.'
             template2 = loader.get_template('core/verificationWait.html')
             context = {
-                'settings': site_settings,
+                'settings': settings,
             }
 
             message = render_to_string('core/acc_active_email.html', {
@@ -201,7 +201,7 @@ def forgot_credentials(request):
                 'uid': user.pk,
                 'token': account_activation_token.make_token(user),
             })
-            send_mail(mail_subject, message, 'greekrhoverify@gmail.com', [email], fail_silently=False)
+            send_mail(mail_subject, message, settings.EMAIL_HOST_USER, [email], fail_silently=False)
             messages.success(request, "Email with password reset link has been sent.")
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -731,11 +731,12 @@ def add_announcement(request):
             for user in User.objects.all():
                 recievers.append(user.email)
 
-            # send_mail(obj.title, obj.body, 'greekrhoverify@gmail.com', recievers) - can't use this function if we want to use bcc, but keep it in for now
+            # send_mail(obj.title, obj.body, settings.EMAIL_HOST_USER, recievers) - can't use this function if we want to use bcc, but keep it in for now
 
             truemessage = render_to_string('core/announcement_email.html', {
                 'user': request.user,
                 'body': form.cleaned_data['body'],
+                'target': form.cleaned_data['target']
             })
 
             with get_connection(
