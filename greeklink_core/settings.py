@@ -38,6 +38,16 @@ else:
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.localhost', 'greeklink-prod-env.us-east-1.elasticbeanstalk.com', '.greeklink-prod-env.us-east-1.elasticbeanstalk.com', 'greek-rho.com', '.greek-rho.com', '172.31.88.161']
 
+# gets health check IP address on elastic beanstalk and allows it
+import requests
+EC2_PRIVATE_IP = None
+try:
+    EC2_PRIVATE_IP = requests.get('http://169.254.169.254/latest/meta-data/local-ipv4', timeout = 0.01).text
+except requests.exceptions.RequestException:
+    pass
+
+if EC2_PRIVATE_IP:
+    ALLOWED_HOSTS.append(EC2_PRIVATE_IP)
 
 # Application definition
 SHARED_APPS = (
