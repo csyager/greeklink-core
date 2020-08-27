@@ -8,7 +8,8 @@ from django.conf.urls.static import static
 from . import views
 
 urlpatterns = [
-    path('', views.index, name='index'),   
+    path('', views.index, name='index'),
+    path('health', views.health, name='health'), 
     path('signup/', views.signup, name='signup'),
     path('resend_verification_email<int:user_id>', views.resend_verification_email, name='resend_verification_email'),
     path('activate/<int:user_id>/<str:token>', views.activate, name='activate'),
@@ -50,5 +51,5 @@ urlpatterns = [
 ]
 
 
-if settings.DEBUG is True:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# if settings.DEBUG is True:
+#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

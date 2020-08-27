@@ -37,6 +37,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, redirect
 import datetime
 from django.contrib.auth.views import LoginView
+from organizations.models import Client
 # Create your views here.
 
 def getSettings():
@@ -53,6 +54,15 @@ def getSettings():
         settings = SiteSettings.objects.all()
     settings = settings[0]
     return settings
+
+def health(request):
+    """ for aws health checks, just prints a success message
+    """
+    if settings.EC2_PRIVATE_IP:
+        c = Client.objects.get(name='health')
+        c.domain_url = settings.EC2_PRIVATE_IP
+        c.save()
+    return HttpResponse("<h1>Success! Server is healthy!")
 
 # extends built in Django LoginView
 class CustomLoginView(LoginView):
