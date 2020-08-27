@@ -151,7 +151,7 @@ def signup(request):
                 'token': account_activation_token.make_token(user),
             })
             to_email = form.cleaned_data.get('email')
-            send_mail('Activate your account', message, 'greekrhoverify@gmail.com', [to_email], fail_silently=False)
+            send_mail('Activate your account', message, settings.EMAIL_HOST_USER, [to_email], fail_silently=False)
 
             return HttpResponse(template2.render(context, request))
     else:
@@ -738,29 +738,15 @@ def add_announcement(request):
                 'body': form.cleaned_data['body'],
             })
 
-
-
             with get_connection(
                 host='smtp.gmail.com', 
                 port=587, 
-                username='announcementsgreekrho@gmail.com', 
-                password='greekrho1', 
+                username=settings.ANN_EMAIL, 
+                password=settings.ANN_PASSWORD, 
                 use_tls=True
                 ) as connection:
-                    EmailMessage(obj.title, truemessage, 'announcementsgreekrho@gmail.com', [], recievers,
+                    EmailMessage(obj.title, truemessage, settings.ANN_EMAIL, [], recievers,
                  connection=connection).send(fail_silently=True)
-
-            #keep this here just in case
-            # email = EmailMessage(
-            #             obj.title,
-            #             truemessage,
-            #             'greekrhoverify.com',
-            #             [],
-            #             recievers
-            #             )
-
-            # email.content_subtype = "html"
-            # email.send(fail_silently=True)
 
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         else:
@@ -790,7 +776,7 @@ def support_request(request):
             template2 = loader.get_template('core/supportConfirmation.html')
             
             try:
-                send_mail(subject, truemessage, 'greekrhoverify@gmail.com', ['Greeklink@virginia.edu'])
+                send_mail(subject, truemessage, settings.EMAIL_HOST_USER, ['Greeklink@virginia.edu'])
             except BadHeaderError:
                 return HttpResponse('Invalid header found.')
             return HttpResponse(template2.render(context, request))
