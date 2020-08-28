@@ -190,6 +190,7 @@ def resend_verification_email(request, user_id):
         'settings': getSettings(),
         'user': user,
     }
+    messages.success(request, "Email has been resent to " + to_email)
     return HttpResponse(template.render(context, request))
 
 # users activating accounts
