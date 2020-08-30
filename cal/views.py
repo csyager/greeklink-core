@@ -122,7 +122,7 @@ def date(request, year, month, day):
     public_social_events = []
     public_chapter_events = []
     org_community = request.tenant.community
-    for tenant in Client.objects.filter(community=org_community).exclude(name=request.tenant.name).all():
+    for tenant in Client.objects.filter(community=org_community).exclude(name=request.tenant.name).exclude(name='public').all():
                 with tenant_context(tenant):
                     for event in SocialEvent.objects.filter(is_public=True, date=this_date):
                         public_social_events.append((event, tenant.name))

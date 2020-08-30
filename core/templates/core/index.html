@@ -36,6 +36,9 @@
                     </div>
                 </div>
             <ul class="list-group">
+                {% if not announcements %}
+                <b><i>No announcements to display.  Announcements can be created by administrators and will be displayed here.</i></b>
+                {% endif %}
                 {% for announcement in announcements %}
                 <li class="list-group-item">
                     <b><a href="{{ announcement.target }}">{{ announcement.title }}</a></b> - {{ announcement.user }} 
