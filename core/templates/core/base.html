@@ -40,6 +40,7 @@
     {% block content %}
     {% endblock %} 
 </body>
+{% if not request.user_agent.is_mobile %}
 <div class="container text-center footer bg-light">
     <div class="row justify-content-end">
         <div class="col-md-6">
@@ -50,6 +51,16 @@
                 <a href="/support">Report a bug | Request a feature</a>
             </div>
         </div>
+{% else %}
+<div class="container footer bg-light">
+    <div class="row">
+        <div class="col-6 text-left">
+            <img src="{% static 'core/icons/logo.png' %}" style="max-width: 200px;">
+        </div>
+        <div class="col-6 text-right">
+            <a href="/support">Report a bug | Request a feature</a>
+        </div>
+{% endif %}
     </div>
 </div>
 </html>
