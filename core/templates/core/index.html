@@ -21,7 +21,7 @@
 <div class="container" style="max-width: 2000px">
     <br>
     <div class="row">
-        <div class="col-lg-9">
+        <div class="col-lg-8">
             <h2>Announcements</h2>
                 <div class='row title-row my-1'>
                     <div class='col-12 py-1'>
@@ -86,6 +86,15 @@
                 </div>
             </div>
             {% endif %}
+        </div>
+        <div class="col-lg-4">
+            <h2>Upcoming Events</h2>
+            <ul class="list-group">
+            {% for event in events %}
+                <li class="list-group-item list-group-item-action" onclick="window.location='{{ event.get_url }}';">
+                    {{ event.date }}, {{ event.time }}:  {{ event.name }}
+                </li>
+            {% endfor %}
         </div>
     </div>
     <br>
