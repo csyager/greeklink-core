@@ -14,6 +14,9 @@
     <div>
         <h2>Files</h2>
         <ul class="list-group">
+            {% if not files %}
+                <b><i>No files to display.  Files can be added by admins for easy access and download on this page.</i></b>
+            {% endif %}
             {% for file in files %}
             <li class="list-group-item">
                 {% if file.extension == "txt" %}<i class="fa fa-file-text" aria-hidden="true" style="color: {{ settings.primary_color_theme }}"></i>
@@ -73,6 +76,9 @@
     <div>
         <h2>Links</h2>
         <ul class="list-group">
+            {% if not links %}
+                <b><i>No links to display.  Links can be added by admins for easy access on this page.</i></b>
+            {% endif %}
             {% for link in links %}
             <li class="list-group-item">
                 <i class="fa fa-link" aria-hidden="true" style="color: {{ settings.primary_color_theme }}"></i>
