@@ -5,7 +5,7 @@
 </div>
 <div class="jumbotron">
   <h1 class="display-4">{{ announcement.title }}</h1>
-  <p class="lead">{{ announcement.body }}</p>
+  <p class="lead">{{ announcement.body|linebreaks }}</p>
   <hr class="my-4">
     {% if announcement.target %}
       <p>{{user}} included a link. Click <a href="{{ announcement.target }}" aria-pressed="true" target="_blank">here</a> to view. 
