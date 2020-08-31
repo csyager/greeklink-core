@@ -313,7 +313,7 @@ class ResourcesAdminTestCase(TenantTestCase):
         file_object = ResourceFile.objects.get(name='filename')
         path = reverse('remove_file', kwargs=dict(file_id=file_object.pk))
         response = self.client.post(path, follow=True)
-        self.assertNotContains(response, 'filename')
+        self.assertContains(response, 'filename', count=1)
 
     # tests the add calendar function
     def test_add_calendar(self):
