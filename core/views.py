@@ -761,11 +761,11 @@ def add_announcement(request):
             obj.body = form.cleaned_data['body']
             obj.save()
             
-            if 'question' in request.POST:
-                question = request.POST['question']
+            if 'send_emailBoolean' in request.POST:
+                send_emailBoolean = request.POST['send_emailBoolean']
             else:
-                question = False
-            if question:
+                send_emailBoolean = False
+            if send_emailBoolean:
                 recievers = []
                 for user in User.objects.all():
                     recievers.append(user.email)
