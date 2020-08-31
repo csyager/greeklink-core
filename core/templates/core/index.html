@@ -20,6 +20,13 @@
 </div>
 <div class="container" style="max-width: 2000px">
     <br>
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
     <div class="row">
         <div class="col-lg-9">
             <h2>Announcements</h2>
