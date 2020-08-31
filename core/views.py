@@ -229,10 +229,9 @@ def forgot_credentials(request):
                 messages.error(request, "User with this email does not exist.")
                 return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
             mail_subject = "Reset your password"
-            current_site = get_current_site(request)
             message = render_to_string('core/reset_credentials_email.html', {
                 'user': user,
-                'domain': current_site.domain,
+                'domain': get_tenant_domain(request, request.tenant.domain_url),
                 'uid': user.pk,
                 'token': account_activation_token.make_token(user),
             })

@@ -4,6 +4,9 @@
 <div class="container">
     <h2>Rush Events</h2>
     <div class="list-group">
+        {% if not events %}
+            <b><i>No rush events to display.  Rush events can be created by admins, and track attendance of invited rushees.</i></b>
+        {% endif %}
         {% for event in events %}
         <a href="/rush/events/{{ event.id }}" class="list-group-item">{{ event.name }} -- {{ event.date }}, {{ event.time }} <span class="badge badge-info">{{ event.attendance.count }}</span></a>
         {% endfor %}
