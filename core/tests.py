@@ -405,15 +405,6 @@ class AnnouncementsTestCase(TenantTestCase):
         response = self.client.post(path)
         self.assertContains(response, '<li class="list-group-item">')
 
-    # tests that announcement link works
-    def test_announcement_link_appears(self):
-        a = Announcement.objects.get(title="test")
-        a.target = reverse('resources')
-        a.save()
-        path = reverse('index')
-        response = self.client.post(path)
-        self.assertContains(response, '<a href="' + reverse('resources'))
-
     # tests that add announcement button appears
     def test_add_announcement_button_appears(self):
         path = reverse('index')
