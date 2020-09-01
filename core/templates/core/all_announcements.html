@@ -19,9 +19,8 @@
     <p class="lead">{{ settings.organization_name }}</p>
 </div>
 <div class="container" style="max-width: 2000px">
-    <br>
     <div class="row">
-        <div class="col-lg-9">
+        <div class="col-lg-8" style="margin-top: 10px">
             <h2>Announcements</h2>
                 <div class='row title-row my-1'>
                     <div class='col-12 py-1'>
@@ -93,6 +92,16 @@
                 </div>
             </div>
             {% endif %}
+        </div>
+        <div class="col-lg-4" style="margin-top: 10px">
+            <h2>Upcoming Events</h2>
+            {% if not request.user_agent.is_mobile %}<br><br>{% endif %}
+            <ul class="list-group" style="margin-top: 10px">
+            {% for event in events %}
+                <li class="list-group-item list-group-item-action" onclick="window.location='{{ event.get_url }}';">
+                    <a href="{{ event.get_url }}">{{ event.name }} -- {{ event.date }}, {{ event.time }}</a>
+                </li>
+            {% endfor %}
         </div>
     </div>
     <br>

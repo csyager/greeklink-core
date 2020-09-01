@@ -126,12 +126,23 @@ def all_announcements(request):
     page_obj = paginator.get_page(page_number)
     announcementscount = len(announcements)
 
+    date_in_two_weeks = timezone.now() + timedelta(days=14)
+    date_one_day_ago = timezone.now() - timedelta(days=1)
+    date_two_weeks_ago = timezone.now() - timedelta(days=14)
+    social_events = SocialEvent.objects.filter(date__range=[date_one_day_ago, date_in_two_weeks])
+    rush_events = RushEvent.objects.filter(date__range=[date_one_day_ago, date_in_two_weeks])
+    chapter_events = ChapterEvent.objects.filter(date__range=[date_one_day_ago, date_in_two_weeks])
+    events = sorted(
+        chain(social_events, rush_events, chapter_events),
+        key=lambda event: (event.date, event.time))
+
     context = {
         "home_page": "active",
         'settings': getSettings(),
         "announcements": announcements,
         "announcement_form": announcement_form,
         'page_obj': page_obj,
+        'events': events,
         'announcementscount' : announcementscount
     }
     return HttpResponse(template.render(context, request))
