@@ -1,10 +1,12 @@
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.contrib import admin
 from django.conf.urls import url, handler404, handler500
 from django.conf import settings
 from django.contrib.auth.views import LoginView
 from core.forms import LoginForm
 from django.conf.urls.static import static
+from django_ses.views import handle_bounce
+from django.views.decorators.csrf import csrf_exempt
 from . import views
 
 urlpatterns = [
@@ -46,6 +48,7 @@ urlpatterns = [
     path('removeAnnouncement<int:announcement_id>', views.remove_announcement, name="remove_announcement"),
     path('editSocialEvent<int:event_id>', views.edit_social_event, name="edit_social_event"),
     path('support/', views.support_request, name='support'),
+    re_path(r'^ses/bounce/$', csrf_exempt(handle_bounce)),
 ]
 
 
