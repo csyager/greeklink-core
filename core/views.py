@@ -38,6 +38,8 @@ from django.shortcuts import render, redirect
 import datetime
 from django.contrib.auth.views import LoginView
 from organizations.models import Client
+from rush.models import RushEvent
+from cal.models import ChapterEvent
 # Create your views here.
 
 def getSettings():
@@ -96,17 +98,22 @@ def index(request):
     date_one_day_ago = timezone.now() - timedelta(days=1)
     date_two_weeks_ago = timezone.now() - timedelta(days=14)
     social_events = SocialEvent.objects.filter(date__range=[date_one_day_ago, date_in_two_weeks])
+    rush_events = RushEvent.objects.filter(date__range=[date_one_day_ago, date_in_two_weeks])
+    chapter_events = ChapterEvent.objects.filter(date__range=[date_one_day_ago, date_in_two_weeks])
     events = sorted(
-        chain(social_events),
-        key=lambda event: event.date)
-    activity = Activity.objects.filter(user=request.user, date__range=[date_two_weeks_ago, timezone.now()]).order_by('date').reverse()[0:5]
+        chain(social_events, rush_events, chapter_events),
+        key=lambda event: (event.date, event.time))
+     
+    first_five_events = events[:5]
+    remainder_events = events[5:]
+
     announcements = Announcement.objects.order_by('date').reverse()[0:5]
     announcement_form = AnnouncementForm()
     context = {
         "home_page": "active",
         'settings': getSettings(),
-        "events": events,
-        "activity": activity,
+        "first_five_events": first_five_events,
+        "remainder_events": remainder_events,
         "announcements": announcements,
         "announcement_form": announcement_form,
     }
@@ -124,12 +131,27 @@ def all_announcements(request):
     page_obj = paginator.get_page(page_number)
     announcementscount = len(announcements)
 
+    date_in_two_weeks = timezone.now() + timedelta(days=14)
+    date_one_day_ago = timezone.now() - timedelta(days=1)
+    date_two_weeks_ago = timezone.now() - timedelta(days=14)
+    social_events = SocialEvent.objects.filter(date__range=[date_one_day_ago, date_in_two_weeks])
+    rush_events = RushEvent.objects.filter(date__range=[date_one_day_ago, date_in_two_weeks])
+    chapter_events = ChapterEvent.objects.filter(date__range=[date_one_day_ago, date_in_two_weeks])
+    events = sorted(
+        chain(social_events, rush_events, chapter_events),
+        key=lambda event: (event.date, event.time))
+
+    first_five_events = events[:5]
+    remainder_events = events[5:]
+
     context = {
         "home_page": "active",
         'settings': getSettings(),
         "announcements": announcements,
         "announcement_form": announcement_form,
         'page_obj': page_obj,
+        'first_five_events': first_five_events,
+        'remainder_events': remainder_events,
         'announcementscount' : announcementscount
     }
     return HttpResponse(template.render(context, request))
