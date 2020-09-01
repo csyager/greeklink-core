@@ -111,6 +111,16 @@
                 </li>
             {% endfor %}
             {% if remainder_events%}
+            <script>
+                function toggle_show_more() {
+                    elem = document.getElementById("upcoming_events_toggle");
+                    if (elem.innerHTML == "Show more events") {
+                        elem.innerHTML = "Show fewer events";
+                    } else {
+                        elem.innerHTML = "Show more events";
+                    }
+                }
+            </script>
             <div class="collapse" id="events_collapse">
                 {% for event in remainder_events %}
                     <li class="list-group-item list-group-item-action" onclick="window.location='{{ event.get_url }}';">
@@ -118,7 +128,7 @@
                     </li>
                 {% endfor %}
             </div><br>
-            <a data-toggle="collapse" href="#events_collapse" aria-expanded="false" aria-controls="events_collapse">Show more events</a>
+            <a data-toggle="collapse" href="#events_collapse" aria-expanded="false" aria-controls="events_collapse" id="upcoming_events_toggle" onclick="toggle_show_more();">Show more events</a>
             {% endif %}
             </ul>
         </div>
