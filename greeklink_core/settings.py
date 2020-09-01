@@ -205,7 +205,7 @@ LOGIN_REDIRECT_URL = '/'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 
-if ENV == 'testing1':
+if ENV == 'testing':
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     EMAIL_HOST = 'smtp.gmail.com'
     VERIFY_EMAIL_USER = os.environ['VERIFY_EMAIL']
