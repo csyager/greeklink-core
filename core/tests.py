@@ -313,7 +313,7 @@ class ResourcesAdminTestCase(TenantTestCase):
         file_object = ResourceFile.objects.get(name='filename')
         path = reverse('remove_file', kwargs=dict(file_id=file_object.pk))
         response = self.client.post(path, follow=True)
-        self.assertNotContains(response, 'filename')
+        self.assertContains(response, 'filename', count=1)
 
     # tests the add calendar function
     def test_add_calendar(self):
@@ -404,15 +404,6 @@ class AnnouncementsTestCase(TenantTestCase):
         path = reverse('index')
         response = self.client.post(path)
         self.assertContains(response, '<li class="list-group-item">')
-
-    # tests that announcement link works
-    def test_announcement_link_appears(self):
-        a = Announcement.objects.get(title="test")
-        a.target = reverse('resources')
-        a.save()
-        path = reverse('index')
-        response = self.client.post(path)
-        self.assertContains(response, '<a href="' + reverse('resources'))
 
     # tests that add announcement button appears
     def test_add_announcement_button_appears(self):

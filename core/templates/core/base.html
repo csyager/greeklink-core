@@ -15,7 +15,7 @@
     {% load static %}
     <!-- iPhone logo -->
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{% static 'core/icons/apple-touch-icon.png' %}" />
-    <meta name="apple-mobile-web-app-title" content="GreekLink">
+    <meta name="apple-mobile-web-app-title" content="GreekRho">
 
     <!-- fontawesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -40,16 +40,27 @@
     {% block content %}
     {% endblock %} 
 </body>
+{% if not request.user_agent.is_mobile %}
 <div class="container text-center footer bg-light">
     <div class="row justify-content-end">
         <div class="col-md-6">
-            <img src="{% static 'core/icons/logo.png' %}" style="max-width: 400px; max-height: 90px;">
+            <img src="{% static 'core/icons/logo.png' %}" style="max-width: 400px; max-height: 80px;">
         </div>
         <div class="col-md-3">
             <div class= "container text-right footer py-md-4" style="position: relative">
                 <a href="/support">Report a bug | Request a feature</a>
             </div>
         </div>
+{% else %}
+<div class="container footer bg-light">
+    <div class="row">
+        <div class="col-6 text-left">
+            <img src="{% static 'core/icons/logo.png' %}" style="max-width: 200px;">
+        </div>
+        <div class="col-6 text-right">
+            <a href="/support">Report a bug | Request a feature</a>
+        </div>
+{% endif %}
     </div>
 </div>
 </html>

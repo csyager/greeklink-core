@@ -10,8 +10,10 @@ from django.views.decorators.csrf import csrf_exempt
 from . import views
 
 urlpatterns = [
-    path('', views.index, name='index'),   
+    path('', views.index, name='index'),
+    path('health', views.health, name='health'), 
     path('signup/', views.signup, name='signup'),
+    path('resend_verification_email<int:user_id>', views.resend_verification_email, name='resend_verification_email'),
     path('activate/<int:user_id>/<str:token>', views.activate, name='activate'),
     path('forgot_credentials', views.forgot_credentials, name='forgot_credentials'),
     path('reset_password<int:user_id>/<str:token>', views.reset_password, name='reset_password'),
@@ -44,13 +46,13 @@ urlpatterns = [
     path('removeLink<int:link_id>', views.remove_link, name="remove_link"),
     path('addLink', views.add_link, name="add_link"),
     path('add_announcement', views.add_announcement, name='add_announcement'),
-    path('all_announcements', views.all_announcements, name='all_announcements'),
     path('removeAnnouncement<int:announcement_id>', views.remove_announcement, name="remove_announcement"),
     path('editSocialEvent<int:event_id>', views.edit_social_event, name="edit_social_event"),
     path('support/', views.support_request, name='support'),
     re_path(r'^ses/bounce/$', csrf_exempt(handle_bounce)),
+    path('announcement<int:announcement_id>', views.announcement, name="announcement"),
 ]
 
 
-if settings.DEBUG is True:
+if settings.ENV == 'testing':
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

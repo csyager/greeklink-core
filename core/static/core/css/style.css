@@ -17,7 +17,6 @@
 
 .footer img {
     padding: 10px;
-    height: 90%;
 }
 
 body {
@@ -136,4 +135,8 @@ div.scrollable {
     padding-bottom: 0px;
     padding-left: 10px;
     padding-right: 10px;
+}
+
+.row:before, .row:after {
+    width:0px; height: 0px;
 }

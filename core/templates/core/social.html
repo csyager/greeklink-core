@@ -3,6 +3,15 @@
 <br>
 <div class="container">
     <h1>Social</h1>
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% elif messages.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">{{ mesage }}</div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
     <div class="container">
         <ul class="nav nav-tabs" id="social_tabs" role="tablist">
             <li class="nav-item">
@@ -31,6 +40,9 @@
                         }
             
                     </script>
+                    {% if not page_obj %}
+                    <b><i>No events to display.  Social Events are tools to manage attendance at public events and can be created by administrators and will appear here.</i></b>
+                    {% endif %}
                     {% for event in page_obj %}
                     <li class="list-group-item"><a href="social_event{{ event.id }}">{{ event.name }} -- {{ event.date }}, {{ event.time }} <span class="badge badge-info">{{ event.list.count }}</span> </a>
                         {% if perms.core.change_socialevent %}    
@@ -112,6 +124,9 @@
                 <br>
                 <h2>Rosters</h2>
                 <ul class="list-group">
+                    {% if not rosters %}
+                        <b><i>No rosters to display.  Rosters are lists containing names that can be created by administrators to be easily added to social event lists, and will appear here.</i></b>
+                    {% endif %}
                     {% for roster in rosters %}
                         <li class="list-group-item"><a href="roster{{ roster.id }}">{{ roster.title }}</a>
                             {% if perms.core.delete_roster %}

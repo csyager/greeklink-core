@@ -39,6 +39,9 @@ import datetime
 from django.contrib.auth.views import LoginView
 from django_ses.signals import bounce_received, complaint_received
 from django.dispatch import receiver
+from organizations.models import Client
+from rush.models import RushEvent
+from cal.models import ChapterEvent
 # Create your views here.
 
 def getSettings():
@@ -55,6 +58,15 @@ def getSettings():
         settings = SiteSettings.objects.all()
     settings = settings[0]
     return settings
+
+def health(request):
+    """ for aws health checks, just prints a success message
+    """
+    if settings.EC2_PRIVATE_IP:
+        c = Client.objects.get(name='health')
+        c.domain_url = settings.EC2_PRIVATE_IP
+        c.save()
+    return HttpResponse("<h1>Success! Server is healthy!")
 
 # extends built in Django LoginView
 class CustomLoginView(LoginView):
@@ -88,30 +100,20 @@ def index(request):
     date_one_day_ago = timezone.now() - timedelta(days=1)
     date_two_weeks_ago = timezone.now() - timedelta(days=14)
     social_events = SocialEvent.objects.filter(date__range=[date_one_day_ago, date_in_two_weeks])
+    rush_events = RushEvent.objects.filter(date__range=[date_one_day_ago, date_in_two_weeks])
+    chapter_events = ChapterEvent.objects.filter(date__range=[date_one_day_ago, date_in_two_weeks])
     events = sorted(
-        chain(social_events),
-        key=lambda event: event.date)
-    activity = Activity.objects.filter(user=request.user, date__range=[date_two_weeks_ago, timezone.now()]).order_by('date').reverse()[0:5]
-    announcements = Announcement.objects.order_by('date').reverse()[0:5]
-    announcement_form = AnnouncementForm()
-    context = {
-        "home_page": "active",
-        'settings': getSettings(),
-        "events": events,
-        "activity": activity,
-        "announcements": announcements,
-        "announcement_form": announcement_form,
-    }
-    return HttpResponse(template.render(context, request))
+        chain(social_events, rush_events, chapter_events),
+        key=lambda event: (event.date, event.time))
+     
+    first_five_events = events[:5]
+    remainder_events = events[5:]
 
-@login_required
-def all_announcements(request):
-    template = loader.get_template('core/all_announcements.html')
     announcements = Announcement.objects.order_by('-date')
     announcement_form = AnnouncementForm()
 
     #for pagination
-    paginator = Paginator(announcements, 10)                                               #this number changes items per page
+    paginator = Paginator(announcements, 5)                                               #this number changes items per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     announcementscount = len(announcements)
@@ -122,11 +124,18 @@ def all_announcements(request):
         "announcements": announcements,
         "announcement_form": announcement_form,
         'page_obj': page_obj,
+        'first_five_events': first_five_events,
+        'remainder_events': remainder_events,
         'announcementscount' : announcementscount
     }
     return HttpResponse(template.render(context, request))
 
-
+def get_tenant_domain(request, domain_url):
+    try:
+        port = ':' + request.build_absolute_uri('/').split(':')[2].strip('/')
+    except IndexError:
+        port = ''
+    return domain_url + port
 
 # users signing up for site
 def signup(request):
@@ -139,16 +148,17 @@ def signup(request):
             user = form.save(commit=False)
             user.is_active = False
             user.save()
-            current_site = get_current_site(request)
-            mail_subject = 'Activate your blog account.'
+            current_site = request.tenant
+            mail_subject = 'Activate your Greek-Rho account.'
             template2 = loader.get_template('core/verificationWait.html')
             context = {
                 'settings': site_settings,
+                'user': user,
             }
 
             message = render_to_string('core/acc_active_email.html', {
                 'user': user,
-                'domain': current_site.domain,
+                'domain': get_tenant_domain(request, current_site.domain_url),
                 'uid': user.pk,
                 'token': account_activation_token.make_token(user),
             })
@@ -159,6 +169,25 @@ def signup(request):
     else:
         form = SignupForm()
     return HttpResponse(template.render({'form': form}, request))
+
+def resend_verification_email(request, user_id):
+    template = loader.get_template('core/verificationWait.html')
+    user = User.objects.get(id=user_id)
+    mail_subject = 'Activate your Greek-Rho account.'
+    message = render_to_string('core/acc_active_email.html', {
+        'user': user,
+        'domain': get_tenant_domain(request, request.tenant.domain_url),
+        'uid': user.pk,
+        'token': account_activation_token.make_token(user),
+    })
+    to_email = user.email
+    send_mail(mail_subject, message, settings.EMAIL_HOST_USER, [to_email], fail_silently=False)
+    context = {
+        'settings': getSettings(),
+        'user': user,
+    }
+    messages.success(request, "Email has been resent to " + to_email)
+    return HttpResponse(template.render(context, request))
 
 # users activating accounts
 
@@ -196,10 +225,9 @@ def forgot_credentials(request):
                 messages.error(request, "User with this email does not exist.")
                 return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
             mail_subject = "Reset your password"
-            current_site = get_current_site(request)
             message = render_to_string('core/reset_credentials_email.html', {
                 'user': user,
-                'domain': current_site.domain,
+                'domain': get_tenant_domain(request, request.tenant.domain_url),
                 'uid': user.pk,
                 'token': account_activation_token.make_token(user),
             })
@@ -340,7 +368,7 @@ def upload_file(request):
             obj.file = form.cleaned_data['file']
             obj.extension = str(obj.file).split('.')[-1]
             obj.save()
-
+            messages.success(request, "File " + obj.name + " has been successfully uploaded.")
             return HttpResponseRedirect('resources')
         else:
             return HttpResponse(form.errors)
@@ -349,8 +377,10 @@ def upload_file(request):
 @permission_required('core.delete_resourcefile')
 def remove_file(request, file_id):
     obj = ResourceFile.objects.get(id=file_id)
+    name = obj.name
     obj.file.delete()
     obj.delete()
+    messages.success(request, "File " + name + " has been successfully deleted.")
     return HttpResponseRedirect('resources')
 
 
@@ -421,7 +451,7 @@ def create_social_event(request):
         else:
             obj.list_limit = -1
         obj.save()
-
+        messages.success(request, "Social event " + obj.name + " has been successfully created.")
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @permission_required('core.change_socialevent')
@@ -444,6 +474,7 @@ def edit_social_event(request, event_id):
         else:
             obj.list_limit = -1
         obj.save()
+        messages.success(request, "Social event " + obj.name + " has been successfully edited.")
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -462,7 +493,12 @@ def social_event(request, event_id):
 
 @permission_required('core.delete_socialevent')
 def remove_social_event(request, event_id):
-    SocialEvent.objects.filter(id=event_id).delete()
+    name = SocialEvent.objects.get(id=event_id).name
+    try:
+        SocialEvent.objects.get(id=event_id).delete()
+        messages.success(request, "Social Event " + name + " has been successfully deleted.")
+    except Exception as e:
+        messages.error(request, "Social event could not be deleted: " + e)
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
@@ -503,8 +539,11 @@ def edit_roster(request, roster_id):
 @permission_required('core.change_roster')
 def remove_from_roster(request, roster_id, member_id):
     roster = Roster.objects.get(id=roster_id)
-    roster.members.filter(pk=member_id).delete()
+    member = roster.members.get(pk=member_id)
+    name = member.name
+    member.delete()
     roster.save()
+    messages.success(request, name + " has been successfully removed from Roster " + roster.title + ".", extra_tags='successful_remove')
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @permission_required('core.change_roster')
@@ -684,6 +723,7 @@ def create_roster(request):
             except IntegrityError:
                 continue
         roster.save()
+        messages.success(request, "Roster " + title + " has been successfully created.")
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
     else:
@@ -691,13 +731,19 @@ def create_roster(request):
 
 @permission_required('core.delete_roster')
 def remove_roster(request, roster_id):
-    Roster.objects.get(pk=roster_id).delete()
+    r = Roster.objects.get(pk=roster_id)
+    name = r.title
+    r.delete()
+    messages.success(request, "Roster " + name + " has been successfully deleted.")
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
 @permission_required('core.delete_resourcelink')
 def remove_link(request, link_id):
-    link = ResourceLink.objects.get(id=link_id).delete()
+    link = ResourceLink.objects.get(id=link_id)
+    name = link.name
+    link.delete()
+    messages.success(request, "Link " + name + " has been successfully deleted.")
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
@@ -711,7 +757,7 @@ def add_link(request):
             obj.description = form.cleaned_data['description']
             obj.url = form.cleaned_data['url']
             obj.save()
-
+            messages.success(request, "Link " + obj.name + " has been successfully added.")
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         else:
             return HttpResponse(form.errors)
@@ -728,23 +774,33 @@ def add_announcement(request):
             obj.user = request.user
             obj.body = form.cleaned_data['body']
             obj.save()
-
-            truemessage = render_to_string('core/announcement_email.html', {
-                'user': request.user,
-                'body': form.cleaned_data['body'],
-                'target': form.cleaned_data['target']
-            })
-            messages = []
-            for user in User.objects.all():
-                try:
-                    match = Blacklist.objects.get(email=user.email)
-                except Blacklist.DoesNotExist:
-                    if user.email != '': messages.append((obj.title, truemessage, settings.ANN_EMAIL, [user.email]))
-
-            send_mass_mail(messages, fail_silently=True, auth_user=settings.ANN_EMAIL)
             
-            
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+            if 'send_emailBoolean' in request.POST:
+                send_emailBoolean = request.POST['send_emailBoolean']
+            else:
+                send_emailBoolean = False
+            if send_emailBoolean:
+                
+                truemessage = render_to_string('core/announcement_email.html', {
+                    'user': request.user,
+                    'body': form.cleaned_data['body'],
+                    'target': form.cleaned_data['target']
+                })
+                message_list = []
+                for user in User.objects.all():
+                    try:
+                        match = Blacklist.objects.get(email=user.email)
+                    except Blacklist.DoesNotExist:
+                        if user.email != '': message_list.append((obj.title, truemessage, settings.ANN_EMAIL, [user.email]))
+
+                send_mass_mail(message_list, fail_silently=True, auth_user=settings.ANN_EMAIL)
+
+                messages.success(request, "Announcement has been successfully posted and users have been notified via email.")
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+                
+            else:
+                messages.success(request, "Announcement has been successfully posted.")
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         else:
             return HttpResponse(form.errors)
 
@@ -782,4 +838,14 @@ def support_request(request):
                 'settings': getSettings(),
                 'supportform': supportform
             }
+    return HttpResponse(template.render(context, request))
+
+#announcements page
+def announcement(request, announcement_id):
+    announcement = Announcement.objects.get(id=announcement_id)
+    context = {
+        'announcement': announcement,
+        'settings': getSettings(),
+    }
+    template = loader.get_template('core/announcement.html')
     return HttpResponse(template.render(context, request))

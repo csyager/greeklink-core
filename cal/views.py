@@ -14,6 +14,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from .forms import ChapterEventForm
 from organizations.models import Client
 from tenant_schemas.utils import tenant_context
+from django.contrib import messages
 
 class Calendar(HTMLCalendar):
     def __init__(self, request, year=None, month=None):
@@ -122,7 +123,7 @@ def date(request, year, month, day):
     public_social_events = []
     public_chapter_events = []
     org_community = request.tenant.community
-    for tenant in Client.objects.filter(community=org_community).exclude(name=request.tenant.name).all():
+    for tenant in Client.objects.filter(community=org_community).exclude(name=request.tenant.name).exclude(name='public').all():
                 with tenant_context(tenant):
                     for event in SocialEvent.objects.filter(is_public=True, date=this_date):
                         public_social_events.append((event, tenant.name))
@@ -165,7 +166,7 @@ def create_chapter_event(request):
             end_date = form.cleaned_data.get('end_date')
 
             ChapterEvent.objects.create_chapter_event(name, date, time, is_public, location, recurring, end_date)
-
+            messages.success(request, "Chapter event " + name + " has been created successfully.")
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         else:
             return HttpResponse(form.errors)

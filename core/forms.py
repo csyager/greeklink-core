@@ -47,7 +47,7 @@ class OrganizationSelectForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(OrganizationSelectForm, self).__init__(*args, **kwargs)
         self.ORG_CHOICES = [('', 'Click to select organization')]
-        for org in Client.objects.all().exclude(name='public'):
+        for org in Client.objects.all().exclude(name='public').exclude(name='health'):
             self.ORG_CHOICES.append((org.domain_url, org.name))
         self.fields['organization'].choices = self.ORG_CHOICES
 
@@ -151,8 +151,9 @@ class AnnouncementForm(ModelForm):
         widget=forms.TextInput(attrs={'class': 'form-control rounded'}))
     target = forms.URLField(required=False, label='Target',
         widget=forms.URLInput(attrs={'class': 'form-control rounded'}))
-    body = forms.CharField(max_length=280, label='Body',
+    body = forms.CharField(max_length=500, label='Body',
         widget=forms.Textarea(attrs={'class': 'form-control rounded'}))
+    send_emailBoolean = forms.BooleanField(required=False)
 
     class Meta:
         model = Announcement
@@ -171,5 +172,5 @@ class SupportForm(forms.Form):
         widget=forms.TextInput(attrs={'class': 'form-control rounded'})) 
     subject = forms.CharField(required=True, label='Subject:',
         widget=forms.TextInput(attrs={'class': 'form-control rounded'})) 
-    message = forms.CharField(required=True, max_length=280, label='Message:',
+    message = forms.CharField(required=True, max_length=500, label='Message:',
         widget=forms.Textarea(attrs={'class': 'form-control rounded'}))

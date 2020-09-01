@@ -24,13 +24,26 @@
 <body>
     <br>
     <div class="container h-100" style="text-align: center">
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+            <div class="alert alert-danger" role="alert">
+                {{ message }}
+            </div>
+            {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+            <div class="alert alert-success" role="alert">
+                {{ message }}
+            </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Thank you for signing up for GreekRho!</h5>
                 <p><b>A link has been sent to your email, please click on it to confirm your address and log in.</b></p><br>
                 <p><b>If you haven't received an email, click here to resend:</b></p>
                 <!-- TODO: implement this feature -->
-                <button class="btn btn-primary" type="submit">Send another email</button><br>
+                <a href="/resend_verification_email{{ user.pk }}"><button class="btn btn-primary" type="submit">Send another email</button></a><br>
             </div>
         </div>
     </div>
