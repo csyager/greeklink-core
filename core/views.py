@@ -107,42 +107,14 @@ def index(request):
     first_five_events = events[:5]
     remainder_events = events[5:]
 
-    announcements = Announcement.objects.order_by('date').reverse()[0:5]
-    announcement_form = AnnouncementForm()
-    context = {
-        "home_page": "active",
-        'settings': getSettings(),
-        "first_five_events": first_five_events,
-        "remainder_events": remainder_events,
-        "announcements": announcements,
-        "announcement_form": announcement_form,
-    }
-    return HttpResponse(template.render(context, request))
-
-@login_required
-def all_announcements(request):
-    template = loader.get_template('core/all_announcements.html')
     announcements = Announcement.objects.order_by('-date')
     announcement_form = AnnouncementForm()
 
     #for pagination
-    paginator = Paginator(announcements, 10)                                               #this number changes items per page
+    paginator = Paginator(announcements, 5)                                               #this number changes items per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     announcementscount = len(announcements)
-
-    date_in_two_weeks = timezone.now() + timedelta(days=14)
-    date_one_day_ago = timezone.now() - timedelta(days=1)
-    date_two_weeks_ago = timezone.now() - timedelta(days=14)
-    social_events = SocialEvent.objects.filter(date__range=[date_one_day_ago, date_in_two_weeks])
-    rush_events = RushEvent.objects.filter(date__range=[date_one_day_ago, date_in_two_weeks])
-    chapter_events = ChapterEvent.objects.filter(date__range=[date_one_day_ago, date_in_two_weeks])
-    events = sorted(
-        chain(social_events, rush_events, chapter_events),
-        key=lambda event: (event.date, event.time))
-
-    first_five_events = events[:5]
-    remainder_events = events[5:]
 
     context = {
         "home_page": "active",
