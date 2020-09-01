@@ -103,12 +103,17 @@ def index(request):
     events = sorted(
         chain(social_events, rush_events, chapter_events),
         key=lambda event: (event.date, event.time))
+     
+    first_five_events = events[:5]
+    remainder_events = events[5:]
+
     announcements = Announcement.objects.order_by('date').reverse()[0:5]
     announcement_form = AnnouncementForm()
     context = {
         "home_page": "active",
         'settings': getSettings(),
-        "events": events,
+        "first_five_events": first_five_events,
+        "remainder_events": remainder_events,
         "announcements": announcements,
         "announcement_form": announcement_form,
     }
@@ -136,13 +141,17 @@ def all_announcements(request):
         chain(social_events, rush_events, chapter_events),
         key=lambda event: (event.date, event.time))
 
+    first_five_events = events[:5]
+    remainder_events = events[5:]
+
     context = {
         "home_page": "active",
         'settings': getSettings(),
         "announcements": announcements,
         "announcement_form": announcement_form,
         'page_obj': page_obj,
-        'events': events,
+        'first_five_events': first_five_events,
+        'remainder_events': remainder_events,
         'announcementscount' : announcementscount
     }
     return HttpResponse(template.render(context, request))
