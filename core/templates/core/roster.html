@@ -10,15 +10,18 @@
         <button class="btn btn-success" data-toggle="modal" data-target="#invite_modal">Add Roster to Event</button>
         <br><br>
         {% if messages %}
-            
                 {% for message in messages %}
                     {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
                     <div class="alert alert-danger" role="alert">
                         <b>The following name was not added to the roster, because it is a duplicate:</b> {{ message }}<br>
                     </div>
-                    {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                    {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS and 'successful_remove' not in message.tags %}
                     <div class="alert alert-success" role="alert">
                         <b>The members of this roster were successfully added to the following event:</b> {{ message }}<br>
+                    </div>
+                    {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS and 'successful_remove' in message.tags %}
+                    <div class="alert alert-success" role="alert">
+                        {{ message }}
                     </div>
                     {% endif %}
                 {% endfor %}

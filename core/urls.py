@@ -48,8 +48,9 @@ urlpatterns = [
     path('removeAnnouncement<int:announcement_id>', views.remove_announcement, name="remove_announcement"),
     path('editSocialEvent<int:event_id>', views.edit_social_event, name="edit_social_event"),
     path('support/', views.support_request, name='support'),
+    path('announcement<int:announcement_id>', views.announcement, name="announcement"),
 ]
 
 
-# if settings.DEBUG is True:
-#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+if settings.ENV == 'testing':
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

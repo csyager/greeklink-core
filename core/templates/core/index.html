@@ -20,6 +20,13 @@
 </div>
 <div class="container" style="max-width: 2000px">
     <br>
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
     <div class="row">
         <div class="col-lg-8">
             <h2>Announcements</h2>
@@ -36,14 +43,17 @@
                     </div>
                 </div>
             <ul class="list-group">
+                {% if not announcements %}
+                <b><i>No announcements to display.  Announcements can be created by administrators and will be displayed here.</i></b>
+                {% endif %}
                 {% for announcement in announcements %}
                 <li class="list-group-item">
-                    <b><a href="{{ announcement.target }}">{{ announcement.title }}</a></b> - {{ announcement.user }} 
+                    <b><a href="announcement{{ announcement.id }}">{{ announcement.title }}</a></b> - {{ announcement.user }} 
                 {% if perms.core.delete_announcement %}
                 <a href="removeAnnouncement{{ announcement.id }}" class="btn btn-danger btn-sm float-right">Remove</a>
                 {% endif %} 
                     <br>
-                    {{ announcement.body }}
+                    {{ announcement.body|truncatechars:85 }} <!--85 due to long string bug-->
                 </li>
                 
                 {% endfor %}
@@ -70,11 +80,16 @@
                                 <div class="form-group">
                                     {{ announcement_form.target.label }}
                                     {{ announcement_form.target }}
-                                    <small class="form-text text-muted">You can optionally include a target URL, so when users click on the announcement they will be directed elsewhere, either within this site or on the internet</small>
+                                    <small class="form-text text-muted">You can optionally include a target URL, which will appear as a link at the bottom of your announcement.</small>
                                 </div>
                                 <div class="form-group">
                                     {{ announcement_form.body.label }}
                                     {{ announcement_form.body }}
+                                </div>
+                                <div class="form-group">
+                                    {{ announcement_form.send_emailBoolean }}
+                                    <label>Notify users via email?</label>
+                                    <small class ="form-text text-muted">Checking the box will send your announcement as an email to all registered users in your organization.</small>
                                 </div>
                         </div>
                         <div class="modal-footer">

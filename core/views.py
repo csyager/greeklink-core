@@ -374,7 +374,7 @@ def upload_file(request):
             obj.file = form.cleaned_data['file']
             obj.extension = str(obj.file).split('.')[-1]
             obj.save()
-
+            messages.success(request, "File " + obj.name + " has been successfully uploaded.")
             return HttpResponseRedirect('resources')
         else:
             return HttpResponse(form.errors)
@@ -383,8 +383,10 @@ def upload_file(request):
 @permission_required('core.delete_resourcefile')
 def remove_file(request, file_id):
     obj = ResourceFile.objects.get(id=file_id)
+    name = obj.name
     obj.file.delete()
     obj.delete()
+    messages.success(request, "File " + name + " has been successfully deleted.")
     return HttpResponseRedirect('resources')
 
 
@@ -455,7 +457,7 @@ def create_social_event(request):
         else:
             obj.list_limit = -1
         obj.save()
-
+        messages.success(request, "Social event " + obj.name + " has been successfully created.")
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @permission_required('core.change_socialevent')
@@ -478,6 +480,7 @@ def edit_social_event(request, event_id):
         else:
             obj.list_limit = -1
         obj.save()
+        messages.success(request, "Social event " + obj.name + " has been successfully edited.")
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -496,7 +499,12 @@ def social_event(request, event_id):
 
 @permission_required('core.delete_socialevent')
 def remove_social_event(request, event_id):
-    SocialEvent.objects.filter(id=event_id).delete()
+    name = SocialEvent.objects.get(id=event_id).name
+    try:
+        SocialEvent.objects.get(id=event_id).delete()
+        messages.success(request, "Social Event " + name + " has been successfully deleted.")
+    except Exception as e:
+        messages.error(request, "Social event could not be deleted: " + e)
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
@@ -537,8 +545,11 @@ def edit_roster(request, roster_id):
 @permission_required('core.change_roster')
 def remove_from_roster(request, roster_id, member_id):
     roster = Roster.objects.get(id=roster_id)
-    roster.members.filter(pk=member_id).delete()
+    member = roster.members.get(pk=member_id)
+    name = member.name
+    member.delete()
     roster.save()
+    messages.success(request, name + " has been successfully removed from Roster " + roster.title + ".", extra_tags='successful_remove')
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @permission_required('core.change_roster')
@@ -718,6 +729,7 @@ def create_roster(request):
             except IntegrityError:
                 continue
         roster.save()
+        messages.success(request, "Roster " + title + " has been successfully created.")
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
     else:
@@ -725,13 +737,19 @@ def create_roster(request):
 
 @permission_required('core.delete_roster')
 def remove_roster(request, roster_id):
-    Roster.objects.get(pk=roster_id).delete()
+    r = Roster.objects.get(pk=roster_id)
+    name = r.title
+    r.delete()
+    messages.success(request, "Roster " + name + " has been successfully deleted.")
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
 @permission_required('core.delete_resourcelink')
 def remove_link(request, link_id):
-    link = ResourceLink.objects.get(id=link_id).delete()
+    link = ResourceLink.objects.get(id=link_id)
+    name = link.name
+    link.delete()
+    messages.success(request, "Link " + name + " has been successfully deleted.")
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
@@ -745,7 +763,7 @@ def add_link(request):
             obj.description = form.cleaned_data['description']
             obj.url = form.cleaned_data['url']
             obj.save()
-
+            messages.success(request, "Link " + obj.name + " has been successfully added.")
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         else:
             return HttpResponse(form.errors)
@@ -762,30 +780,40 @@ def add_announcement(request):
             obj.user = request.user
             obj.body = form.cleaned_data['body']
             obj.save()
+            
+            if 'send_emailBoolean' in request.POST:
+                send_emailBoolean = request.POST['send_emailBoolean']
+            else:
+                send_emailBoolean = False
+            if send_emailBoolean:
+                recievers = []
+                for user in User.objects.all():
+                    recievers.append(user.email)
 
-            recievers = []
-            for user in User.objects.all():
-                recievers.append(user.email)
+                # send_mail(obj.title, obj.body, settings.EMAIL_HOST_USER, recievers) - can't use this function if we want to use bcc, but keep it in for now
 
-            # send_mail(obj.title, obj.body, settings.EMAIL_HOST_USER, recievers) - can't use this function if we want to use bcc, but keep it in for now
+                truemessage = render_to_string('core/announcement_email.html', {
+                    'user': request.user,
+                    'body': form.cleaned_data['body'],
+                    'target': form.cleaned_data['target']
+                })
 
-            truemessage = render_to_string('core/announcement_email.html', {
-                'user': request.user,
-                'body': form.cleaned_data['body'],
-                'target': form.cleaned_data['target']
-            })
+                with get_connection(
+                    host='smtp.gmail.com', 
+                    port=587, 
+                    username=settings.ANN_EMAIL, 
+                    password=settings.ANN_PASSWORD, 
+                    use_tls=True
+                    ) as connection:
+                        EmailMessage(obj.title, truemessage, settings.ANN_EMAIL, [], recievers,
+                                     connection=connection).send(fail_silently=True)
+                                     
+                messages.success(request, "Announcement has been successfully posted and users have been notified via email.")
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-            with get_connection(
-                host='smtp.gmail.com', 
-                port=587, 
-                username=settings.ANN_EMAIL, 
-                password=settings.ANN_PASSWORD, 
-                use_tls=True
-                ) as connection:
-                    EmailMessage(obj.title, truemessage, settings.ANN_EMAIL, [], recievers,
-                 connection=connection).send(fail_silently=True)
-
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+            else:
+                messages.success(request, "Announcement has been successfully posted.")
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         else:
             return HttpResponse(form.errors)
 
@@ -823,4 +851,14 @@ def support_request(request):
                 'settings': getSettings(),
                 'supportform': supportform
             }
+    return HttpResponse(template.render(context, request))
+
+#announcements page
+def announcement(request, announcement_id):
+    announcement = Announcement.objects.get(id=announcement_id)
+    context = {
+        'announcement': announcement,
+        'settings': getSettings(),
+    }
+    template = loader.get_template('core/announcement.html')
     return HttpResponse(template.render(context, request))

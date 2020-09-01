@@ -93,6 +93,9 @@
         {% endfor %}
         </tbody>
     </table>
+    {% if not rushees %}
+        <b><i>No rushees to display.  Rushees can sign into the site through the Rush Signin page under the Rush dropdown above.  When they sign in they will be listed here.</i></b>
+    {% endif %}
 </div>
 
 {% endblock %}
