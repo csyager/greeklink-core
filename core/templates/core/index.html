@@ -18,8 +18,7 @@
     <h1 class="display-4">Welcome, {{ user.get_short_name }}</h1>
     <p class="lead">{{ settings.organization_name }}</p>
 </div>
-<div class="container" style="max-width: 2000px">
-    <br>
+<div class="container" style="max-width: 2000px;">
     {% if messages %}
         {% for message in messages %}
             {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
@@ -28,7 +27,7 @@
         {% endfor %}
     {% endif %}
     <div class="row">
-        <div class="col-lg-8">
+        <div class="col-lg-8" style="margin-top: 10px">
             <h2>Announcements</h2>
                 <div class='row title-row my-1'>
                     <div class='col-12 py-1'>
@@ -59,7 +58,7 @@
                 {% endfor %}
             </ul><br>
                 {% if perms.core.add_announcement %}
-            <button class="btn btn-primary" data-toggle="modal" data-target="#announcementModal"><i class="fa fa-plus" aria-hidden="true"></i>  Add Announcement</button>
+            <button class="btn btn-primary {% if request.user_agent.is_mobile %} btn-sm {% endif %}" data-toggle="modal" data-target="#announcementModal"><i class="fa fa-plus" aria-hidden="true"></i>  Add Announcement</button>
           <!-- Modal -->
             <div class="modal fade" id="announcementModal" tabindex="-1" role="dialog" aria-labelledby="announcementModal" aria-hidden="true">
                 <div class="modal-dialog" role="document">
@@ -102,9 +101,10 @@
             </div>
             {% endif %}
         </div>
-        <div class="col-lg-4">
+        <div class="col-lg-4" style="margin-top: 10px">
             <h2>Upcoming Events</h2>
-            <ul class="list-group">
+            {% if not request.user_agent.is_mobile %}<br><br>{% endif %}
+            <ul class="list-group" style="margin-top: 10px">
             {% for event in events %}
                 <li class="list-group-item list-group-item-action" onclick="window.location='{{ event.get_url }}';">
                     <a href="{{ event.get_url }}">{{ event.name }} -- {{ event.date }}, {{ event.time }}</a>
