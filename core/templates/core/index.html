@@ -107,7 +107,7 @@
             <ul class="list-group">
             {% for event in events %}
                 <li class="list-group-item list-group-item-action" onclick="window.location='{{ event.get_url }}';">
-                    {{ event.date }}, {{ event.time }}:  {{ event.name }}
+                    <a href="{{ event.get_url }}">{{ event.name }} -- {{ event.date }}, {{ event.time }}</a>
                 </li>
             {% endfor %}
         </div>
