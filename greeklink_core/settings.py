@@ -204,30 +204,13 @@ LOGIN_REDIRECT_URL = '/'
 # email settings
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-
-if ENV == 'testing':
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = 'smtp.gmail.com'
-    VERIFY_EMAIL_USER = os.environ['VERIFY_EMAIL']
-    EMAIL_HOST_PASSWORD = os.environ['VERIFY_PASSWORD']
-
-    #other email accounts
-    ANN_EMAIL = os.environ['ANN_EMAIL']
-    ANN_PASSWORD = os.environ['ANN_PASSWORD']
-
-    SUPPORT_EMAIL_USER = os.environ['SUPPORT_EMAIL']
-    SUPPORT_EMAIL_PASSWORD = os.environ['SUPPORT_PASSWORD']
-
-
-# AWS SES access
-else:
-    EMAIL_BACKEND = 'django_ses.SESBackend'
-    AWS_SES_AUTOTHROTTLE = 0.75
-    VERIFY_EMAIL_USER = os.environ['VERIFY_EMAIL']
-    SUPPORT_EMAIL_USER = os.environ['SUPPORT_EMAIL']
-    ANN_EMAIL = os.environ['ANN_EMAIL']
-    AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
-    AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
+EMAIL_BACKEND = 'django_ses.SESBackend'
+AWS_SES_AUTOTHROTTLE = 0.75
+VERIFY_EMAIL_USER = os.environ['VERIFY_EMAIL']
+SUPPORT_EMAIL_USER = os.environ['SUPPORT_EMAIL']
+ANN_EMAIL = os.environ['ANN_EMAIL']
+AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
+AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
 
 
 # Static files (CSS, JavaScript, Images)
