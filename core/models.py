@@ -272,4 +272,10 @@ class Announcement(models.Model):
 
     objects = AnnouncementManager()
 
+    def __str__(self):
+        return self.title
+
+    def get_url(self):
+        return reverse('announcement', kwargs=dict(announcement_id=self.pk))
+
 #------------------------------------------------------------------------------

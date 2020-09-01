@@ -760,30 +760,38 @@ def add_announcement(request):
             obj.user = request.user
             obj.body = form.cleaned_data['body']
             obj.save()
+            
+            if 'send_emailBoolean' in request.POST:
+                send_emailBoolean = request.POST['send_emailBoolean']
+            else:
+                send_emailBoolean = False
+            if send_emailBoolean:
+                recievers = []
+                for user in User.objects.all():
+                    recievers.append(user.email)
 
-            recievers = []
-            for user in User.objects.all():
-                recievers.append(user.email)
+                # send_mail(obj.title, obj.body, settings.EMAIL_HOST_USER, recievers) - can't use this function if we want to use bcc, but keep it in for now
 
-            # send_mail(obj.title, obj.body, settings.EMAIL_HOST_USER, recievers) - can't use this function if we want to use bcc, but keep it in for now
+                truemessage = render_to_string('core/announcement_email.html', {
+                    'user': request.user,
+                    'body': form.cleaned_data['body'],
+                    'target': form.cleaned_data['target']
+                })
 
-            truemessage = render_to_string('core/announcement_email.html', {
-                'user': request.user,
-                'body': form.cleaned_data['body'],
-                'target': form.cleaned_data['target']
-            })
+                with get_connection(
+                    host='smtp.gmail.com', 
+                    port=587, 
+                    username=settings.ANN_EMAIL, 
+                    password=settings.ANN_PASSWORD, 
+                    use_tls=True
+                    ) as connection:
+                        EmailMessage(obj.title, truemessage, settings.ANN_EMAIL, [], recievers,
+                    connection=connection).send(fail_silently=True)
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-            with get_connection(
-                host='smtp.gmail.com', 
-                port=587, 
-                username=settings.ANN_EMAIL, 
-                password=settings.ANN_PASSWORD, 
-                use_tls=True
-                ) as connection:
-                    EmailMessage(obj.title, truemessage, settings.ANN_EMAIL, [], recievers,
-                 connection=connection).send(fail_silently=True)
+            else:
 
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         else:
             return HttpResponse(form.errors)
 
@@ -821,4 +829,14 @@ def support_request(request):
                 'settings': getSettings(),
                 'supportform': supportform
             }
+    return HttpResponse(template.render(context, request))
+
+#announcements page
+def announcement(request, announcement_id):
+    announcement = Announcement.objects.get(id=announcement_id)
+    context = {
+        'announcement': announcement,
+        'settings': getSettings(),
+    }
+    template = loader.get_template('core/announcement.html')
     return HttpResponse(template.render(context, request))
