@@ -3,6 +3,15 @@
 <br>
 <div class="container">
     <h1>Social</h1>
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% elif messages.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">{{ mesage }}</div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
     <div class="container">
         <ul class="nav nav-tabs" id="social_tabs" role="tablist">
             <li class="nav-item">

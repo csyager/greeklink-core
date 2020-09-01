@@ -4,6 +4,13 @@
 <br>
 <div class="container">
     <h1>Resources</h1><br>
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
     <div>
         <h2>Files</h2>
         <ul class="list-group">
