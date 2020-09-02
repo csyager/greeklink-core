@@ -10,7 +10,6 @@ admin.site.register(ResourceLink)
 admin.site.register(Attendee)
 admin.site.register(Roster)
 admin.site.register(RosterMember)
-admin.site.register(Blacklist)
 
 # registers SiteSettings object without adding to admin page
 class SiteSettingsAdmin(admin.ModelAdmin):

@@ -788,10 +788,8 @@ def add_announcement(request):
                 })
                 message_list = []
                 for user in User.objects.all():
-                    try:
-                        match = Blacklist.objects.get(email=user.email)
-                    except Blacklist.DoesNotExist:
-                        if user.email != '': message_list.append((obj.title, truemessage, settings.ANN_EMAIL, [user.email]))
+                    if user.email != '': 
+                        message_list.append((obj.title, truemessage, settings.ANN_EMAIL, [user.email]))
 
                 send_mass_mail(message_list, fail_silently=True, auth_user=settings.ANN_EMAIL)
 
