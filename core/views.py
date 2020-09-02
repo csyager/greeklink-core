@@ -26,7 +26,7 @@ import xlwt
 from datetime import date, timedelta
 from django.utils import timezone
 from itertools import chain
-from django.core.mail import get_connection, send_mail, BadHeaderError
+from django.core.mail import get_connection, send_mail, send_mass_mail, BadHeaderError
 from urllib import parse
 from django.urls import reverse
 from django.db import IntegrityError, transaction
@@ -37,6 +37,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, redirect
 import datetime
 from django.contrib.auth.views import LoginView
+from django_ses.signals import bounce_received, complaint_received
+from django.dispatch import receiver
 from organizations.models import Client
 from rush.models import RushEvent
 from cal.models import ChapterEvent
@@ -161,7 +163,7 @@ def signup(request):
                 'token': account_activation_token.make_token(user),
             })
             to_email = form.cleaned_data.get('email')
-            send_mail(mail_subject, message, settings.EMAIL_HOST_USER, [to_email], fail_silently=False)
+            send_mail('Activate your account', message, settings.VERIFY_EMAIL_USER, [to_email], fail_silently=False, auth_user=settings.VERIFY_EMAIL_USER)
 
             return HttpResponse(template2.render(context, request))
     else:
@@ -229,7 +231,7 @@ def forgot_credentials(request):
                 'uid': user.pk,
                 'token': account_activation_token.make_token(user),
             })
-            send_mail(mail_subject, message, settings.EMAIL_HOST_USER, [email], fail_silently=False)
+            send_mail(mail_subject, message, settings.VERIFY_EMAIL_USER, [email], fail_silently=False, auth_user=settings.VERIFY_EMAIL_USER)
             messages.success(request, "Email with password reset link has been sent.")
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -778,31 +780,24 @@ def add_announcement(request):
             else:
                 send_emailBoolean = False
             if send_emailBoolean:
-                recievers = []
-                for user in User.objects.all():
-                    recievers.append(user.email)
-
-                # send_mail(obj.title, obj.body, settings.EMAIL_HOST_USER, recievers) - can't use this function if we want to use bcc, but keep it in for now
-
+                
                 truemessage = render_to_string('core/announcement_email.html', {
                     'user': request.user,
                     'body': form.cleaned_data['body'],
                     'target': form.cleaned_data['target']
                 })
+                message_list = []
+                for user in User.objects.all():
+                    try:
+                        match = Blacklist.objects.get(email=user.email)
+                    except Blacklist.DoesNotExist:
+                        if user.email != '': message_list.append((obj.title, truemessage, settings.ANN_EMAIL, [user.email]))
 
-                with get_connection(
-                    host='smtp.gmail.com', 
-                    port=587, 
-                    username=settings.ANN_EMAIL, 
-                    password=settings.ANN_PASSWORD, 
-                    use_tls=True
-                    ) as connection:
-                        EmailMessage(obj.title, truemessage, settings.ANN_EMAIL, [], recievers,
-                                     connection=connection).send(fail_silently=True)
-                                     
+                send_mass_mail(message_list, fail_silently=True, auth_user=settings.ANN_EMAIL)
+
                 messages.success(request, "Announcement has been successfully posted and users have been notified via email.")
                 return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-
+                
             else:
                 messages.success(request, "Announcement has been successfully posted.")
                 return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
@@ -833,7 +828,7 @@ def support_request(request):
             template2 = loader.get_template('core/supportConfirmation.html')
             
             try:
-                send_mail(subject, truemessage, settings.EMAIL_HOST_USER, ['Greeklink@virginia.edu'])
+                send_mail(subject, truemessage, settings.SUPPORT_EMAIL_USER, ['Greeklink@virginia.edu'], auth_user=settings.SUPPORT_EMAIL_USER)
             except BadHeaderError:
                 return HttpResponse('Invalid header found.')
             return HttpResponse(template2.render(context, request))
