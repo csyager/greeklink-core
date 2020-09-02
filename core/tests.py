@@ -435,8 +435,9 @@ class AnnouncementsTestCase(TenantTestCase):
     def test_add_announcement_view_invalid(self):
         path = reverse('add_announcement')
         post_dict = {}
-        response = self.client.post(path, post_dict, follow=True)
-        self.assertContains(response, 'titlebody')
+        referer = reverse('index')
+        response = self.client.post(path, post_dict, HTTP_REFERER=referer, follow=True)
+        self.assertContains(response, 'Announcement was not successfully posted, because of the following errors:  This field is required.  This field is required.')
 
 
 class SocialTestCase(TenantTestCase):
