@@ -280,6 +280,10 @@ class Announcement(models.Model):
 
 
 #------------------------------------------------------------------------------ block for email
+CAUSE_CHOICES = [
+    ('BOUNCE', 'Bounce'),
+    ('COMPLAINT', 'Complaint'),
+]
 
 class Blacklist(models.Model):
     """ Blacklist of emails that were bounced or sent complaints
@@ -287,10 +291,6 @@ class Blacklist(models.Model):
         cause -- reason the email address was added to the blocklist
     """
     email = models.EmailField()
-    CAUSE_CHOICES = [
-        ('BOUNCE', 'Bounce'),
-        ('COMPLAINT', 'Complaint'),
-    ]
     cause = models.CharField(max_length=20, choices=CAUSE_CHOICES)
 
 #------------------------------------------------------------------------------
