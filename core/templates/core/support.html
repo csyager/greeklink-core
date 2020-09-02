@@ -69,6 +69,7 @@
                 <div class="form-group">
                     {{ supportform.message.label }}
                     {{ supportform.message }}
+                    <span class="pull-right badge badge-secondary " id="char_count"></span>
                 </div>
         </div>
         <div class="modal-footer border-0">
@@ -82,6 +83,8 @@
       </div>
     </div>
   </div>
+  <!-- character count js -->
+  <script src="{% static 'core/js/char_count.js' %}"></script>
 </body>
 <div class="container text-center footer bg-light">
     <div class="row justify-content-end">
