@@ -277,21 +277,3 @@ class Announcement(models.Model):
 
     def get_url(self):
         return reverse('announcement', kwargs=dict(announcement_id=self.pk))
-
-#------------------------------------------------------------------------------ block for email
-
-class Blacklist(models.Model):
-    """ Blacklist of emails that were bounced or sent complaints
-        email -- email address that is blocked
-        cause -- reason the email address was added to the blocklist
-    """
-    email = models.EmailField()
-    CAUSE_CHOICES = [
-        ('BOUNCE', 'Bounce'),
-        ('COMPLAINT', 'Complaint'),
-    ]
-    cause = models.CharField(max_length=20, choices=CAUSE_CHOICES)
-
-#------------------------------------------------------------------------------
-
-
