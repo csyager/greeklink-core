@@ -1,6 +1,6 @@
 asgiref==3.2.7
 attrs==19.3.0
-awsebcli==3.18.1
+awsebcli==3.18.2
 bcrypt==3.1.7
 blessed==1.17.5
 boto3==1.13.16
