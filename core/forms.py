@@ -152,7 +152,7 @@ class AnnouncementForm(ModelForm):
     target = forms.URLField(required=False, label='Target',
         widget=forms.URLInput(attrs={'class': 'form-control rounded'}))
     body = forms.CharField(max_length=500, label='Body',
-        widget=forms.Textarea(attrs={'class': 'form-control rounded'}))
+        widget=forms.Textarea(attrs={'class': 'form-control rounded', 'id': 'text_char_count'}))
     send_emailBoolean = forms.BooleanField(required=False)
 
     class Meta:

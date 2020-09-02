@@ -45,9 +45,9 @@
                 
                 {% endfor %}
             </ul><br>
-                {% if perms.core.add_announcement %}
+            {% if perms.core.add_announcement %}
             <button class="btn btn-primary {% if request.user_agent.is_mobile %} btn-sm {% endif %}" data-toggle="modal" data-target="#announcementModal"><i class="fa fa-plus" aria-hidden="true"></i>  Add Announcement</button>
-          <!-- Modal -->
+            <!-- Modal -->
             <div class="modal fade" id="announcementModal" tabindex="-1" role="dialog" aria-labelledby="announcementModal" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
@@ -72,6 +72,7 @@
                                 <div class="form-group">
                                     {{ announcement_form.body.label }}
                                     {{ announcement_form.body }}
+                                    <span class="pull-right badge badge-secondary " id="char_count"></span>
                                 </div>
                                 <div class="form-group">
                                     {{ announcement_form.send_emailBoolean }}
@@ -87,6 +88,8 @@
                     </div>
                 </div>
             </div>
+            <!-- character count js -->
+            <script src="{% static 'core/js/char_count.js' %}"></script>
             {% endif %}
 
                 {% if announcementscount > 5 %}
