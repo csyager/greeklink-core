@@ -72,7 +72,7 @@ class ResourceFile(models.Model):
     """
     name = models.CharField(max_length=50)
     file = models.FileField(upload_to="resource_files")
-    description = models.CharField(max_length=280)
+    description = models.CharField(max_length=500)
     extension = models.CharField(max_length=4, default="")
 
     objects = ResourceFileManager()
@@ -217,7 +217,7 @@ class ResourceLink(models.Model):
         url -- URL address that the link references
     """
     name = models.CharField(max_length=50)
-    description = models.CharField(max_length=280)
+    description = models.CharField(max_length=500)
     url = models.URLField(blank=False)
 
     objects = ResourceLinkManager()
@@ -272,6 +272,12 @@ class Announcement(models.Model):
 
     objects = AnnouncementManager()
 
+    def __str__(self):
+        return self.title
+
+    def get_url(self):
+        return reverse('announcement', kwargs=dict(announcement_id=self.pk))
+
 #------------------------------------------------------------------------------ block for email
 
 class Blacklist(models.Model):
@@ -288,8 +294,4 @@ class Blacklist(models.Model):
 
 #------------------------------------------------------------------------------
 
-    def __str__(self):
-        return self.title
 
-    def get_url(self):
-        return reverse('announcement', kwargs=dict(announcement_id=self.pk))

@@ -120,8 +120,8 @@ class UploadFileForm(ModelForm):
         widget=forms.TextInput(attrs={'class': 'form-control rounded'}))
     file = forms.FileField(label="File",
         widget=forms.FileInput(attrs={'class': 'form-control-file rounded'}))
-    description = forms.CharField(max_length=280, label='Description',
-        widget=forms.Textarea(attrs={'class': 'form-control rounded'}))
+    description = forms.CharField(max_length=500, label='Description',
+        widget=forms.Textarea(attrs={'class': 'form-control rounded', 'id': 'text_char_count'}))
 
     class Meta:
         model = ResourceFile
@@ -138,8 +138,8 @@ class LinkForm(ModelForm):
         widget=forms.TextInput(attrs={'class': 'form-control rounded'}))
     url = forms.URLField(label="URL",
         widget=forms.URLInput(attrs={'class': 'form-control rounded'}))
-    description = forms.CharField(max_length=280, label="Description",
-        widget=forms.Textarea(attrs={'class': 'form-control rounded'}))
+    description = forms.CharField(max_length=500, label="Description",
+        widget=forms.Textarea(attrs={'class': 'form-control rounded', 'id': 'text_char_count_2'}))
 
     class Meta:
         model = ResourceLink

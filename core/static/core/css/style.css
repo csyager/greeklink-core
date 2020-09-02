@@ -141,7 +141,7 @@ div.scrollable {
     width:0px; height: 0px;
 }
 
-#char_count {
+#char_count, #char_count_2 {
     margin-top: -30px;
     margin-right: 5px;
     position: relative;
