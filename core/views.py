@@ -800,7 +800,12 @@ def add_announcement(request):
                 messages.success(request, "Announcement has been successfully posted.")
                 return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         else:
-            return HttpResponse(form.errors)
+            error_string = "Announcement was not successfully posted, because of the following errors:  "
+            for field in form:
+                for error in field.errors:
+                    error_string += error + '  '
+            messages.error(request, error_string)
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 def support_request(request):
     context = {
