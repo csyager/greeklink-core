@@ -272,6 +272,13 @@ class Announcement(models.Model):
 
     objects = AnnouncementManager()
 
+    def __str__(self):
+        return self.title
+
+    def get_url(self):
+        return reverse('announcement', kwargs=dict(announcement_id=self.pk))
+
+
 #------------------------------------------------------------------------------ block for email
 
 class Blacklist(models.Model):
@@ -287,9 +294,3 @@ class Blacklist(models.Model):
     cause = models.CharField(max_length=20, choices=CAUSE_CHOICES)
 
 #------------------------------------------------------------------------------
-
-    def __str__(self):
-        return self.title
-
-    def get_url(self):
-        return reverse('announcement', kwargs=dict(announcement_id=self.pk))
