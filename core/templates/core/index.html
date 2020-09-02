@@ -143,6 +143,9 @@
         </div>
         <div class="col-lg-4" style="margin-top: 10px">
             <h2>Upcoming Events</h2>
+            {% if not first_five_events %}
+                <b><i>No upcoming events to display.</i></b>
+            {% endif %}
             <ul class="list-group" style="margin-top: 10px">
             {% for event in first_five_events %}
                 <li class="list-group-item list-group-item-action" onclick="window.location='{{ event.get_url }}';">
