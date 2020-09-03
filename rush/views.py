@@ -47,7 +47,7 @@ def rushee(request, num):
         for filter in request.session['rushee_filter']:
             if filter != 'cut':
                 variable_column = filter
-                search_type = 'contains'
+                search_type = 'icontains'
                 filter_string = variable_column + '__' + search_type
                 next_rushee = (all_rushees.filter(**{ filter_string: request.session['rushee_filter'][filter]})
                                 .filter(name__gt=obj.name).order_by('name')[0].id)
@@ -80,7 +80,7 @@ def rushee(request, num):
         for filter in request.session['rushee_filter']:
             if filter != 'cut':
                 variable_column = filter
-                search_type = 'contains'
+                search_type = 'icontains'
                 filter_string = variable_column + '__' + search_type
                 prev_rushee = (all_rushees.filter(**{ filter_string: request.session['rushee_filter'][filter]})
                                 .filter(name__lt=obj.name).order_by('-name')[0].id)
@@ -292,7 +292,7 @@ def current_rushees(request):
             for filter in request.session['rushee_filter']:
                 if filter != 'cut':
                     variable_column = filter
-                    search_type = 'contains'
+                    search_type = 'icontains'
                     filter_string = variable_column + '__' + search_type
                     rushees = rushees.filter(**{ filter_string: request.session['rushee_filter'][filter]})
                     filter_form = FilterForm(initial=request.session['rushee_filter'])
