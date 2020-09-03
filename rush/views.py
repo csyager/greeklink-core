@@ -453,7 +453,7 @@ def cut_rushee(request, rushee_id):
     this_rushee.a = 0
     this_rushee.b = 0
     current_round = this_rushee.round
-    this_rushee.cut = current_round
+    this_rushee.cut = True
     this_rushee.save()
 
     # get next rushee
