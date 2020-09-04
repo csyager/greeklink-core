@@ -44,7 +44,7 @@ jobs:
         python manage.py makemigrations cal
         python manage.py migrate_schemas
     - name: collectstatic
-        run: python manage.py collectstatic
+      run: python manage.py collectstatic
     - name: Run Tests
       run: |
         python manage.py test
