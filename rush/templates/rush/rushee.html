@@ -310,23 +310,35 @@
       <div class="container">
           <div class="row">
               <div class="col col-md-6">
-                  <a href="/vote{{ rushee.id }}/y"><button class="btn btn-success btn-block"><br><br><br><h1><b>Yes</b></h1><br><br><br></button></a>
+                  <a href="/rush/vote{{ rushee.id }}/y"><button class="btn btn-success btn-block"><br><br><br><h1><b>Yes</b></h1><br><br><br></button></a>
               </div>
               <div class="col col-md-6">
-                  <a href="/vote{{ rushee.id }}/n"><button class="btn btn-danger btn-block"><br><br><br><h1><b>No</b></h1><br><br><br></button></a>
+                  <a href="/rush/vote{{ rushee.id }}/n"><button class="btn btn-danger btn-block"><br><br><br><h1><b>No</b></h1><br><br><br></button></a>
               </div>
           </div>
           <br>
           <div class="row">
               <div class="col col-md-6" style="width: 42vw">
-                  <a href="/vote{{ rushee.id }}/a"><button class="btn btn-primary btn-block"><br><br><br><h1 style="font-size: 8vw"><b>Abstain</b></h1><br><br><br></button></a>
+                  <a href="/rush/vote{{ rushee.id }}/a"><button class="btn btn-primary btn-block"><br><br><br><h1 style="font-size: 8vw"><b>Abstain</b></h1><br><br><br></button></a>
               </div>
               <div class="col col-md-6" style="width: 45vw">
-                  <a href="/vote{{ rushee.id }}/b"><button class="btn btn-warning btn-block"><br><br><br><h1 style="font-size: 8vw"><b>Blackball</b></h1><br><br><br></button></a>
+                  <a href="/rush/vote{{ rushee.id }}/b"><button class="btn btn-warning btn-block"><br><br><br><h1 style="font-size: 8vw"><b>Blackball</b></h1><br><br><br></button></a>
               </div>
           </div>
       </div>
     </div>
+    <!-- alerts for when user casts a vote -->
+    {% if messages %}
+    {% for message in messages %}
+    <script>
+        {% if 'safe' in message.tags %}
+        alert('{{ message|safe }}');
+        {% else %}
+        alert('{{ message }}');
+        {% endif %}
+    </script>
+    {% endfor %}
+    {% endif %}
     <div class="carousel-item">
         <h2 style="margin: 10%">Personal Information</h2>
         <table class="table table-hover" style="margin: 10%">
