@@ -174,6 +174,12 @@ def resend_verification_email(request, user_id):
     template = loader.get_template('core/verificationWait.html')
     user = User.objects.get(id=user_id)
     mail_subject = 'Activate your Greek-Rho account.'
+
+    context = {
+            'settings': getSettings(),
+            'user': user,
+        }
+
     message = render_to_string('core/acc_active_email.html', {
         'user': user,
         'domain': get_tenant_domain(request, request.tenant.domain_url),
@@ -181,11 +187,8 @@ def resend_verification_email(request, user_id):
         'token': account_activation_token.make_token(user),
     })
     to_email = user.email
-    send_mail(mail_subject, message, settings.EMAIL_HOST_USER, [to_email], fail_silently=False)
-    context = {
-        'settings': getSettings(),
-        'user': user,
-    }
+    send_mail('Activate your account', message, settings.VERIFY_EMAIL_USER, [to_email], fail_silently=False, auth_user=settings.VERIFY_EMAIL_USER)
+    
     messages.success(request, "Email has been resent to " + to_email)
     return HttpResponse(template.render(context, request))
 
