@@ -30,7 +30,7 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: psycopg2 requisists
+    - name: psycopg2 requisites
       run: sudo apt-get install python-dev libpq-dev
     - name: Install Dependencies
       run: |
@@ -44,7 +44,7 @@ jobs:
         python manage.py makemigrations cal
         python manage.py migrate_schemas
     - name: collectstatic
-        run python manage.py collectstatic
+        run: python manage.py collectstatic
     - name: Run Tests
       run: |
         python manage.py test
