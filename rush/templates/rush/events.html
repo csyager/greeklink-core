@@ -7,9 +7,15 @@
         {% if not events %}
             <b><i>No rush events to display.  Rush events can be created by admins, and track attendance of invited rushees.</i></b>
         {% endif %}
-        {% for event in events %}
-        <a href="/rush/events/{{ event.id }}" class="list-group-item">{{ event.name }} -- {{ event.date }}, {{ event.time }} <span class="badge badge-info">{{ event.attendance.count }}</span></a>
-        {% endfor %}
+        <ul class="list-group">
+            {% for event in events %}
+            <li class="list-group-item">
+                <a href="/rush/events/{{ event.id }}">{{ event.name }} -- {{ event.date }}, {{ event.time }} <span class="badge badge-info">{{ event.attendance.count }}</span></a>
+                {% if perms.rush.deleterushevent %}
+                    <a href="removeEvent{{ event.id }}" class="btn btn-danger btn-sm float-right">Remove</a>
+                {% endif %}
+            </li>
+            {% endfor %}
     </div>
     <br>
     {% if perms.rush.add_rushevent %}
