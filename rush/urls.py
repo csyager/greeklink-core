@@ -29,4 +29,5 @@ urlpatterns = [
     path('removeEvent<int:event_id>', views.remove_event, name="remove_event"),
     path('filter_rushees', views.filter_rushees, name="filter_rushees"),
     path('clear_rushees_filter', views.clear_rushees_filter, name="clear_rushees_filter"),
+    path('activate_rush_signin', views.activate_rush_signin, name='activate_rush_signin'), 
 ]

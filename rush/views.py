@@ -553,3 +553,11 @@ def clear_rushees_filter(request):
     except KeyError:
         pass
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+@permission_required('core.activate_rushsignin')
+def activate_rush_signin(request):
+    """ activates rush signin """
+    settings = getSettings()
+    settings.rush_signin_active = True
+    settings.save()
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))

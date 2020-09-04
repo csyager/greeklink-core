@@ -35,7 +35,8 @@ class PermissionsSupport(models.Model):
         default_permissions = ()
         permissions = (
             ('add_calendar', 'Add calendar'),
-            ('delete_calendar', 'Remove calendar')
+            ('delete_calendar', 'Remove calendar'),
+            ('activate_rushsignin', 'Activate rushsignin')
         )
 #----------------------------------------------------------------------- block for resource file
 class ResourceFileQuerySet(models.QuerySet):

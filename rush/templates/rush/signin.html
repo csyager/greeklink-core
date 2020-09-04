@@ -8,7 +8,19 @@
     <div class="alert alert-danger">
     Rush signin is not active.  Must be enabled by site admin.
     </div>
+    {% if perms.core.activate_rushsignin %}
+    <a class='btn btn-primary' href="/rush/activate_rush_signin">Click here to enable rush signin.</a>
+    {% endif %}
 </div>
+{% elif event is None %}
+<br><br>
+<div class="container">
+    <div class="alert alert-danger">
+        No rush events exist!  An admin must create an event for rushees to sign into first.
+    </div>
+    {% if perms.rush.add_rushevent %}
+    <a class='btn btn-primary' href="/rush/events">Click here to create an event.</a>
+    {% endif %}
 {% else %}
 
 <br>
