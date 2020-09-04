@@ -1,5 +1,5 @@
 # Greeklink-core  
-[![Build Status](https://travis-ci.com/csyager/greeklink-core.svg?branch=master)](https://travis-ci.com/csyager/greeklink-core)  
+[![Django CI Actions Status](https://github.com/csyager/greeklink-core/workflows/Django%20CI/badge.svg)](https://github.com/csyager/greeklink-core/actions)
 
 This repository represents the source code of the Greeklink web application.  This repository is licensed as open-source, and comprises our solution for a personal homepage for Greek organizations in college campuses, along with technologies designed to aid these organizations in their social event planning.
 
