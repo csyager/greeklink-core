@@ -24,4 +24,4 @@ class SiteSettingsAdmin(admin.ModelAdmin):
 
 admin.site.register(SiteSettings, SiteSettingsAdmin)
 
-admin.site.site_header = "GreekLink Settings"
+admin.site.site_header = "Greek-Rho Settings"

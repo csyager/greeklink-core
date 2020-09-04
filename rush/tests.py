@@ -326,8 +326,8 @@ class EventsTestCase(TenantTestCase):
         """ tests the view showing all rush events """
         path = reverse('rush:events')
         response = self.client.post(path)
-        self.assertContains(response, '<a href="/rush/events/' + str(self.event1.pk) + '" class="list-group-item">')
-        self.assertContains(response, '<a href="/rush/events/' + str(self.event2.pk) + '" class="list-group-item">')
+        self.assertContains(response, '<a href="/rush/events/' + str(self.event1.pk))
+        self.assertContains(response, '<a href="/rush/events/' + str(self.event2.pk))
 
     def test_single_event_view(self):
         """ tests the view showing a single event """

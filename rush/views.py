@@ -175,6 +175,8 @@ def signin(request, event_id=-1):
     form = RusheeForm()
     objects = Rushee.objects.filter(cut=False).order_by('name')
     all_events = RushEvent.objects.all().order_by('date')
+    settings = getSettings()
+    round_range = range(1, settings.num_rush_rounds + 1)
     if int(event_id) != -1:
         this_event = RushEvent.objects.get(id=int(event_id))
         objects = (Rushee.objects.filter(round=this_event.round, cut=False)
@@ -187,7 +189,8 @@ def signin(request, event_id=-1):
         "event": this_event,
         "objects": objects,
         "events": all_events,
-        'settings': getSettings()
+        'round_range': round_range,
+        'settings': settings
     }
     return HttpResponse(template.render(context, request))
 
@@ -553,3 +556,16 @@ def clear_rushees_filter(request):
     except KeyError:
         pass
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+@permission_required('core.activate_rushsignin')
+def toggle_rush_signin(request):
+    """ activates rush signin """
+    settings = getSettings()
+    if settings.rush_signin_active:
+        settings.rush_signin_active = False
+    else:
+        settings.rush_signin_active = True
+    settings.save()
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
