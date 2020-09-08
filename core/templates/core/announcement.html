@@ -4,11 +4,12 @@
 <div class="mt-5 col-md-20">
 </div>
 <div class="jumbotron">
-  <h1 class="display-4">{{ announcement.title }}</h1>
+  <h1 class="display-3">{{ announcement.title }}</h1>
+  <h5 class="display-6">{{ announcement.user.first_name }} {{ announcement.user.last_name }}</h5>
   <p class="lead">{{ announcement.body|linebreaks }}</p>
   <hr class="my-4">
     {% if announcement.target %}
-      <p>{{user}} included a link. Click <a href="{{ announcement.target }}" aria-pressed="true" target="_blank">here</a> to view. 
+      <p>{{ annoucement.user.first_name }} included a link. Click <a href="{{ announcement.target }}" aria-pressed="true" target="_blank">here</a> to view. 
       </p>
     {% endif %}
   <p class="lead">
