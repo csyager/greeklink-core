@@ -430,6 +430,7 @@ def social(request):
         'events': events,
         'eventscount' : eventscount,
         'rosters': rosters,
+        'social_event_form': SocialEventForm,
     }
     return HttpResponse(template.render(context, request))
 
@@ -437,24 +438,29 @@ def social(request):
 @permission_required('core.add_socialevent')
 def create_social_event(request):
     if request.method == 'POST':
-        obj = SocialEvent()
-        obj.name = request.POST.get('name')
-        obj.date = request.POST.get('date')
-        obj.time = request.POST.get('time')
-        obj.location = request.POST.get('location')
-        if request.POST.get('public') == 'on':
-            obj.is_public = True
-        else:
-            obj.is_public = False
-        if request.POST.get('limit') != None:
-            if request.POST.get('limit') != '':
-                obj.list_limit = request.POST.get('limit')
+        form = SocialEventForm(request.POST)
+        event = SocialEvent()
+        if form.is_valid():
+            event.name = form.cleaned_data['name']
+            event.date = form.cleaned_data['date']
+            event.time = form.cleaned_data['time']
+            event.location = form.cleaned_data['location']
+            if form.cleaned_data['public']:
+                event.is_public = True
             else:
-                obj.list_limit = -1
+                event.is_public = False
+            if form.cleaned_data['list_limit'] != '' and form.cleaned_data['list_limit'] != None:
+                event.list_limit = form.cleaned_data['list_limit']
+            else:
+                event.list_limit = -1
+            event.save()
+            messages.success(request, "Social event " + event.name + " has been successfully created.")
         else:
-            obj.list_limit = -1
-        obj.save()
-        messages.success(request, "Social event " + obj.name + " has been successfully created.")
+            errors = ""
+            for field in form:
+                for error in field.errors:
+                    errors += error
+            messages.error(request, "Social event could not be created, because of the following errors: ")
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @permission_required('core.change_socialevent')

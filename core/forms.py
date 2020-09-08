@@ -6,6 +6,7 @@ from django.forms import ModelForm, Select
 from django.forms.widgets import TextInput
 from django.core.exceptions import ValidationError
 from organizations.models import Client, Community
+import datetime
 
 def getSettings():
     settings = SiteSettings.objects.all()
@@ -144,6 +145,25 @@ class LinkForm(ModelForm):
     class Meta:
         model = ResourceLink
         fields = ('name', 'url', 'description')
+
+class SocialEventForm(ModelForm):
+
+    name = forms.CharField(max_length=50, label='Name',
+        widget=forms.TextInput(attrs={'class': 'form-control rounded'}))
+    date = forms.DateField(initial=datetime.date.today, label='Date',
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control rounded', 'placeholder': 'YYYY-mm-dd'}))
+    time = forms.TimeField(label="Time",
+        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control rounded', 'placeholder': "HH:mm:ss in 24 hour time"}))
+    location = forms.CharField(max_length=50, label='Location',
+        widget=forms.TextInput(attrs={'class': 'form-control rounded'}))
+    public = forms.BooleanField(label='Make event public?', required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}))
+    list_limit = forms.IntegerField(label='List Limit', required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control rounded', 'disabled': 'true', 'min': '1'}))
+
+    class Meta:
+        model = SocialEvent
+        fields = ('name', 'date', 'time', 'location', 'is_public', 'list_limit')
 
 
 class AnnouncementForm(ModelForm):
