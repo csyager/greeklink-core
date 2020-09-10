@@ -1,14 +1,8 @@
 """ database models for the core application """
-import os
-from urllib.parse import urljoin
 
 from django.db import models, connection
 from django.db.models import Q
 from django.urls import reverse
-from django.conf import settings
-from django.utils.encoding import filepath_to_uri
-
-from tenant_schemas.storage import TenantFileSystemStorage
 
 from django.contrib.auth.models import User, Group, Permission
 
@@ -46,19 +40,6 @@ class PermissionsSupport(models.Model):
         )
 #----------------------------------------------------------------------- block for resource file
 
-class TestEnvironmentSystemStorage(TenantFileSystemStorage):
-    def url(self, name):
-        if settings.DEBUG:
-            if self.base_url is None:
-                raise ValueError("This file is not accessible via a URL.")
-            url = filepath_to_uri(name)
-            if url is not None:
-                url = url.lstrip('/')
-            print (urljoin(self.base_url, os.path.join(connection.tenant.domain_url, url)))
-            return urljoin(self.base_url, os.path.join(connection.tenant.domain_url, url))
-        else:
-            return super().url(name)
-        
 class ResourceFileQuerySet(models.QuerySet):
     """ Query set of ResourceFiles returned when using search function
         search -- returns query set based on search input
