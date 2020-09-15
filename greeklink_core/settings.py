@@ -36,7 +36,7 @@ if ENV == 'testing':
 else:
     DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.localhost', 'greeklink-prod-env.us-east-1.elasticbeanstalk.com', '.greeklink-prod-env.us-east-1.elasticbeanstalk.com', 'greek-rho.com', '.greek-rho.com', '172.31.88.161', 'awseb-awseb-1xs69vwf6dk11-1836811465.us-east-1.elb.amazonaws.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.localhost', '.elasticbeanstalk.com', 'greeklink-prod-env.us-east-1.elasticbeanstalk.com', '.greeklink-prod-env.us-east-1.elasticbeanstalk.com', 'greek-rho.com', '.greek-rho.com', '172.31.88.161', 'awseb-awseb-1xs69vwf6dk11-1836811465.us-east-1.elb.amazonaws.com']
 
 # gets health check IP address on elastic beanstalk and allows it
 import requests
@@ -233,7 +233,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 if ENV == 'testing':
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-    # DEFAULT_FILE_STORAGE = 'tenant_schemas.storage.TenantFileSystemStorage'   <-- should probably be set but haven't gotten it to work yet
+    DEFAULT_FILE_STORAGE = 'core.storage.TestEnvironmentSystemStorage'
 
 # AWS S3 for media upload hosting
 else:
@@ -241,6 +241,4 @@ else:
     AWS_S3_REGION_NAME = os.environ['AWS_S3_REGION_NAME']
     AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
     AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-
-    
+    DEFAULT_FILE_STORAGE = 'core.storage.S3TenantStorage'
