@@ -1,6 +1,6 @@
 """ database models for the core application """
 
-from django.db import models
+from django.db import models, connection
 from django.db.models import Q
 from django.urls import reverse
 
@@ -39,6 +39,7 @@ class PermissionsSupport(models.Model):
             ('activate_rushsignin', 'Activate rushsignin')
         )
 #----------------------------------------------------------------------- block for resource file
+
 class ResourceFileQuerySet(models.QuerySet):
     """ Query set of ResourceFiles returned when using search function
         search -- returns query set based on search input
