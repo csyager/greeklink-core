@@ -64,25 +64,25 @@
                                             <div class="form-group row">
                                                 <label for="new_name" class="col-sm-2 col-form-label">Name</label>
                                                 <div class="col-sm-10">
-                                                    <input type="text" class="form-control" id="edit_name_{{ event.id }}" name="name" value="{{ event.name }}">
+                                                    <input type="text" class="form-control" id="edit_name_{{ event.id }}" name="name" value="{{ event.name }}" required>
                                                 </div>
                                             </div>
                                             <div class="form-group row">
                                                 <label for="new_date" class="col-sm-2 col-form-label">Date</label>
                                                 <div class="col-sm-10">
-                                                    <input type="date" class="form-control" id="edit_date_{{ event.id }}" placeholder="YYYY-mm-dd" name="date" value="{{ event.date|date:'Y-m-d' }}">
+                                                    <input type="date" class="form-control" id="edit_date_{{ event.id }}" placeholder="YYYY-mm-dd" name="date" value="{{ event.date|date:'Y-m-d' }}" required>
                                                 </div>
                                             </div>
                                             <div class="form-group row">
                                                 <label for="new_time" class="col-sm-2 col-form-label">Time</label>
                                                 <div class="col-sm-10">
-                                                    <input type="time" class="form-control" id="edit_time_{{ event.id }}" name="time" placeholder="HH:mm:ss in 24-hour time" value="{{ event.time|date:'G:i' }}">
+                                                    <input type="time" class="form-control" id="edit_time_{{ event.id }}" name="time" placeholder="HH:mm:ss in 24-hour time" value="{{ event.time|date:'G:i' }}" required>
                                                 </div>
                                             </div>
                                             <div class="form-group row">
                                                 <label for="new_location" class="col-sm-2 col-form-label">Location</label>
                                                 <div class="col-sm-10">
-                                                    <input type="text" class="form-control" id="edit_location_{{ event.id }}" name="location" value="{{ event.location }}">
+                                                    <input type="text" class="form-control" id="edit_location_{{ event.id }}" name="location" value="{{ event.location }}" required>
                                                 </div>
                                             </div>
                                             <div class="form-group form-check">
@@ -203,7 +203,7 @@
         <script>
             function toggle_limit(){
                 var check_elem = document.getElementById('new_checkbox');
-                var limit_elem = document.getElementById('new_limit');
+                var limit_elem = document.getElementById('id_list_limit');
 
                 if(check_elem.checked) {
                     limit_elem.removeAttribute('disabled');
@@ -229,32 +229,40 @@
                         <div class="table">
                             {% csrf_token %}
                             <div class="form-group row">
-                                <label for="new_name" class="col-sm-2 col-form-label">Name</label>
+                                <div class="col-sm-2 col-form-label">
+                                    {{ social_event_form.name.label }}
+                                </div>
                                 <div class="col-sm-10">
-                                    <input type="text" class="form-control" id="new_name" name="name">
+                                    {{ social_event_form.name }}
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label for="new_date" class="col-sm-2 col-form-label">Date</label>
+                                <div class="col-sm-2 col-form-label">
+                                    {{ social_event_form.date.label }}
+                                </div>
                                 <div class="col-sm-10">
-                                    <input type="date" class="form-control" placeholder="YYYY-mm-dd" id="new_date" name="date">
+                                    {{ social_event_form.date }}
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label for="new_time" class="col-sm-2 col-form-label">Time</label>
+                                <div class="col-sm-2 col-form-label">
+                                    {{ social_event_form.time.label }}
+                                </div>
                                 <div class="col-sm-10">
-                                    <input type="time" class="form-control" id="new_time" placeholder="HH:mm:ss in 24-hour time" name="time">
+                                    {{ social_event_form.time }}
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label for="new_location" class="col-sm-2 col-form-label">Location</label>
+                                <div class="col-sm-2 col-form-label">
+                                    {{ social_event_form.location.label }}
+                                </div>
                                 <div class="col-sm-10">
-                                    <input type="text" class="form-control" id="new_location" name="location">
+                                    {{ social_event_form.location }}
                                 </div>
                             </div>
                             <div class="form-group form-check">
-                                <input type="checkbox" class="form-check-input" id="new_public" name="public">
-                                <label class="form-check-label" for="new_public">Make event public?</label><br>
+                                {{ social_event_form.public }}
+                                {{ social_event_form.public.label }}<br>
                                 <small>Making an event public will allow other organizations in your community to see the event on their calendar.</small>
                             </div>
                             <div class="form-group form-check">
@@ -262,9 +270,11 @@
                                 <label class="form-check-label" for="new_checkbox">Limit list additions?</label>                            
                             </div>
                             <div class="form-group row">
-                                <label for="new_limit" class="col-sm-2 col-form-label">List Limit</label>
+                                <div class="col-sm-2 col-form-label">
+                                    {{ social_event_form.list_limit.label }}
+                                </div>
                                 <div class="col-sm-10">
-                                    <input type="number" class="form-control" id="new_limit" name="limit" disabled="true">
+                                    {{ social_event_form.list_limit }}
                                     <small>Setting this variable will limit the number of people users can add to the list for this event.</small>
                                 </div>   
                             </div>
