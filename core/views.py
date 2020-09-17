@@ -791,7 +791,7 @@ def add_announcement(request):
             if send_emailBoolean:
                 
                 truemessage = render_to_string('core/announcement_email.html', {
-                    'user': request.user,
+                    'user': request.user.first_name + request.user.last_name,
                     'body': form.cleaned_data['body'],
                     'target': form.cleaned_data['target']
                 })
