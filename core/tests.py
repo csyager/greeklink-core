@@ -463,8 +463,10 @@ class SocialTestCase(TenantTestCase):
     # tests the create event function
     def test_create_event(self):
         path = reverse('create_social_event')
-        post_dict = {'name': 'test_name', 'date': '2001-01-01', 'time': '12:00', 'location': ""}
-        response = self.client.post(path, post_dict, HTTP_REFERER=reverse('social'), follow=True)
+        form_data = {'name': 'test_name', 'date': '2001-01-01', 'time': '12:00', 'location': "test_location"}
+        form = SocialEventForm(form_data)
+        self.assertTrue(form.is_valid)
+        response = self.client.post(path, form_data, HTTP_REFERER=reverse('social'), follow=True)
         self.assertContains(response, 'test_name -- Jan. 1, 2001, noon')
 
     # tests that the page for an individual social event exists
