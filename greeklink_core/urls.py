@@ -23,7 +23,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls')),
     path('cal/', include('cal.urls')),
-    path('rush/', include('rush.urls'))
+    path('rush/', include('rush.urls')),
+    path('finance/', include('finance.urls'))
 ]
 
 handler404 = 'core.views.handler404'

@@ -1,5 +1,5 @@
   
-""" URL paths for the rush application """
+""" URL paths for the cal application """
 
 from django.urls import path
 from . import views
