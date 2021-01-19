@@ -10,6 +10,7 @@ sudo rm -rf core/migrations
 sudo rm -rf rush/migrations
 sudo rm -rf organizations/migrations
 sudo rm -rf cal/migrations
+sudo rm -rf finance/migrations
 
 # delete everything from media
 sudo rm -rf media/
@@ -22,6 +23,7 @@ python manage.py makemigrations core
 python manage.py makemigrations organizations
 python manage.py makemigrations rush
 python manage.py makemigrations cal
+python manage.py makemigrations finance
 python manage.py migrate_schemas
 python manage.py collectstatic --noinput
 

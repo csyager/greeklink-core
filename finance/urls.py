@@ -5,4 +5,5 @@ app_name = 'finance'
 
 urlpatterns = [
     path('', views.index, name="index"),
+    path('create_transaction', views.create_transaction, name="create_transaction")
 ]

@@ -66,6 +66,7 @@ TENANT_APPS = (
     'core',
     'rush',
     'cal',
+    'finance',
 )
 
 INSTALLED_APPS = [
@@ -84,6 +85,7 @@ INSTALLED_APPS = [
     'core.apps.CoreConfig',
     'rush.apps.RushConfig',
     'cal.apps.CalConfig',
+    'finance.apps.FinanceConfig',
 ]
 
 TENANT_MODEL = 'organizations.Client'
@@ -108,6 +110,8 @@ TEMPLATES = [
         'DIRS': [
             'core/templates',
             'rush/templates',
+            'cal/templates',
+            'finance/templates',
         ],
         'APP_DIRS': True,
         'OPTIONS': {

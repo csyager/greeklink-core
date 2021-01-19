@@ -1,6 +1,56 @@
 {% extends 'core/base.html' %}
 {% block content %}
 {% load static %}
-<h1>Finances</h1>
+<br>
+<div class="container">
+    <h1>Finance</h1>
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% elif messages.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">{{ message }}</div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Request Payment</h4>
+                    <p class="card-text">Request payment from individuals or groups.</p>
+                    <form action="/finance/create_transaction" method="post">
+                        {% csrf_token %}
+                        {{ transaction_form }}
+                        <br>
+                        <button type="submit" class="btn btn-primary">Request payment</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Payments</h4>
+                    <p class="card-text">Track who has paid, who is required to pay, and how much money is outstanding in a transaction.</p>
+                    <form action="/finance/transaction_details" method="post">
+                        {% csrf_token %}
+                        {{ transaction_detail_form }}
+                        <br>
+                        <button type="submit" class="btn btn-primary">View more details</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Make payment</h4>
+                    <p class="card-text">Submit a payment for a transaction</p>
+                    <a href="#" class="btn btn-primary">Go somewhere else</a>
+                </div>
+            </div>
+        </div>
+</div>
 
 {% endblock %}
