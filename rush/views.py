@@ -305,7 +305,7 @@ def current_rushees(request):
         "rush_page": "active",
         "rushees": rushees,
         "filter_form": filter_form,
-        "settings": getSettings(),
+        "settings": settings,
     }
     return HttpResponse(template.render(context, request))
 
