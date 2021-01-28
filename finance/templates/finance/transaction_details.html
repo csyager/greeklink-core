@@ -1,0 +1,83 @@
+{% extends 'core/base.html' %}
+{% block content %}
+{% load static %}
+{% load mathfilters %}
+<br>
+<div class="container">
+    <h1>{{ transaction.name }}</h1>
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% elif messages.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">{{ message }}</div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+    <a href="/finance" class="btn btn-danger">Back to Finance Home</a>&nbsp;&nbsp;<button class="btn btn-primary btn" data-toggle="modal" data-target="#submitPaymentModal">Record Payment</button>
+    <br>
+    <br>
+    <h3>Transaction Data</h3>
+    <table class="table">
+        <thead>
+            <th scope="col">Amount per user</th>
+            <th scope="col"># Users Requested</th>
+            <th scope="col">Total amount Paid</th>
+            <th scope="col">Total amount Requested</th>
+            <th scope="col">% Collected</th>
+        </thead>
+        <tbody>
+            <tr>
+                <td>${{ transaction.amount|floatformat:2 }}</td>
+                <td>{{ num_requested }}</td>
+                <td>${{ total_collected|floatformat:2 }}</td>
+                <td>${{ total_requested|floatformat:2 }}</td>
+                <td>{{ percentage|floatformat:2 }}%</td>
+            </tr>
+        </tbody>
+    </table>
+    <br>
+    <h3>User Balances</h3>
+    <table class="table">
+        <thead>
+            <th scope="col">User</th>
+            <th scope="col">Paid</th>
+            <th scope="col">Balance</th>
+        </thead>
+        <tbody>
+            {% for user in transaction_user_relation.all %}
+            <tr>
+                <td>{{ user.user.username }}</td>
+                <td>${{ user.amount_paid|floatformat:2 }}</td>
+                <td>${{ transaction.amount|sub:user.amount_paid|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- record payment modal -->
+<div class="modal fade" id="submitPaymentModal" tabindex="-1" role="dialog" aria-labelledby="submitPaymentModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="submitPaymentLabel">Record Payment</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="/finance/submit_payment{{ transaction.id }}" method="post">
+                    {% csrf_token %}
+                    {{ record_payment_form }}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Submit Payment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

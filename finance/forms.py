@@ -38,12 +38,28 @@ class TransactionForm(forms.Form):
 
 class TransactionDetailForm(forms.Form):
     transaction = forms.ChoiceField(choices=[], required=True,
-        widget=forms.Select(attrs={'class': 'form-control rounded'}))
+        widget=forms.Select(attrs={'class': 'form-control rounded', 'id': 'transaction_details_select'}))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         OPTIONS = []
         for transaction in Transaction.objects.all():
-            OPTIONS.append((transaction, transaction))
+            OPTIONS.append((transaction.id, transaction))
 
         self.fields['transaction'].choices = OPTIONS
+
+
+class RecordPaymentForm(forms.Form):
+    user = forms.ChoiceField(choices=[], required=True,
+        widget=forms.Select(attrs={'class': 'form-control rounded', 'id': 'user_select'}))
+    amount = forms.DecimalField(max_digits=6, decimal_places=2,
+        widget=forms.NumberInput(attrs={'class': 'form-control rounded', 'placeholder': 'Amount paid'}))
+
+    def __init__(self, *args, **kwargs):
+        self.transaction = kwargs.pop('transaction')
+        super().__init__(*args, **kwargs)
+        USERS = []
+        for user_relation in self.transaction.transaction_user_list.all():
+            USERS.append((user_relation.user.id, user_relation.user.username))
+
+        self.fields['user'].choices = USERS

@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'django_user_agents',
     'storages',
+    'mathfilters',
     'core.apps.CoreConfig',
     'rush.apps.RushConfig',
     'cal.apps.CalConfig',

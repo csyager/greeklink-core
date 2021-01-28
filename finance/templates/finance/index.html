@@ -2,6 +2,17 @@
 {% block content %}
 {% load static %}
 <br>
+<script>
+
+    function detailsFunction(){
+        elem = document.getElementById('transaction_details_select');
+        val = elem.value;
+        url = '/finance/transaction_details';
+        url += val;
+        window.location.href=url;
+    }
+
+</script>
 <div class="container">
     <h1>Finance</h1>
     {% if messages %}
@@ -33,11 +44,9 @@
                 <div class="card-body">
                     <h4 class="card-title">Payments</h4>
                     <p class="card-text">Track who has paid, who is required to pay, and how much money is outstanding in a transaction.</p>
-                    <form action="/finance/transaction_details" method="post">
-                        {% csrf_token %}
                         {{ transaction_detail_form }}
                         <br>
-                        <button type="submit" class="btn btn-primary">View more details</button>
+                        <button onclick="detailsFunction()" class="btn btn-primary">View more details</button>
                     </form>
                 </div>
             </div>
@@ -45,12 +54,15 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title">Make payment</h4>
+                    <h4 class="card-title">Record payment</h4>
                     <p class="card-text">Submit a payment for a transaction</p>
-                    <a href="#" class="btn btn-primary">Go somewhere else</a>
+                    <a href="#" class="btn btn-primary">Record payment</a>
                 </div>
             </div>
         </div>
+    </div>
 </div>
+
+
 
 {% endblock %}
