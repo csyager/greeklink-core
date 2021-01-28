@@ -37,7 +37,6 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, redirect
 import datetime
 from django.contrib.auth.views import LoginView
-from django_ses.signals import bounce_received, complaint_received
 from django.dispatch import receiver
 from organizations.models import Client
 from rush.models import RushEvent

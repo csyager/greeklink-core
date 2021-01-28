@@ -35,6 +35,9 @@ class RusheeForm(ModelForm):
     phone_number = forms.CharField(max_length=10,
         widget=forms.TextInput(attrs={'class': 'form-control rounded', 'placeholder': 'Phone Number'}))
 
+    in_person = forms.ChoiceField(choices={(True, 'Yes'), (False, 'No')}, label="Do you plan to participate in the in-person rush activities this year?",
+        widget=forms.Select(attrs={'class': 'form-control rounded'}))
+
     class Meta:
         model = Rushee
         fields = ['name', 'email', 'year', 'major', 'hometown', 'address', 'phone_number']
