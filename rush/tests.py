@@ -223,7 +223,8 @@ class RusheeRegisterTestCase(TenantTestCase):
             'major': 'test_major',
             'hometown': 'test_hometown',
             'address': 'test_address',
-            'phone_number': '9999999999'
+            'phone_number': '9999999999',
+            'in_person': True
         }
 
     def test_valid_form_register(self):
