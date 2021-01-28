@@ -112,7 +112,6 @@ def rushee(request, num):
 
 
 # adds a rushee to the database when they first sign in
-@login_required
 def register(request, event_id):
     """ adds a rushee to the database when they first sign in
         event_id -- primary key of event that rushee is registering in
@@ -165,7 +164,6 @@ def register(request, event_id):
 
 
 # for rushees signing into events
-@login_required
 def signin(request, event_id=-1):
     """ page for rushees signing into events when they are already registered
         event_id -- if passed in URL represents the event being signed into

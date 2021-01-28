@@ -12,6 +12,7 @@
 <br>
 {% endif %}
 {% if not settings.rush_signin_active %}
+<br>
 <div class="container">
     <div class="alert alert-danger">
     Rush signin is not active.  Must be enabled by site admin.
@@ -87,6 +88,7 @@
     </div>
     {% endif %}
 {% else %}
+<br>
 <div class="dropdown" style="margin-left: 5%">
     <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         Change event
@@ -128,6 +130,10 @@
     </div>
     <div class="form-group">
         {{ form.phone_number }}
+    </div>
+    <div class="form-group">
+        <b>{{ form.in_person.label }}</b><br><br>
+        {{ form.in_person }}
     </div>
     <input type="hidden" id="profile_picture_data" name="profile_picture_data">
     <br>
