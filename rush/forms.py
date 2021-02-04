@@ -38,7 +38,7 @@ class RusheeForm(ModelForm):
     in_person = forms.ChoiceField(choices={(True, 'Yes'), (False, 'No')}, label="Do you plan to participate in the in-person rush activities this year?", required=True,
         widget=forms.Select(attrs={'class': 'form-control rounded'}))
 
-    friends_rushing = forms.CharField(max_length=100, label="Are you rushing with any friends or roommates?", required=False,
+    friends_rushing = forms.CharField(max_length=100, label="Are you rushing with any friends or roommates?  This will be used to plan small group events.", required=False,
         widget=forms.TextInput(attrs={'class': 'form-control rounded', 'placeholder': 'List up to 3 names'}))
 
     class Meta:
