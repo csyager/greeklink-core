@@ -126,6 +126,8 @@ def register(request, event_id):
         obj.hometown = form.cleaned_data['hometown']
         obj.address = form.cleaned_data['address']
         obj.phone_number = form.cleaned_data['phone_number']
+        obj.in_person = form.cleaned_data['in_person']
+        obj.friends_rushing = form.cleaned_data['friends_rushing']
 
         # NOTE: Please don't mess with this, I don't know how I made it work
         # Handles saving the image as a file in media/profile_images
