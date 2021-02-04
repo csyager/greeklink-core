@@ -20,27 +20,30 @@ class CommentForm(ModelForm):
 
 # form for initial rushee sign in
 class RusheeForm(ModelForm):
-    name = forms.CharField(max_length=100,
+    name = forms.CharField(max_length=100, required=True,
         widget=forms.TextInput(attrs={'class': 'form-control rounded', 'placeholder': 'Name'}))
-    email = forms.EmailField(max_length=100,
+    email = forms.EmailField(max_length=100, required=True,
         widget=forms.EmailInput(attrs={'class': 'form-control rounded', 'placeholder': 'Email'}))
-    year = forms.ChoiceField(choices=YEAR_CHOICES,
+    year = forms.ChoiceField(choices=YEAR_CHOICES, required=True,
         widget=forms.Select(attrs={'class': 'form-control rounded'}))
-    major = forms.CharField(max_length=100,
+    major = forms.CharField(max_length=100, required=True,
         widget=forms.TextInput(attrs={'class': 'form-control rounded', 'placeholder': 'Major'}))
-    hometown = forms.CharField(max_length=100,
+    hometown = forms.CharField(max_length=100, required=True,
         widget=forms.TextInput(attrs={'class': 'form-control rounded', 'placeholder': 'Hometown'}))
-    address = forms.CharField(max_length=100,
+    address = forms.CharField(max_length=100, required=True,
         widget=forms.TextInput(attrs={'class': 'form-control rounded', 'placeholder': 'School Address'}))
-    phone_number = forms.CharField(max_length=10,
+    phone_number = forms.CharField(max_length=10, required=True,
         widget=forms.TextInput(attrs={'class': 'form-control rounded', 'placeholder': 'Phone Number'}))
 
-    in_person = forms.ChoiceField(choices={(True, 'Yes'), (False, 'No')}, label="Do you plan to participate in the in-person rush activities this year?",
+    in_person = forms.ChoiceField(choices={(True, 'Yes'), (False, 'No')}, label="Do you plan to participate in the in-person rush activities this year?", required=True,
         widget=forms.Select(attrs={'class': 'form-control rounded'}))
+
+    friends_rushing = forms.CharField(max_length=100, label="Are you rushing with any friends or roommates?", required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control rounded', 'placeholder': 'List up to 3 names'}))
 
     class Meta:
         model = Rushee
-        fields = ['name', 'email', 'year', 'major', 'hometown', 'address', 'phone_number']
+        fields = ['name', 'email', 'year', 'major', 'hometown', 'address', 'phone_number', 'in_person', 'friends_rushing']
 
     def save(self):
         rushee = super(RusheeForm, self).save(commit=False)
