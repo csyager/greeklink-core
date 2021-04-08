@@ -112,7 +112,6 @@ def rushee(request, num):
 
 
 # adds a rushee to the database when they first sign in
-@login_required
 def register(request, event_id):
     """ adds a rushee to the database when they first sign in
         event_id -- primary key of event that rushee is registering in
@@ -127,6 +126,8 @@ def register(request, event_id):
         obj.hometown = form.cleaned_data['hometown']
         obj.address = form.cleaned_data['address']
         obj.phone_number = form.cleaned_data['phone_number']
+        obj.in_person = form.cleaned_data['in_person']
+        obj.friends_rushing = form.cleaned_data['friends_rushing']
 
         # NOTE: Please don't mess with this, I don't know how I made it work
         # Handles saving the image as a file in media/profile_images
@@ -165,7 +166,6 @@ def register(request, event_id):
 
 
 # for rushees signing into events
-@login_required
 def signin(request, event_id=-1):
     """ page for rushees signing into events when they are already registered
         event_id -- if passed in URL represents the event being signed into
@@ -307,7 +307,7 @@ def current_rushees(request):
         "rush_page": "active",
         "rushees": rushees,
         "filter_form": filter_form,
-        "settings": getSettings(),
+        "settings": settings,
     }
     return HttpResponse(template.render(context, request))
 

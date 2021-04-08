@@ -43,6 +43,10 @@ class Rushee(models.Model):
     hometown = models.CharField(max_length=75)
     address = models.CharField(max_length=75)
     phone_number = models.CharField(max_length=10)
+
+    in_person = models.BooleanField(default=True)
+    friends_rushing = models.CharField(max_length=100, default="")
+
     endorsements = models.ManyToManyField(User, related_name="endorsed_rushees", blank=True)
     oppositions = models.ManyToManyField(User, related_name="opposed_rushees", blank=True)
 
