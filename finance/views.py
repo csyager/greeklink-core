@@ -7,8 +7,12 @@ from .forms import TransactionForm, TransactionDetailForm, RecordPaymentForm
 from django.contrib import messages
 from .models import Transaction, TransactionUserRelation
 from django.contrib.auth.models import User
+import matplotlib
+import matplotlib.pyplot as plt
+from mpld3 import fig_to_html, plugins, utils
 
 # Create your views here.
+matplotlib.use('agg')
 
 @login_required
 def index(request):
@@ -82,6 +86,16 @@ def transaction_details(request, transaction_id):
 
     percentage = round(100*(total_collected/transaction.amount), 2)
 
+    # pie chart
+    labels = 'Paid', 'Outstanding'
+    sizes = percentage, 100.0-percentage
+    explode = (0, 0)
+    fig1, ax1 = plt.subplots()
+    wedges = ax1.pie(sizes, explode=explode, colors=['green', 'red'], labels=labels, autopct='%1.1f%%',
+            shadow=False, startangle=0)
+    ax1.axis('equal')
+    graph_html = fig_to_html(fig1)
+
     template = loader.get_template('finance/transaction_details.html')
     context = {
         'settings': getSettings(),
@@ -92,9 +106,11 @@ def transaction_details(request, transaction_id):
         'total_collected': float(total_collected),
         'total_requested': float(num_requested * transaction.amount),
         'percentage': float(percentage),
-        'record_payment_form': RecordPaymentForm(transaction=transaction)
+        'record_payment_form': RecordPaymentForm(transaction=transaction),
+        'graph_html': graph_html
     }
     return HttpResponse(template.render(context, request))
+
 
 
 def submit_payment(request, transaction_id):
