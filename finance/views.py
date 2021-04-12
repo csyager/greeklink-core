@@ -3,13 +3,14 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import loader
 from core.views import getSettings
 from django.contrib.auth.decorators import login_required, permission_required
-from .forms import TransactionForm, TransactionDetailForm, RecordPaymentForm
+from .forms import TransactionForm, TransactionDetailForm, RecordPaymentForm, RecordPaymentWithTransactionForm
 from django.contrib import messages
 from .models import Transaction, TransactionUserRelation
 from django.contrib.auth.models import User
 import matplotlib
 import matplotlib.pyplot as plt
 from mpld3 import fig_to_html, plugins, utils
+import json
 
 # Create your views here.
 matplotlib.use('agg')
@@ -24,7 +25,8 @@ def index(request):
         'settings': getSettings(),
         'finance_page': 'active',
         'transaction_form': TransactionForm(),
-        'transaction_detail_form': TransactionDetailForm()
+        'transaction_detail_form': TransactionDetailForm(),
+        'record_payment_with_transaction_form': RecordPaymentWithTransactionForm()
     }
     return HttpResponse(template.render(context, request))
 
@@ -94,7 +96,9 @@ def transaction_details(request, transaction_id):
     wedges = ax1.pie(sizes, explode=explode, colors=['green', 'red'], labels=labels, autopct='%1.1f%%',
             shadow=False, startangle=0)
     ax1.axis('equal')
-    graph_html = fig_to_html(fig1)
+    fig1.set_figwidth(3.5)
+    fig1.set_figheight(3.5)
+    graph_html = fig_to_html(fig1, figid="transaction-pie-chart")
 
     template = loader.get_template('finance/transaction_details.html')
     context = {
@@ -128,3 +132,36 @@ def submit_payment(request, transaction_id):
 
     messages.success(request, user.username + "'s payment of $" + '%.2f' % amount + " for transaction " + transaction.name + " successfully recorded.")
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+def submit_payment_with_transaction(request):
+    '''
+        submit a payment with the transaction id in the POST data
+    '''
+    transaction_id = int(request.POST.get('transaction'))
+    transaction = Transaction.objects.get(id=transaction_id)
+    user_id = int(request.POST.get('user'))
+    user = User.objects.get(id=user_id)
+    amount = float(request.POST.get('amount'))
+
+    transaction_user_relation = TransactionUserRelation.objects.get(transaction=transaction, user=user)
+    transaction_user_relation.amount_paid += amount
+    transaction_user_relation.save()
+
+    messages.success(request, user.username + "'s payment of $" + '%.2f' % amount + " for transaction " + transaction.name + " successfully recorded.")
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+def get_users_in_transaction(request, transaction_id=0):
+    '''
+        gets a list of users in a transaction
+    '''
+    if transaction_id == 0:
+        return HttpResponse(json.dumps({}))
+
+    transaction = Transaction.objects.get(id=transaction_id)
+    ret_dict = {}
+    for user in transaction.transaction_user_list.all():
+        ret_dict[user.id] = user.user.username
+    
+    return HttpResponse(json.dumps(ret_dict))

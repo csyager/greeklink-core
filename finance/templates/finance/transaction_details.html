@@ -17,25 +17,32 @@
     <a href="/finance" class="btn btn-danger">Back to Finance Home</a>&nbsp;&nbsp;<button class="btn btn-primary btn" data-toggle="modal" data-target="#submitPaymentModal">Record Payment</button>
     <br>
     <br>
+
+    <!-- payment pie chart -->
+    {{ graph_html |safe}}
+
     <h3>Transaction Data</h3>
-    <table class="table">
-        <thead>
-            <th scope="col">Amount per user</th>
-            <th scope="col"># Users Requested</th>
-            <th scope="col">Total amount Paid</th>
-            <th scope="col">Total amount Requested</th>
-            <th scope="col">% Collected</th>
-        </thead>
-        <tbody>
-            <tr>
-                <td>${{ transaction.amount|floatformat:2 }}</td>
-                <td>{{ num_requested }}</td>
-                <td>${{ total_collected|floatformat:2 }}</td>
-                <td>${{ total_requested|floatformat:2 }}</td>
-                <td>{{ percentage|floatformat:2 }}%</td>
-            </tr>
-        </tbody>
-    </table>
+        <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <th scope="col">Amount per user</th>
+                <th scope="col"># Users Requested</th>
+                <th scope="col">Total amount Paid</th>
+                <th scope="col">Total amount Requested</th>
+                <th scope="col">% Collected</th>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>${{ transaction.amount|floatformat:2 }}</td>
+                    <td>{{ num_requested }}</td>
+                    <td>${{ total_collected|floatformat:2 }}</td>
+                    <td>${{ total_requested|floatformat:2 }}</td>
+                    <td>{{ percentage|floatformat:2 }}%</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
     <br>
     <h3>User Balances</h3>
     <table class="table">
@@ -55,6 +62,7 @@
         </tbody>
     </table>
 </div>
+<br>
 
 <!-- record payment modal -->
 <div class="modal fade" id="submitPaymentModal" tabindex="-1" role="dialog" aria-labelledby="submitPaymentModal" aria-hidden="true">
@@ -67,7 +75,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="/finance/submit_payment{{ transaction.id }}" method="post">
+                <form action="submit_payment{{ transaction.id }}" method="post">
                     {% csrf_token %}
                     {{ record_payment_form }}
             </div>
@@ -80,9 +88,6 @@
     </div>
 </div>
 
-<!-- payment pie chart -->
-<div class="container">
-    {{ graph_html |safe}}
-</div>
+
 
 {% endblock %}

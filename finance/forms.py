@@ -63,3 +63,21 @@ class RecordPaymentForm(forms.Form):
             USERS.append((user_relation.user.id, user_relation.user.username))
 
         self.fields['user'].choices = USERS
+
+
+class RecordPaymentWithTransactionForm(forms.Form):
+    transaction = forms.ChoiceField(choices=[], required=True,
+        widget=forms.Select(attrs={'class': 'form-control rounded', 'id': 'payment_with_transaction_transaction_select', 'onchange': 'fetchUsers(this.value);'}))
+    user = forms.ChoiceField(choices=[], required=True,
+        widget=forms.Select(attrs={'class': 'form-control rounded', 'id': 'payment_with_transaction_user_select', 'style': 'display:none'}))
+    amount = forms.DecimalField(max_digits=6, decimal_places=2,
+        widget=forms.NumberInput(attrs={'class': 'form-control rounded', 'placeholder': 'Amount paid', 'id': 'payment_with_transaction_amount', 'style': 'display:none'}))
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        OPTIONS = [("", "Select existing transaction")]
+        for transaction in Transaction.objects.all():
+            OPTIONS.append((transaction.id, transaction))
+        
+        self.fields['transaction'].choices = OPTIONS
+        

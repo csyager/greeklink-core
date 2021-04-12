@@ -26,7 +26,7 @@
     {% endif %}
     <div class="row">
         <div class="col-md-4">
-            <div class="card">
+            <div class="card transaction-card">
                 <div class="card-body">
                     <h4 class="card-title">Request Payment</h4>
                     <p class="card-text">Request payment from individuals or groups.</p>
@@ -40,9 +40,9 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card">
+            <div class="card transaction-card">
                 <div class="card-body">
-                    <h4 class="card-title">Payments</h4>
+                    <h4 class="card-title">Transaction Details</h4>
                     <p class="card-text">Track who has paid, who is required to pay, and how much money is outstanding in a transaction.</p>
                         {{ transaction_detail_form }}
                         <br>
@@ -52,17 +52,25 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card">
+            <script src="{% static 'finance/js/fetch_user_in_transaction.js' %}"></script>
+            <div class="card transaction-card">
                 <div class="card-body">
                     <h4 class="card-title">Record payment</h4>
                     <p class="card-text">Submit a payment for a transaction</p>
-                    <a href="#" class="btn btn-primary">Record payment</a>
+                    <form action="submit_payment_with_transaction" method="post">
+                    {% csrf_token %}
+                    {% for field in record_payment_with_transaction_form %}
+                        <label id="{{ field.auto_id }}_label" for="{{ field.auto_id }}" {% if field.auto_id != "id_transaction" %}style="display:none"{% endif %}>{{ field.label }}</label>
+                        {{ field }}
+                    {% endfor %}
+                    <br>
+                    <button type="submit" class="btn btn-primary">Record payment</a>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
+<br>
 
 
 {% endblock %}
