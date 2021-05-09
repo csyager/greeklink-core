@@ -5,12 +5,19 @@ from core.views import getSettings
 from django.contrib.auth.decorators import login_required, permission_required
 from .forms import TransactionForm, TransactionDetailForm, RecordPaymentForm, RecordPaymentWithTransactionForm
 from django.contrib import messages
-from .models import Transaction, TransactionUserRelation
+from .models import Transaction, TransactionUserRelation, BudgetLineItem, PaymentEvent
 from django.contrib.auth.models import User
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+from matplotlib.ticker import StrMethodFormatter, FixedFormatter
+import numpy as np
 from mpld3 import fig_to_html, plugins, utils
+from datetime import datetime, timedelta, date
 import json
+from bokeh.models import ColumnDataSource
+from bokeh.plotting import figure, output_file, show
+from bokeh.embed import components
 
 # Create your views here.
 matplotlib.use('agg')
@@ -21,12 +28,51 @@ def index(request):
         index for finance page
     '''
     template = loader.get_template('finance/index.html')
+
+    last_7_days = []
+    today = datetime.today()
+    rounded_date = (today - timedelta(hours=today.hour, minutes=today.minute, seconds=today.second, microseconds=today.microsecond))
+    payment_events = PaymentEvent.objects.filter(date__range=[today.date()-timedelta(7), today.date()])
+    y1=[]
+    y2=[]
+    for i in range(0, 7):
+        this_date = rounded_date - timedelta(i)
+        last_7_days.append(this_date)
+        costs = 0
+        profits = 0
+        for e in payment_events.filter(date=this_date):
+            if e.is_cost:
+                costs += e.amount
+            else:
+                profits += e.amount
+        y1.append(profits)
+        y2.append(costs)
+    
+    print(y1)
+    print(y2)
+    
+    x=last_7_days
+    
+
+    
+    plot = figure(title='Line Graph', x_axis_label='Date', y_axis_label='Amount', plot_width=300, plot_height=300, sizing_mode='scale_width', x_axis_type='datetime')
+    plot.multi_line([x, x], [y1, y2], color=["green", "red"], line_width=2)
+    plot.line(x, y2, line_color="red", line_width=2, legend_label="Costs")
+    plot.line(x, y1, line_color="green", line_width=2, legend_label="Profits")
+    
+    plot.legend.location = "top_left"
+
+    script, graph_html = components(plot)
+    
+
     context = {
         'settings': getSettings(),
         'finance_page': 'active',
         'transaction_form': TransactionForm(),
         'transaction_detail_form': TransactionDetailForm(),
-        'record_payment_with_transaction_form': RecordPaymentWithTransactionForm()
+        'record_payment_with_transaction_form': RecordPaymentWithTransactionForm(),
+        'script': script,
+        'graph_html': graph_html
     }
     return HttpResponse(template.render(context, request))
 
@@ -38,15 +84,14 @@ def create_transaction(request):
     if request.method == 'POST':
         form = TransactionForm(request.POST)
         if form.is_valid():
-            print("valid form")
             name = form.cleaned_data.get('name')
             description = form.cleaned_data.get('description')
             due_date = form.cleaned_data.get('due_date')
             amount = form.cleaned_data.get('amount')
             groups = form.cleaned_data.get('groups')
             users = form.cleaned_data.get('users')
+            create_line_item = request.POST.get('create_line_item')
             transaction = Transaction.objects.create(name=name, description=description, due_date=due_date, amount=amount)
-            print("transaction created")
             transaction.save()
             for user in users:
                 u = User.objects.get(username=user)
@@ -57,6 +102,9 @@ def create_transaction(request):
                     if not TransactionUserRelation.objects.get(user=user, transaction=transaction):
                         user_relation = TransactionUserRelation.objects.create(user=user, transaction=transaction)
                         user_relation.save()
+            if create_line_item:
+                line_item = BudgetLineItem.objects.create(transaction=transaction)
+            
             messages.success(request, "Transaction " + transaction.name + " has been successfully created.")
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         else:
@@ -126,6 +174,9 @@ def submit_payment(request, transaction_id):
     user = User.objects.get(id=user_id)
     amount = float(request.POST.get('amount'))
 
+    payment_event = PaymentEvent.objects.create(description=f"Payment for transaction {transaction} by user {user}", amount=amount)
+    payment_event.save()
+
     transaction_user_relation = TransactionUserRelation.objects.get(transaction=transaction, user=user)
     transaction_user_relation.amount_paid += amount
     transaction_user_relation.save()
@@ -143,6 +194,9 @@ def submit_payment_with_transaction(request):
     user_id = int(request.POST.get('user'))
     user = User.objects.get(id=user_id)
     amount = float(request.POST.get('amount'))
+
+    payment_event = PaymentEvent.objects.create(description=f"Payment for transaction {transaction} by user {user}", amount=amount)
+    payment_event.save()
 
     transaction_user_relation = TransactionUserRelation.objects.get(transaction=transaction, user=user)
     transaction_user_relation.amount_paid += amount
@@ -162,6 +216,6 @@ def get_users_in_transaction(request, transaction_id=0):
     transaction = Transaction.objects.get(id=transaction_id)
     ret_dict = {}
     for user in transaction.transaction_user_list.all():
-        ret_dict[user.id] = user.user.username
+        ret_dict[user.user.id] = user.user.username
     
     return HttpResponse(json.dumps(ret_dict))

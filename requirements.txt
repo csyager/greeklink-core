@@ -3,6 +3,7 @@ attrs==19.3.0
 awsebcli==3.19.4
 bcrypt==3.1.7
 blessed==1.17.5
+bokeh==2.3.1
 boto3==1.17.47
 botocore==1.20.47
 cached-property==1.5.1

@@ -1,4 +1,12 @@
 {% extends 'core/base.html' %}
+{% block extrahead %}
+<!-- bokeh styles and scripts -->
+<link href="http://cdn.pydata.org/bokeh/release/bokeh-2.3.1.min.css" rel="stylesheet" type="text/css">
+<link href="http://cdn.pydata.org/bokeh/release/bokeh-widgets-2.3.1.min.css" rel="stylesheet" type="text/css">
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-2.3.1.min.js"></script>
+ <script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-2.3.1.min.js"></script>
+{{ script | safe }}
+{% endblock %}
 {% block content %}
 {% load static %}
 <br>
@@ -33,21 +41,48 @@
                     <form action="/finance/create_transaction" method="post">
                         {% csrf_token %}
                         {{ transaction_form }}
-                        <br>
+                        <br>    
+                        <div style="padding-left: 20px; padding-bottom: 20px">                      
+                            <input type="checkbox" name="create_line_item" class="form-check-input">
+                            Create budget line item?<br>
+                        </div>
                         <button type="submit" class="btn btn-primary">Request payment</button>
                     </form>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card transaction-card">
-                <div class="card-body">
-                    <h4 class="card-title">Transaction Details</h4>
-                    <p class="card-text">Track who has paid, who is required to pay, and how much money is outstanding in a transaction.</p>
-                        {{ transaction_detail_form }}
-                        <br>
-                        <button onclick="detailsFunction()" class="btn btn-primary">View more details</button>
-                    </form>
+            <div class="row" style="padding-left: 15px; padding-right: 15px">
+                <div class="card transaction-card">
+                    <div class="card-body">
+                        <h4 class="card-title">Transaction Details</h4>
+                        <p class="card-text">Track who has paid, who is required to pay, and how much money is outstanding in a requested payment.</p>
+                            {{ transaction_detail_form }}
+                            <br>
+                            <button onclick="detailsFunction()" class="btn btn-primary">View more details</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="padding-left: 15px; padding-right: 15px">
+                <div class="card transaction-card">
+                    <div class="card-body">
+                        <h4 class="card-title">Budget</h4>
+                        <p class="card-text">Manage a budget showing income vs. costs.</p>
+                        
+                        <a href="#" class="btn btn-primary">View Budget</a>
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="padding-left: 15px; padding-right: 15px">
+                <div class="card transaction-card">
+                    <div class="card-body">
+                        <h4 class="card-title">Activity last 7 days</h4>
+                        <div class="container" style='width: 100%'>
+                            {{ graph_html|safe }}
+                        </div>
+                        <a href="#" class="btn btn-primary">View Budget</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -68,9 +103,10 @@
                 </div>
             </div>
         </div>
+        
     </div>
 </div>
 <br>
-
+<br>
 
 {% endblock %}
