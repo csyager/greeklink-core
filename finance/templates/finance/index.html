@@ -70,7 +70,7 @@
                         <h4 class="card-title">Budget</h4>
                         <p class="card-text">Manage a budget showing income vs. costs.</p>
                         
-                        <a href="#" class="btn btn-primary">View Budget</a>
+                        <a href="/finance/budget" class="btn btn-primary">View Budget</a>
                     </div>
                 </div>
             </div>
@@ -81,7 +81,6 @@
                         <div class="container" style='width: 100%'>
                             {{ graph_html|safe }}
                         </div>
-                        <a href="#" class="btn btn-primary">View Budget</a>
                     </div>
                 </div>
             </div>
@@ -100,6 +99,33 @@
                     {% endfor %}
                     <br>
                     <button type="submit" class="btn btn-primary">Record payment</a>
+                </div>
+            </div>
+            <div class="card transaction-card">
+                <div class="card-body">
+                    <h4 class="card-title">Forecast</h4>
+                    <p class="card-text">Payments that have upcoming due dates</p>
+                    {% if upcoming_budget_line_items %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Due Date</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Amount</th>
+                        </thead>
+                        <tbody>
+                            {% for elem in upcoming_budget_line_items %}
+                            <tr>
+                                <td>{{ elem.due_date }}</td>
+                                <td>{{ elem.description }}</td>
+                                <td>{{ elem.amount|floatformat:2 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p><i><b>No upcoming payments</b></i></p>
+                    {% endif %}
                 </div>
             </div>
         </div>

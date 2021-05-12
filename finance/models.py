@@ -60,7 +60,7 @@ class BudgetLineItem(models.Model):
     created_date = models.DateField(default=timezone.now)
 
     def save(self, *args, **kwargs):
-        if self.transaction is not None:
+        if self.transaction is not None and self.pk is None:
             self.name = self.transaction.name
             self.is_cost = False
             self.description = self.transaction.description

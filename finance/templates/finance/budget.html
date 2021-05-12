@@ -1,0 +1,171 @@
+{% extends 'core/base.html' %}
+{% block content %}
+{% load static %}
+<br>
+<div class="container">
+    <h1>Budget</h1>
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% elif messages.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">{{ message }}</div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+    <a href="/finance" class="btn btn-danger"><i class="fa fa-angle-left" aria-hidden="true"></i></a>&nbsp;&nbsp;
+    <button class="btn btn-primary btn" data-toggle="modal" data-target="#budgetLineItemModal">Create Line Item</button>&nbsp;&nbsp;
+</div>
+<br>
+<br>
+
+<div class="container">
+    <table class="table table-striped table-bordered table-responsive-md">
+        <thead>
+            <tr>
+                <th scope="col">Item</th>
+                <th scope="col">Description</th>
+                <th scope="col">Due Date</th>
+                <th scope="col">Amount</th>
+                <th scope="col" style="width: 80px"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for line_item in budget_line_items %}
+                <tr>
+                    <td>{{ line_item.name }}</td>
+                    <td>{{ line_item.description }}</td>
+                    <td>{{ line_item.due_date }}</td>
+                    <td>{% if line_item.is_cost %}-{% endif %}{{ line_item.amount|floatformat:2 }}</td>
+                    <td>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fa fa-cog" aria-hidden="true"></i>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item" href="/finance/delete_budget_line_item{{ line_item.id }}">Remove</a>
+                                <a class="dropdown-item" data-toggle="modal" data-target="#editBudgetLineItemModal{{ line_item.id }}">Edit</a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            <tr class={% if balance > 0%}"table-success"{% elif balance < 0 %}"table-danger"{% endif %}>
+                <td colspan="3">Balance</td>
+                <td>{{ balance }}</td>
+                <td>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa fa-cog" aria-hidden="true"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+                            <a class="dropdown-item" data-toggle="modal" data-target="#clearBudgetModal">Clear Budget</a>
+                            <a href="" class="dropdown-item"><i class="fa fa-download" aria-hidden="true"></i> Export Budget</a>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- edit budget line item modal -->
+{% for line_item in budget_line_items %}
+<div class="modal fade" id="editBudgetLineItemModal{{ line_item.id }}" tabindex="-1" role="dialog" aria-labelledby="editBudgetLineItemModal{{ line_item.id }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="editBudgetLineItemLabel{{ line_item.id }}">Edit Line Item: {{ line_item.name }}</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="/finance/edit_budget_line_item{{ line_item.id }}" class="form" method="post">
+                    {% csrf_token %}
+                    {{ create_line_item_form.name.label }}
+                    <input type="text" name="name" class="form-control rounded" value={{ line_item.name }}>
+                    {{ create_line_item_form.description.label }}
+                    <textarea name="description" class="form-control rounded" rows="5">{{ line_item.description }}</textarea>
+                    {{ create_line_item_form.due_date.label }}
+                    <input name="due_date" type="date" class="form-control rounded" value={{ line_item.due_date|date:"Y-m-d" }}>
+                    {{ create_line_item_form.amount.label }}
+                    <input name="amount" type="number" class="form-control rounded" value={{ line_item.amount|floatformat:2 }}>
+                    <br>
+                    <div class="form-group row">
+                        <div class="col-md-8">
+                            <input name="is_cost" type="checkbox" class="form-control-rounded" value={{ line_item.is_cost }} {% if line_item.is_cost %}checked="true"{% endif %}>&nbsp;&nbsp;
+                            {{ create_line_item_form.is_cost.label }}
+                        </div>
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Edit Line Item</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- budget line item modal -->
+<div class="modal fade" id="budgetLineItemModal" tabindex="-1" role="dialog" aria-labelledby="budgetLineItemModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="budgetLineItemLabel">Add Line Item</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="/finance/create_budget_line_item" class="form" method="post">
+                    {% csrf_token %}
+                    {{ create_line_item_form.name.label }}
+                    {{ create_line_item_form.name }}
+                    {{ create_line_item_form.description.label }}
+                    {{ create_line_item_form.description }}
+                    {{ create_line_item_form.due_date.label }}
+                    {{ create_line_item_form.due_date }}
+                    {{ create_line_item_form.amount.label }}
+                    {{ create_line_item_form.amount }}
+                    <br>
+                    <div class="form-group row">
+                        <div class="col-md-8">
+                            {{ create_line_item_form.is_cost }}&nbsp;&nbsp;
+                            {{ create_line_item_form.is_cost.label }}
+                        </div>
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Create Line Item</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- clear budget modal -->
+<div class="modal fade" id="clearBudgetModal" tabindex="-1" role="dialog" aria-labelledby="clearBudgetModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="clearBudgetLabel">Are you sure you want to clear the budget?</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <a href="/finance/clear_budget" type="submit" class="btn btn-danger">Clear budget</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<br>
+{% endblock %}

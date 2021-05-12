@@ -2,6 +2,7 @@ from django import forms
 from .models import *
 from django.forms import ModelForm
 from django.contrib.auth.models import User, Group
+from django.forms.widgets import CheckboxInput
 import datetime
 
 class TransactionForm(forms.Form):
@@ -80,4 +81,17 @@ class RecordPaymentWithTransactionForm(forms.Form):
             OPTIONS.append((transaction.id, transaction))
         
         self.fields['transaction'].choices = OPTIONS
+
+
+class CreateBudgetLineItemForm(forms.Form):
+    name = forms.CharField(max_length=50,
+        widget=forms.TextInput(attrs={'class': 'form-control rounded', 'placeholder':'Line Item Name'}))
+    description = forms.CharField(max_length=500,
+        widget=forms.Textarea(attrs={'class': 'form-control rounded', 'placeholder': 'Description', 'rows': '5'}))
+    due_date = forms.DateField(initial=datetime.date.today,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control rounded', 'placeholder': 'YYYY-mm-dd'}))
+    amount = forms.DecimalField(max_digits=6, decimal_places=2,
+        widget=forms.NumberInput(attrs={'class': 'form-control rounded', 'placeholder': 'Budgeted cost or income of line item'}))
+    is_cost = forms.BooleanField(label='Check if line item represents a cost', required=False,
+        widget=forms.CheckboxInput())
         
