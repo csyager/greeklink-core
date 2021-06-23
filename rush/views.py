@@ -325,7 +325,7 @@ def post_comment(request, rushee_id):
         obj.rushee = Rushee.objects.get(id=rushee_id)
         obj.save()
 
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER') + "#comments")
     else:
         return HttpResponse("Comment not recorded.")
 
