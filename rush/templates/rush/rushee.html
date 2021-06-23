@@ -164,7 +164,7 @@
                 <ul class="list-group">
                     {% for comment in comments %}
                     <li class="list-group-item">
-                        <b>{{ comment.name }}{% if perms.rush.delete_comment %}</b> (<a href="/rush/remove_comment{{ comment.id }}">remove comment</a>){% endif %}<br>
+                        <b>{{ comment.name }}{% if perms.rush.delete_comment %}</b> (<a href="/rush/remove_comment{{ comment.id }}">remove comment</a>){% else %}</b>{% endif %}<br>
                         {{ comment.body }}
                     </li>
                     {% endfor %}
