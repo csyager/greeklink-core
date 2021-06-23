@@ -6,7 +6,7 @@
     <div class="row">
         <div class="col-md-4">
             <div class="embed-responsive embed-responsive-4by3">
-                <img class="embed-responsive-item rounded" src="{% if rushee.profile_picture %}{{ rushee.profile_picture.url }}{% endif %}" style="background-color: grey; text-align: center" alt="No profile picture.">
+                <img class="embed-responsive-item rounded" src="{% if rushee.profile_picture %}{{ rushee.profile_picture.url }}{% else %}{% static 'rush/images/default_profile.png' %}{% endif %}" style="background-color: grey; text-align: center" alt="No profile picture.">
             </div>
             <br>
             <div class="row">
