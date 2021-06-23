@@ -77,16 +77,16 @@
 
         <!-- endorse/oppose controls -->
         <div class="row">
-            <a href="/rush/endorse{{ rushee.id }}"><button class="btn btn-success" style="width: 183px">I endorse this rushee</button></a>&nbsp;
+            <a href="/rush/endorse{{ rushee.id }}"><button class="btn btn-success" style="width: 183px; margin-bottom: 10px;">I endorse this rushee</button></a>&nbsp;
             <a href="/rush/oppose{{ rushee.id }}"><button class="btn btn-danger" style="width: 183px">I oppose this rushee</button></a>&nbsp;
             <a href="/rush/clear_endorsement{{ rushee.id }}"><button class="btn btn-primary">Reset</button></a>
         </div><br>
         <div class="row">
-            <a href="/rush/vote{{ rushee.id }}/y"><button class="btn btn-success" style="width: 183px">Yes</button></a>&nbsp;
+            <a href="/rush/vote{{ rushee.id }}/y"><button class="btn btn-success" style="width: 183px; margin-bottom: 10px;">Yes</button></a>&nbsp;
             <a href="/rush/vote{{ rushee.id }}/n"><button class="btn btn-danger" style="width: 183px">No</button></a><br>&nbsp;
         </div>
         <div class="row">
-            <a href="/rush/vote{{ rushee.id }}/a"><button class="btn btn-primary" style="width: 183px">Abstain</button></a>&nbsp;
+            <a href="/rush/vote{{ rushee.id }}/a"><button class="btn btn-primary" style="width: 183px; margin-bottom: 10px;">Abstain</button></a>&nbsp;
             <a href="/rush/vote{{ rushee.id }}/b"><button class="btn btn-warning" style="width: 183px">Blackball</button></a>
         </div>
         <p style="margin-left: -15px"><i>Note that votes will not be tallied until voting on this rushee is opened by an admin!</i></p>
@@ -247,7 +247,7 @@
     <div class="row">
         <div class="col-6">
             <div class="embed-responsive embed-responsive-4by3">
-                <img class="embed-responsive-item rounded" src="{% if rushee.profile_picture %}{{ rushee.profile_picture.url }}{% endif %}" style="background-color: grey; text-align: center" alt="No profile picture.">
+                <img class="embed-responsive-item rounded" src="{% if rushee.profile_picture %}{{ rushee.profile_picture.url }}{% else %}{% static 'rush/images/default_profile.png' %}{% endif %}" style="background-color: grey; text-align: center" alt="No profile picture.">
             </div>
             <div class="row" style="padding-top: 10px; margin: auto">
                 <div style="text-align: left; padding-right: 5px;">
