@@ -43,77 +43,155 @@
                     {% if not page_obj %}
                     <b><i>No events to display.  Social Events are tools to manage attendance at public events and can be created by administrators and will appear here.</i></b>
                     {% endif %}
-                    {% for event in page_obj %}
-                    <li class="list-group-item"><a href="social_event{{ event.id }}">{{ event.name }} -- {{ event.date }}, {{ event.time }} <span class="badge badge-info">{{ event.list.count }}</span> </a>
-                        {% if perms.core.change_socialevent %}    
-                        <a href="removeSocialEvent{{ event.id }}" class="btn btn-danger btn-sm float-right">Remove</a>
-                        <button type="button" class="btn btn-secondary btn-sm float-right mr-1" data-toggle="modal" data-target="#editeventModal{{ event.id }}">Edit</button>
-                        <!-- Edit Event Modal -->
-                        <div class="modal fade" id="editeventModal{{ event.id }}" tabindex="-1" role="dialog" aria-labelledby="editeventModal" aria-hidden="true">
-                            <div class="modal-dialog" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h4 class="modal-title" id="editeventModalLabel">Edit Event</h4>
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <form method="post" action="editSocialEvent{{ event.id }}">
-                                            {% csrf_token %}
-                                            <div class="form-group row">
-                                                <label for="new_name" class="col-sm-2 col-form-label">Name</label>
-                                                <div class="col-sm-10">
-                                                    <input type="text" class="form-control" id="edit_name_{{ event.id }}" name="name" value="{{ event.name }}" required>
+                    {% if upcoming_events %}
+                        <h3>Upcoming events:</h3>
+                        {% for event in upcoming_events %}
+                        <li class="list-group-item"><a href="social_event{{ event.id }}">{{ event.name }} -- {{ event.date }}, {{ event.time }} <span class="badge badge-info">{{ event.list.count }}</span> </a>
+                            {% if perms.core.change_socialevent %}    
+                            <a href="removeSocialEvent{{ event.id }}" class="btn btn-danger btn-sm float-right">Remove</a>
+                            <button type="button" class="btn btn-secondary btn-sm float-right mr-1" data-toggle="modal" data-target="#editeventModal{{ event.id }}">Edit</button>
+                            <!-- Edit Event Modal -->
+                            <div class="modal fade" id="editeventModal{{ event.id }}" tabindex="-1" role="dialog" aria-labelledby="editeventModal" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h4 class="modal-title" id="editeventModalLabel">Edit Event</h4>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form method="post" action="editSocialEvent{{ event.id }}">
+                                                {% csrf_token %}
+                                                <div class="form-group row">
+                                                    <label for="new_name" class="col-sm-2 col-form-label">Name</label>
+                                                    <div class="col-sm-10">
+                                                        <input type="text" class="form-control" id="edit_name_{{ event.id }}" name="name" value="{{ event.name }}" required>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="form-group row">
-                                                <label for="new_date" class="col-sm-2 col-form-label">Date</label>
-                                                <div class="col-sm-10">
-                                                    <input type="date" class="form-control" id="edit_date_{{ event.id }}" placeholder="YYYY-mm-dd" name="date" value="{{ event.date|date:'Y-m-d' }}" required>
+                                                <div class="form-group row">
+                                                    <label for="new_date" class="col-sm-2 col-form-label">Date</label>
+                                                    <div class="col-sm-10">
+                                                        <input type="date" class="form-control" id="edit_date_{{ event.id }}" placeholder="YYYY-mm-dd" name="date" value="{{ event.date|date:'Y-m-d' }}" required>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="form-group row">
-                                                <label for="new_time" class="col-sm-2 col-form-label">Time</label>
-                                                <div class="col-sm-10">
-                                                    <input type="time" class="form-control" id="edit_time_{{ event.id }}" name="time" placeholder="HH:mm:ss in 24-hour time" value="{{ event.time|date:'G:i' }}" required>
+                                                <div class="form-group row">
+                                                    <label for="new_time" class="col-sm-2 col-form-label">Time</label>
+                                                    <div class="col-sm-10">
+                                                        <input type="time" class="form-control" id="edit_time_{{ event.id }}" name="time" placeholder="HH:mm:ss in 24-hour time" value="{{ event.time|date:'H:i' }}" required>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="form-group row">
-                                                <label for="new_location" class="col-sm-2 col-form-label">Location</label>
-                                                <div class="col-sm-10">
-                                                    <input type="text" class="form-control" id="edit_location_{{ event.id }}" name="location" value="{{ event.location }}" required>
+                                                <div class="form-group row">
+                                                    <label for="new_location" class="col-sm-2 col-form-label">Location</label>
+                                                    <div class="col-sm-10">
+                                                        <input type="text" class="form-control" id="edit_location_{{ event.id }}" name="location" value="{{ event.location }}" required>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="form-group form-check">
-                                                <input type="checkbox" class="form-check-input" id="public_checkbox_{{ event.id }}" name="public" {% if event.is_public %} checked {% endif %}>
-                                                <label class="form-check-label" for="public">Make event public?</label>
-                                                <small>Making an event public will allow other organizations in your community to see the event on their calendar.</small>
-                                            </div>
-                                            <div class="form-group form-check">
-                                                <input type="checkbox" class="form-check-input" id="edit_checkbox_{{ event.id }}" name="checkbox" onclick="toggle_limit_edit({{ event.id }})" {% if event.list_limit != -1 %} checked {% endif %}>
-                                                <label class="form-check-label" for="checkbox">Limit list additions?</label>                            
-                                            </div>
-                                            <div class="form-group row">
-                                                <label for="new_limit" class="col-sm-2 col-form-label">List Limit</label>
-                                                <div class="col-sm-10">
-                                                    <input type="number" class="form-control" id="edit_limit_{{ event.id }}" name="limit" {% if event.list_limit == -1 %}disabled="true"{% endif %} {% if event.list_limit != -1 %} value={{ event.list_limit }} {% else %} value="" {% endif %}>
-                                                    <small>Setting this variable will limit the number of people users can add to the list for this event.</small>
-                                                </div>   
-                                            </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                        <button type="submit" class="btn btn-primary">Save changes</button>
-                                        </form>
+                                                <div class="form-group form-check">
+                                                    <input type="checkbox" class="form-check-input" id="public_checkbox_{{ event.id }}" name="public" {% if event.is_public %} checked {% endif %}>
+                                                    <label class="form-check-label" for="public">Make event public?</label>
+                                                    <small>Making an event public will allow other organizations in your community to see the event on their calendar.</small>
+                                                </div>
+                                                <div class="form-group form-check">
+                                                    <input type="checkbox" class="form-check-input" id="edit_checkbox_{{ event.id }}" name="checkbox" onclick="toggle_limit_edit({{ event.id }})" {% if event.list_limit != -1 %} checked {% endif %}>
+                                                    <label class="form-check-label" for="checkbox">Limit list additions?</label>                            
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="new_limit" class="col-sm-2 col-form-label">List Limit</label>
+                                                    <div class="col-sm-10">
+                                                        <input type="number" class="form-control" id="edit_limit_{{ event.id }}" name="limit" {% if event.list_limit == -1 %}disabled="true"{% endif %} {% if event.list_limit != -1 %} value={{ event.list_limit }} {% else %} value="" {% endif %}>
+                                                        <small>Setting this variable will limit the number of people users can add to the list for this event.</small>
+                                                    </div>   
+                                                </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-primary">Save changes</button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        {% endif %}
-                    
-                    </li>
-                    {% endfor %}
+                            {% endif %}
+                        
+                        </li>
+                        {% endfor %}
+                        <br />
+                    {% endif %}
+                    {% if past_events %}
+                        <h3>Past events:</h3>
+                        {% for event in past_events %}
+                        <li class="list-group-item"><a href="social_event{{ event.id }}">{{ event.name }} -- {{ event.date }}, {{ event.time }} <span class="badge badge-info">{{ event.list.count }}</span> </a>
+                            {% if perms.core.change_socialevent %}    
+                            <a href="removeSocialEvent{{ event.id }}" class="btn btn-danger btn-sm float-right">Remove</a>
+                            <button type="button" class="btn btn-secondary btn-sm float-right mr-1" data-toggle="modal" data-target="#editeventModal{{ event.id }}">Edit</button>
+                            <!-- Edit Event Modal -->
+                            <div class="modal fade" id="editeventModal{{ event.id }}" tabindex="-1" role="dialog" aria-labelledby="editeventModal" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h4 class="modal-title" id="editeventModalLabel">Edit Event</h4>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form method="post" action="editSocialEvent{{ event.id }}">
+                                                {% csrf_token %}
+                                                <div class="form-group row">
+                                                    <label for="new_name" class="col-sm-2 col-form-label">Name</label>
+                                                    <div class="col-sm-10">
+                                                        <input type="text" class="form-control" id="edit_name_{{ event.id }}" name="name" value="{{ event.name }}" required>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="new_date" class="col-sm-2 col-form-label">Date</label>
+                                                    <div class="col-sm-10">
+                                                        <input type="date" class="form-control" id="edit_date_{{ event.id }}" placeholder="YYYY-mm-dd" name="date" value="{{ event.date|date:'Y-m-d' }}" required>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="new_time" class="col-sm-2 col-form-label">Time</label>
+                                                    <div class="col-sm-10">
+                                                        <input type="time" class="form-control" id="edit_time_{{ event.id }}" name="time" placeholder="HH:mm:ss in 24-hour time" value="{{ event.time|date:'H:i' }}" required>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="new_location" class="col-sm-2 col-form-label">Location</label>
+                                                    <div class="col-sm-10">
+                                                        <input type="text" class="form-control" id="edit_location_{{ event.id }}" name="location" value="{{ event.location }}" required>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group form-check">
+                                                    <input type="checkbox" class="form-check-input" id="public_checkbox_{{ event.id }}" name="public" {% if event.is_public %} checked {% endif %}>
+                                                    <label class="form-check-label" for="public">Make event public?</label>
+                                                    <small>Making an event public will allow other organizations in your community to see the event on their calendar.</small>
+                                                </div>
+                                                <div class="form-group form-check">
+                                                    <input type="checkbox" class="form-check-input" id="edit_checkbox_{{ event.id }}" name="checkbox" onclick="toggle_limit_edit({{ event.id }})" {% if event.list_limit != -1 %} checked {% endif %}>
+                                                    <label class="form-check-label" for="checkbox">Limit list additions?</label>                            
+                                                </div>
+                                                <div class="form-group row">
+                                                    <label for="new_limit" class="col-sm-2 col-form-label">List Limit</label>
+                                                    <div class="col-sm-10">
+                                                        <input type="number" class="form-control" id="edit_limit_{{ event.id }}" name="limit" {% if event.list_limit == -1 %}disabled="true"{% endif %} {% if event.list_limit != -1 %} value={{ event.list_limit }} {% else %} value="" {% endif %}>
+                                                        <small>Setting this variable will limit the number of people users can add to the list for this event.</small>
+                                                    </div>   
+                                                </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-primary">Save changes</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        
+                        </li>
+                        {% endfor %}
+                    {% endif %}
                 </ul>
                 <br>
                 {% if perms.core.add_socialevent %}

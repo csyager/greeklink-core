@@ -421,12 +421,15 @@ def social(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     eventscount = len(events)
+    upcoming_list = list(filter(lambda el: el in upcoming, page_obj))
+    past_list = list(filter(lambda el: el in past, page_obj))
 
     context = {
         'settings': getSettings(),
         'social_page': "active",
         'page_obj': page_obj,
-        'events': events,
+        'upcoming_events': upcoming_list,
+        'past_events': past_list,
         'eventscount' : eventscount,
         'rosters': rosters,
         'social_event_form': SocialEventForm,
