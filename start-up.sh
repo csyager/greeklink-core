@@ -4,8 +4,8 @@
 python3 -m venv env
 # activate virtual environment and install requirements
 source env/bin/activate && pip install -r requirements.txt
-# remove database and migrations
-# sudo su - postgres -c "dropdb greeklinkdb"
+
+# remove migrations
 sudo rm -rf core/migrations
 sudo rm -rf rush/migrations
 sudo rm -rf organizations/migrations
