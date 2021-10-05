@@ -12,8 +12,8 @@ This app is built using Django, a Python MVC framework that makes building a ser
 ### Requirements
 * Python 3.6
 * git
-* Postgresql
-
+* Docker
+ 
 To install the project locally, run the following commands from your command line interface:
 ```
 git clone https://github.com/csyager/greeklink-core.git

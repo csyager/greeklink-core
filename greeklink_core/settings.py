@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 import environ
-from django.utils.crypto import get_random_secret_key
+from django.core.management.utils  import get_random_secret_key
 
 env = environ.Env()
 environ.Env.read_env()
