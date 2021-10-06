@@ -4,8 +4,8 @@
 python3 -m venv env
 # activate virtual environment and install requirements
 source env/bin/activate && pip install -r requirements.txt
-# remove database and migrations
-dropdb greeklinkdb
+
+# remove migrations
 sudo rm -rf core/migrations
 sudo rm -rf rush/migrations
 sudo rm -rf organizations/migrations
@@ -14,10 +14,36 @@ sudo rm -rf cal/migrations
 # delete everything from media
 sudo rm -rf media/
 
+# stop database container if running
+docker stop greekrho-postgres || true
+
+# wait for database container to be stopped
+while docker ps -f name=greekrho-postgres | grep greekrho-postgres; do
+	sleep 0.1;
+done;
+
+# configure docker postgres db
+# username: greeklinkuser
+# password: greeklinkdb
+# host: localhost (127.0.0.1)
+# port: 5432
+docker run \
+	-d \
+	-P \
+	--env POSTGRES_HOST_AUTH_METHOD=trust \
+	--env POSTGRES_USER=greeklinkuser \
+	--env POSTGRES_DB=greeklinkdb \
+	-p 5432:5432 \
+	--rm \
+	--name greekrho-postgres \
+	postgres:latest 
+
+# wait until database container is ready to accept connections
+until pg_isready -h localhost -p 5432 -U greeklinkuser -d greeklinkdb; do
+	sleep 1.0;
+done;
+
 # migrations and static files
-createdb greeklinkdb
-psql -d postgres -c "CREATE USER greeklinkuser WITH PASSWORD 'greeklink1';"
-psql -d postgres -c "GRANT ALL PRIVILEGES ON DATABASE greeklinkdb TO greeklinkuser; ALTER USER greeklinkuser CREATEDB;"
 python manage.py makemigrations core
 python manage.py makemigrations organizations
 python manage.py makemigrations rush

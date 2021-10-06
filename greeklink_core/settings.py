@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 import environ
+from django.core.management.utils  import get_random_secret_key
 
 env = environ.Env()
 environ.Env.read_env()
@@ -28,7 +29,11 @@ TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
+if ENV == 'production':
+    SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
+else:
+    # if not in production, use a randomly generated key
+    SECRET_KEY = get_random_secret_key()
 
 # SECURITY WARNING: don't run with debug turned on in production!
 if ENV == 'testing':
@@ -221,8 +226,10 @@ AWS_SES_AUTOTHROTTLE = 0.75
 VERIFY_EMAIL_USER = os.environ['VERIFY_EMAIL']
 SUPPORT_EMAIL_USER = os.environ['SUPPORT_EMAIL']
 ANN_EMAIL = os.environ['ANN_EMAIL']
-AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
-AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
+
+if ENV == 'production':
+    AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
+    AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
 
 
 # Static files (CSS, JavaScript, Images)

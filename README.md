@@ -12,26 +12,15 @@ This app is built using Django, a Python MVC framework that makes building a ser
 ### Requirements
 * Python 3.6
 * git
-* Postgresql
-
+* Docker
+ 
 To install the project locally, run the following commands from your command line interface:
 ```
 git clone https://github.com/csyager/greeklink-core.git
 cd greeklink-core
 ```
-For some functionality, as well as to protect secret keys, we use a .env file.  This file is stored in the greeklink_core directory.  Use a text editor to open the .env-template file (note that the file may be hidden).  Change the line that starts with `DJANGO_SECRET_KEY=` to store a 50-character secret key for your app.  When this is done, change the name of the file from .env-template to .env.
-
 ## Dependencies
-To install the python virtual environment, start it, and install the dependencies for the application, run
-```
-python3 -m venv env
-source env/bin/activate
-pip install -r requirements.txt
-```
-
-In production, we run on a Postgres database.  You'll need to have Postgres installed locally for testing.  Postgres can be downloaded from [https://www.postgresql.org/download/](https://www.postgresql.org/download/), or via a package manager.  You may also want to download pgAdmin 4, a user interface for interacting with Postgres databases that runs in your browser.  pgAdmin 4 can be downloaded [here](https://www.pgadmin.org/download/).
-
-Included in the project is a script, `start-up.sh`.  This will install all dependencies and reset and configure your local Postgres database, as well as load fixtures that will pre-populate your local database with entries that will be necessary for interacting with the site.  In production, we use a practice called multitenancy that allows us to use subdomains and separate Postgres schemas so multiple organizations can share our server space.  The `start-up.sh` script will initialize a test tenant in your local database.
+Included in this project is a script, `start-up.sh`.  This will initialize a python virtual environment, remove any applied migrations and media files, start a clean docker image running the local postgres database, apply migrations, collect static files, and load the starting fixtures with entires that will be necessary for interacting with the site.  In production, we use a practice called multitenancy that allows us to use subdomains and separate Postgres schemas so multiple organizations can share our server space.  The `start-up.sh` script will initialize a test tenant in your local database.
 
 ## Running Locally
 
@@ -47,9 +36,9 @@ Use these credentials to sign into the application and view changes made to the 
 Django comes with several boilerplate scripts, a few of which need to be adjusted slightly to support multitenancy.
 
 * `python manage.py runserver` - starts the Django webserver locally
-* `python manage.py tenant-commands shell --schema=test` - starts the Django shell in the terminal, allowing you to view and interact with database objects in a Python environment.  The schema parameter should be set to whatever schema you're working with.
+* `python manage.py tenant-command shell --schema=test` - starts the Django shell in the terminal, allowing you to view and interact with database objects in a Python environment.  The schema parameter should be set to whatever schema you're working with.
 * `python manage.py makemigrations [app name]` - Compiles any changes made to models.py in an app.  Leaving the app name parameter empty compiles all of them.
-* `python manage.py migrate` - migrates changes compiled by makemigrations into the database.
+* `python manage.py migrate_schemas` - migrates changes compiled by makemigrations into the database.
 * `python manage.py collectstatic` - collects static files from each sub-directory and compiles them into the central /static directory.
 
 ## Contributing
