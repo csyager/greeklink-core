@@ -794,6 +794,14 @@ class RosterTestCase(TenantTestCase):
         response = self.client.get(path)
         self.assertContains(response, "test_roster</a>")
     
+    # tests that rosters are paginated if more than 10
+    def test_roster_paginates_over_ten(self):
+        for i in range(15):
+            Roster.objects.create(title=str(i))
+        path = reverse('social')
+        response = self.client.get(path)
+        self.assertContains(response, "<a class=\"page-link\" href=\"?rosterspage")
+    
     # tests edit_roster view function
     def test_edit_roster_view(self):
         path = reverse('edit_roster', kwargs=dict(roster_id=self.roster.pk))
@@ -934,5 +942,3 @@ class RosterTestCase(TenantTestCase):
         response = self.client.post(path, HTTP_REFERER=referer, follow=True)
         self.assertNotContains(response, "test_roster</a>")
         self.assertFalse(Roster.objects.filter(id=1))
-
-    

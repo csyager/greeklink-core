@@ -414,27 +414,47 @@ def social(request):
     events = chain(upcoming, past)
     events = list(events)                                                           #converts to list, necessary for paginator
     # events = SocialEvent.objects.all().order_by('-date', 'time')                  lets keep this just in case something goes wrong with the query chain
-    rosters = Roster.objects.all()
+    rosters = list(Roster.objects.all())
 
-    #for pagination
-    paginator = Paginator(events, 10)                                               #this number changes items per page
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    # event pagination
+    event_paginator = Paginator(events, 10)                                               #this number changes items per page
+    event_page_number = request.GET.get('eventspage')
+    event_page_obj = event_paginator.get_page(event_page_number)
     eventscount = len(events)
-    upcoming_list = list(filter(lambda el: el in upcoming, page_obj))
-    past_list = list(filter(lambda el: el in past, page_obj))
+    upcoming_list = list(filter(lambda el: el in upcoming, event_page_obj))
+    past_list = list(filter(lambda el: el in past, event_page_obj))
+
+    # roster pagination
+    roster_paginator = Paginator(rosters, 10)
+    roster_page_number = request.GET.get('rosterspage')
+    roster_page_obj = roster_paginator.get_page(roster_page_number)
+    rosterscount = len(rosters)
+    
+    try:
+        show_tab = request.session['social_tab']
+    except KeyError:
+        show_tab = 'events'
 
     context = {
         'settings': getSettings(),
         'social_page': "active",
-        'page_obj': page_obj,
+        'event_page_obj': event_page_obj,
         'upcoming_events': upcoming_list,
         'past_events': past_list,
         'eventscount' : eventscount,
         'rosters': rosters,
+        'roster_page_obj': roster_page_obj,
+        'rosterscount': rosterscount,
         'social_event_form': SocialEventForm,
+        'show_tab': show_tab
     }
     return HttpResponse(template.render(context, request))
+
+
+@login_required
+def update_social_tab_session(request):
+    request.session['social_tab'] = request.GET.get('social_tab')
+    return HttpResponse()
 
 
 @permission_required('core.add_socialevent')
