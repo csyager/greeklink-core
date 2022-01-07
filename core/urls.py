@@ -26,6 +26,7 @@ urlpatterns = [
     path('removeCal', views.removeCal, name="removeCal"),
     path('removeFile<int:file_id>', views.remove_file, name="remove_file"),
     path('social', views.social, name="social"),
+    path('update_social_tab_session', views.update_social_tab_session, name="update_social_tab_session"),
     path('createSocialEvent', views.create_social_event, name="create_social_event"),
     path('social_event<int:event_id>', views.social_event, name="social_event"),
     path('removeSocialEvent<int:event_id>', views.remove_social_event, name="remove_social_event"),

@@ -15,14 +15,34 @@
     <div class="container">
         <ul class="nav nav-tabs" id="social_tabs" role="tablist">
             <li class="nav-item">
-                <a class="nav-link active" id="events-tab" data-toggle="tab" href="#events" role="tab" aria-controls="events" aria-selected="true">Events</a>
+                <a class="nav-link {% if show_tab == "events" %} active {% endif %}" id="events-tab" data-toggle="tab" href="#events" role="tab" aria-controls="events" aria-selected="true">Events</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="rosters-tab" data-toggle="tab" href="#rosters" role="tab" aria-controls="rosters" aria-selected="true">Rosters</a>
+                <a class="nav-link {% if show_tab == "rosters" %} active {% endif %}" id="rosters-tab" data-toggle="tab" href="#rosters" role="tab" aria-controls="rosters" aria-selected="true">Rosters</a>
             </li>
+            <script>
+                $("#rosters-tab").click(function() {
+                    $.ajax({
+                        url: 'update_social_tab_session',
+                        data: {
+                          'social_tab': 'rosters'
+                        },
+                        dataType: 'json',
+                      });
+                })
+                $("#events-tab").click(function() {
+                    $.ajax({
+                        url: 'update_social_tab_session',
+                        data: {
+                          'social_tab': 'events'
+                        },
+                        dataType: 'json',
+                      });
+                })
+            </script>
         </ul>
         <div class="tab-content" id="social_tab_content">
-            <div class="tab-pane fade show active" id="events" role="tabpanel" aria-labelledby="events-tab">
+            <div class="tab-pane fade {% if show_tab == "events" %} show active {% endif %}" id="events" role="tabpanel" aria-labelledby="events-tab">
                 <br>
                 <h2>Events</h2>
                 <ul class="list-group">
@@ -40,7 +60,7 @@
                         }
             
                     </script>
-                    {% if not page_obj %}
+                    {% if not event_page_obj %}
                     <b><i>No events to display.  Social Events are tools to manage attendance at public events and can be created by administrators and will appear here.</i></b>
                     {% endif %}
                     {% if upcoming_events %}
@@ -197,15 +217,56 @@
                 {% if perms.core.add_socialevent %}
                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#eventModal"><i class="fa fa-plus" aria-hidden="true"></i> Add Event</button>
                 {% endif %}
+                {% if eventscount > 10 %}
+                    <div class="container">
+                        <div class='row title-row my-1'>
+                            <div class='col-12 py-1'>
+                                <nav aria-label="Page navigation">
+                                    <ul class="pagination justify-content-center">
+                                        {% if event_page_obj.has_previous %}
+
+                                        <li class ="page-item"><a class ="page-link" href="?eventspage={{ event_page_obj.previous_page_number }}">Previous</a></li>
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">Previous</span>
+                                            </li>
+                                        {% endif %}
+
+                                        {% for i in event_page_obj.paginator.page_range %}
+                                            {% if event_page_obj.number == i %}
+                                                <li class="page-item active">
+                                                    <a class="page-link" href="?eventspage={{ i }}">{{ i }}<span class="sr-only">(current)</span></a>
+                                                </li>
+                                            {% else %}
+                                                <li class="page-item"><a class="page-link" href="?eventspage={{ i }}">{{ i }}</a></li>
+
+                                            {% endif %}
+                                        {% endfor %}
+
+                                        {% if event_page_obj.has_next %}
+
+                                        <li class ="page-item"><a class ="page-link" href="?eventspage={{ event_page_obj.next_page_number }}">Next</a></li>
+
+                                        {% else %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link">Next</span>
+                                        </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
             </div>
-            <div class="tab-pane fade" id="rosters" role="tabpanel" aria-labelledby="rosters-tab">
+            <div class="tab-pane fade {% if show_tab == "rosters" %} show active {% endif %}" id="rosters" role="tabpanel" aria-labelledby="rosters-tab">
                 <br>
                 <h2>Rosters</h2>
                 <ul class="list-group">
                     {% if not rosters %}
                         <b><i>No rosters to display.  Rosters are lists containing names that can be created by administrators to be easily added to social event lists, and will appear here.</i></b>
                     {% endif %}
-                    {% for roster in rosters %}
+                    {% for roster in roster_page_obj %}
                         <li class="list-group-item"><a href="roster{{ roster.id }}">{{ roster.title }}</a>
                             {% if perms.core.delete_roster %}
                             <button class="btn btn-danger btn-sm float-right" data-toggle="modal" data-target="#remove_roster_modal{{ roster.id }}">Delete Roster</button>
@@ -274,7 +335,47 @@
                     </div>
                 </div>
                 {% endif %}
-            
+                {% if rosterscount > 10 %}
+                    <div class="container">
+                        <div class='row title-row my-1'>
+                            <div class='col-12 py-1'>
+                                <nav aria-label="Page navigation">
+                                    <ul class="pagination justify-content-center">
+                                        {% if roster_page_obj.has_previous %}
+
+                                        <li class ="page-item"><a class ="page-link" href="?rostersspage={{ roster_page_obj.previous_page_number }}">Previous</a></li>
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">Previous</span>
+                                            </li>
+                                        {% endif %}
+
+                                        {% for i in roster_page_obj.paginator.page_range %}
+                                            {% if roster_page_obj.number == i %}
+                                                <li class="page-item active">
+                                                    <a class="page-link" href="?rosterspage={{ i }}">{{ i }}<span class="sr-only">(current)</span></a>
+                                                </li>
+                                            {% else %}
+                                                <li class="page-item"><a class="page-link" href="?rosterspage={{ i }}">{{ i }}</a></li>
+
+                                            {% endif %}
+                                        {% endfor %}
+
+                                        {% if roster_page_obj.has_next %}
+
+                                        <li class ="page-item"><a class ="page-link" href="?rosterspage={{ roster_page_obj.next_page_number }}">Next</a></li>
+
+                                        {% else %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link">Next</span>
+                                        </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
             </div>
         </div>
         <br>
@@ -371,46 +472,5 @@
     <br>
     <br>
 </div>
-{% if eventscount > 10 %}
-<div class="container">
-    <div class='row title-row my-1'>
-        <div class='col-12 py-1'>
-            <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-center">
-        {% if page_obj.has_previous %}
 
-        <li class ="page-item"><a class ="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
-        {% else %}
-            <li class="page-item disabled">
-                <span class="page-link">Previous</span>
-            </li>
-        {% endif %}
-
-        {% for i in page_obj.paginator.page_range %}
-                            {% if page_obj.number == i %}
-                                <li class="page-item active">
-                                <a class="page-link" href="?page={{ i }}">{{ i }}<span class="sr-only">(current)</span></a>
-                                </li>
-                        {% else %}
-                            <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
-
-                        {% endif %}
-                        {% endfor %}
-
-        {% if page_obj.has_next %}
-
-        <li class ="page-item"><a class ="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
-
-        {% else %}
-        <li class="page-item disabled">
-            <span class="page-link">Next</span>
-        </li>
-        {% endif %}
-    </ul>
-</nav>
-</div>
-</div>
-</div>
-
-{% endif %}
 {% endblock %}
