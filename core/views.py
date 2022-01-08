@@ -284,11 +284,14 @@ def logout_user(request):
 
 # ------------------ ERRORS ---------------------
 def handler404(request, exception):
-    context = {
-        'settings': getSettings()
-    }
-    template = loader.get_template('core/404.html')
-    return HttpResponseNotFound(template.render(context, request), status=404)
+    try:
+        context = {
+            'settings': getSettings()
+        }
+        template = loader.get_template('core/404.html')
+        return HttpResponseNotFound(template.render(context, request), status=404)
+    except:
+        return HttpResponseNotFound(exception)
 
 def handler500(request):
     settings = getSettings()

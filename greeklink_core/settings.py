@@ -47,7 +47,9 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.localhost', '.elasticbeanstalk.com'
 import requests
 EC2_PRIVATE_IP = None
 try:
-    EC2_PRIVATE_IP = requests.get('http://169.254.169.254/latest/meta-data/local-ipv4', timeout=0.01).text
+    print("Trying to get health check IP address from EC2 meta-data")
+    EC2_PRIVATE_IP = requests.get('http://169.254.169.254/latest/meta-data/local-ipv4', timeout=0.1).text
+    print(f"EC2_PRIVATE_IP: {EC2_PRIVATE_IP}")
 except requests.exceptions.RequestException:
     pass
 
