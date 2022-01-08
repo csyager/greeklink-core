@@ -21,6 +21,7 @@ from itertools import chain
 from operator import attrgetter
 import re, io
 import base64
+import logging
 from django.core.files import File
 import xlwt
 from datetime import date, timedelta
@@ -62,9 +63,13 @@ def health(request):
     """ for aws health checks, just prints a success message
     """
     if settings.EC2_PRIVATE_IP:
+        logging.info(f"Getting client for health checks.")
         c = Client.objects.get(name='health')
+        logging.info(f"health client: {c}")
         c.domain_url = settings.EC2_PRIVATE_IP
         c.save()
+        c = Client.objects.get(name='health')
+        logging.info(f"health client IP set to {c.domain_url}")
     return HttpResponse("<h1>Success! Server is healthy!")
 
 # extends built in Django LoginView
