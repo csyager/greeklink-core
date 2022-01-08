@@ -22,6 +22,7 @@ from operator import attrgetter
 import re, io
 import base64
 import logging
+import requests
 from django.core.files import File
 import xlwt
 from datetime import date, timedelta
@@ -70,7 +71,8 @@ def health(request):
         c.save()
         c = Client.objects.get(name='health')
         logging.info(f"health client IP set to {c.domain_url}")
-    return HttpResponse("<h1>Success! Server is healthy!</h1>")
+    response = requests.get("http://169.254.169.254/latest/meta-data/instance-id")
+    return HttpResponse(response.content)
 
 # extends built in Django LoginView
 class CustomLoginView(LoginView):
