@@ -20,7 +20,7 @@ git clone https://github.com/csyager/greeklink-core.git
 cd greeklink-core
 ```
 ## Dependencies
-Included in this project is a script, `start-up.sh`.  This will initialize a python virtual environment, remove any applied migrations and media files, start a clean docker image running the local postgres database, apply migrations, collect static files, and load the starting fixtures with entires that will be necessary for interacting with the site.  In production, we use a practice called multitenancy that allows us to use subdomains and separate Postgres schemas so multiple organizations can share our server space.  The `start-up.sh` script will initialize a test tenant in your local database.
+Included in this project is a script, `scripts/start-up.sh`.  This will initialize a python virtual environment, remove any applied migrations and media files, start a clean docker image running the local postgres database, apply migrations, collect static files, and load the starting fixtures with entires that will be necessary for interacting with the site.  In production, we use a practice called multitenancy that allows us to use subdomains and separate Postgres schemas so multiple organizations can share our server space.  The `scripts/start-up.sh` script will initialize a test tenant in your local database.
 
 ## Running Locally
 
@@ -47,7 +47,7 @@ Django comes with several boilerplate scripts, a few of which need to be adjuste
 Issues can be submitted via GitHub issues.  We use cards created in Issues to triage development work.  Please include a descriptive title and comment and the issue will be addressed as quickly as we can get to it.
 
 ### Committing Changes
-Any contributions should be made to their own branch.  Once your contribution is complete, open a pull request and it will be reviewed.  Included in the project repository is a script, `./coverage.sh`.  Running this script will execute unit tests on testable code, and will open a coverage report in your browser (if it doesn't, the report can be found at htmlcov/index.html).  The following testing guidelines **must** be followed before your branch can be merged:
+Any contributions should be made to their own branch.  Once your contribution is complete, open a pull request and it will be reviewed.  Included in the project repository is a script, `./scripts/coverage.sh`.  Running this script will execute unit tests on testable code, and will open a coverage report in your browser (if it doesn't, the report can be found at htmlcov/index.html).  The following testing guidelines **must** be followed before your branch can be merged:
 1. All tests must pass - this is enforced by TravisCI
 2. All new features must be tested
 3. The coverage percentage must not decrease due to your PR
