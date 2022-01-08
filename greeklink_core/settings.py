@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 import environ
-from django.core.management.utils  import get_random_secret_key
+from django.core.management.utils import get_random_secret_key
 
 env = environ.Env()
 environ.Env.read_env()
@@ -56,6 +56,8 @@ except requests.exceptions.RequestException:
 if EC2_PRIVATE_IP:
     ALLOWED_HOSTS.append(EC2_PRIVATE_IP)
 
+
+
 # Application definition
 SHARED_APPS = (
     'tenant_schemas',
@@ -92,7 +94,6 @@ INSTALLED_APPS = [
     'rush.apps.RushConfig',
     'cal.apps.CalConfig',
 ]
-
 TENANT_MODEL = 'organizations.Client'
 
 MIDDLEWARE = [

@@ -70,7 +70,7 @@ def health(request):
         c.save()
         c = Client.objects.get(name='health')
         logging.info(f"health client IP set to {c.domain_url}")
-    return HttpResponse("<h1>Success! Server is healthy!")
+    return HttpResponse("<h1>Success! Server is healthy!</h1>")
 
 # extends built in Django LoginView
 class CustomLoginView(LoginView):
