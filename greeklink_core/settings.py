@@ -97,7 +97,7 @@ INSTALLED_APPS = [
 TENANT_MODEL = 'organizations.Client'
 
 MIDDLEWARE = [
-    'tenant_schemas.middleware.TenantMiddleware',
+    'tenant_schemas.middleware.DefaultTenantMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
