@@ -61,16 +61,8 @@ def getSettings():
     return settings
 
 def health(request):
-    """ for aws health checks, just prints a success message
+    """ for aws health checks, returns the instance id
     """
-    if settings.EC2_PRIVATE_IP:
-        logging.info(f"Getting client for health checks.")
-        c = Client.objects.get(name='health')
-        logging.info(f"health client: {c}")
-        c.domain_url = settings.EC2_PRIVATE_IP
-        c.save()
-        c = Client.objects.get(name='health')
-        logging.info(f"health client IP set to {c.domain_url}")
     response = requests.get("http://169.254.169.254/latest/meta-data/instance-id")
     return HttpResponse(response.content)
 
