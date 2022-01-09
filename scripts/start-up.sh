@@ -33,7 +33,7 @@ docker run \
 	--env POSTGRES_HOST_AUTH_METHOD=trust \
 	--env POSTGRES_USER=greeklinkuser \
 	--env POSTGRES_DB=greeklinkdb \
-	-p 5432:5432 \
+	-p 5433:5432 \
 	--rm \
 	--name greekrho-postgres \
 	postgres:latest 

@@ -168,7 +168,7 @@ else:
             'USER': 'greeklinkuser',
             'PASSWORD': 'greeklink1',
             'HOST': 'localhost',
-            'PORT': '',
+            'PORT': '5433',
         }
     }
 
