@@ -147,8 +147,8 @@ if 'RDS_DB_NAME' in os.environ:
             'PORT': os.environ['RDS_PORT'],
         }
     }
-# in github ci
-elif os.environ.get('GITHUB_WORKFLOW'):
+# running in Travis CI
+elif os.environ.get('TRAVIS'):
     DATABASES = {
         'default': {
             'ENGINE': 'tenant_schemas.postgresql_backend',
