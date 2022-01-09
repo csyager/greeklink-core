@@ -152,10 +152,10 @@ elif os.environ.get('TRAVIS'):
     DATABASES = {
         'default': {
             'ENGINE': 'tenant_schemas.postgresql_backend',
-            'NAME': 'github_actions',
-            'USER': 'postgres',
-            'PASSWORD': 'postgres',
-            'HOST': '127.0.0.1',
+            'NAME': 'greeklinkdb',
+            'USER': 'greeklinkuser',
+            'PASSWORD': 'greeklink1',
+            'HOST': 'localhost',
             'PORT': '5432',
         }
     }
