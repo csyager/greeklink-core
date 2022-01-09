@@ -39,7 +39,7 @@ docker run \
 	postgres:latest 
 
 # wait until database container is ready to accept connections
-until pg_isready -h localhost -p 5432 -U greeklinkuser -d greeklinkdb; do
+until docker exec greekrho-postgres pg_isready -h localhost -p 5432 -U greeklinkuser -d greeklinkdb; do
 	sleep 1.0;
 done;
 
