@@ -3,6 +3,8 @@
 from django.db import models
 from core.models import User, OrgEvent
 from django.urls import reverse
+from django.dispatch import receiver
+
 
 YEAR_CHOICES = (
     (1, 'Freshman'),
@@ -69,6 +71,13 @@ class Rushee(models.Model):
 
     def __str__(self):
         return self.name
+
+
+@receiver(models.signals.pre_delete, sender=Rushee)
+def delete_s3_image(sender, instance, **kwargs):
+    if instance.profile_picture:
+        instance.profile_picture.delete(save=False)
+
 
 class Comment(models.Model):
     """ a comment left by a User on a rushee
