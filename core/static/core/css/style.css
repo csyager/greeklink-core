@@ -31,6 +31,18 @@ div.login-card-col {
     max-width: 600px;
 }
 
+div.login-card {
+    opacity: .98;
+}
+
+body.login-body {
+    background: url("/static/core/images/lawn_compressed.jpg") no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
 /* -------------------------------------------------------------------------------------------------
    ----------------------------------- ERROR PAGE STYLES -------------------------------------------
    -----------------------------------------------------------------------------------------------*/
