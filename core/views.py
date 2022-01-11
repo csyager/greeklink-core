@@ -701,7 +701,7 @@ def clear_list(request, event_id):
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
-@permission_required('core.change_socialevent')
+@login_required
 def export_xls(request, event_id):
     event = SocialEvent.objects.get(id=event_id)
     response = HttpResponse(content_type='application/ms-excel')
