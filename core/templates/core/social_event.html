@@ -66,8 +66,8 @@
     <button type="button" class="btn btn-danger {% if request.user_agent.is_mobile %} btn-sm {% endif %}" data-toggle="modal" data-target="#clear_modal" style="margin-top: 5px">
       Clear list
     </button>
-    <a href="export_xls{{ event.id }}"><button type="button" class="btn btn-primary {% if request.user_agent.is_mobile %} btn-sm {% endif %}" style="margin-top: 5px">Export Spreadsheet</button></a>
     {% endif %}
+    <a href="export_xls{{ event.id }}"><button type="button" class="btn btn-primary {% if request.user_agent.is_mobile %} btn-sm {% endif %}" style="margin-top: 5px">Export Spreadsheet</button></a>
     {% if perms.core.add_roster %}
     <button type="button" class="btn btn-success {% if request.user_agent.is_mobile %} btn-sm {% endif %}" style="margin-top: 5px" data-toggle="modal" data-target="#roster_modal">Save list as roster</button>
     
