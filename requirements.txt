@@ -32,7 +32,7 @@ jmespath==0.10.0
 jsonschema==3.2.0
 paramiko==2.7.1
 pathspec==0.5.9
-Pillow==8.3.2
+Pillow==9.0.0
 psycopg2==2.8.5
 pyasn1==0.4.8
 pycparser==2.20
