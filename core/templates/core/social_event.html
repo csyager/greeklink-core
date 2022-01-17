@@ -16,6 +16,13 @@
     }
 </script>
 
+<link href="https://unpkg.com/bootstrap-table@1.19.1/dist/bootstrap-table.min.css" rel="stylesheet">
+
+<script src="https://unpkg.com/bootstrap-table@1.19.1/dist/bootstrap-table.min.js"></script>
+<script src="https://unpkg.com/bootstrap-table@1.19.1/dist/extensions/multiple-sort/bootstrap-table-multiple-sort.js"></script>
+
+
+
 <div class="container">
     <h1 style="display: inline">{{ event.name }}</h1>
     <h3>{{ event.date }}, {{ event.time }}</h3>
@@ -104,11 +111,11 @@
     <script src="{% static 'core/js/cross_off_list.js' %}"></script>
     {% endif %}
 
-    <table class="table table-hover" id="list_table">
+    <table class="table table-hover" id="list_table" data-show-multi-sort="true">
         <thead>
           <tr class="d-flex">
-            <th scope="col" class="col-4">Name</th>
-            <th scope="col" class="col-4">User</th>
+            <th scope="col" class="col-4" data-sortable="true">Name</th>
+            <th scope="col" class="col-4" data-sortable="true">User</th>
             {% if event.party_mode %}
             <th scope="col" class="col-4" style="text-align: center">Attended</th>
             {% else %}
@@ -137,8 +144,8 @@
         {% endfor %}
         </tbody>
     </table>
-
 </div>
+<script src="{% static 'core/js/sort_table.js' %}"></script>
 
 <div class="modal fade" id="clear_modal" tabindex="-1" role="dialog" aria-labelledby="clear_modal_label" aria-hidden="true">
   <div class="modal-dialog" role="document">
