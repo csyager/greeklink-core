@@ -62,7 +62,7 @@
     <script src="{% static 'core/js/filter_list.js' %}"></script>
 
     {% if perms.core.change_socialevent %}
-    <div class="custom-control custom-switch" style="text-align:center;">
+    <div class="custom-control custom-switch">
       <input type="checkbox" class="custom-control-input" id="party_mode_switch" {% if event.party_mode %}checked{% endif %} onclick="window.location = 'toggle_party_mode' + {{ event.id }}">
       <label class="custom-control-label" for="party_mode_switch"><b>Party mode {% if event.party_mode %}on{% else %}off{% endif %}</b>:  turning on disables adding to the list and enables checking attendance</label>
     </div><br>
