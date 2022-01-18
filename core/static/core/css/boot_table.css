@@ -13,7 +13,7 @@
 .bootstrap-table .fixed-table-toolbar .columns .btn-group>.btn-group>.btn{border-radius:0}
 .bootstrap-table .fixed-table-toolbar .columns .btn-group>.btn-group:first-child>.btn{border-top-left-radius:4px;border-bottom-left-radius:4px}
 .bootstrap-table .fixed-table-toolbar .columns .btn-group>.btn-group:last-child>.btn{border-top-right-radius:4px;border-bottom-right-radius:4px}
-.bootstrap-table .fixed-table-toolbar .columns .dropdown-menu{max-height:300px;overflow:auto;-ms-overflow-style:scrollbar;z-index:1001}
+.bootstrap-table .fixed-table-toolbar .columns .dropdown-menu{text-align:left;max-height:300px;overflow:auto;-ms-overflow-style:scrollbar;z-index:1001}
 .bootstrap-table .fixed-table-toolbar .columns label{display:block;padding:3px 20px;clear:both;font-weight:400;line-height:1.428571429}
 .bootstrap-table .fixed-table-toolbar .columns-left{margin-right:5px}
 .bootstrap-table .fixed-table-toolbar .columns-right{margin-left:5px}
