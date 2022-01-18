@@ -1,4 +1,4 @@
-<DOCTYPE! html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>GreekRho</title>
@@ -21,11 +21,11 @@
     <!-- base css file -->
     <link rel="stylesheet" type="text/css" href="{% static 'core/css/style.css' %}">
 </head>
-<body>
+<body class="login-body">
     <div class="container h-100">
         <div class="row align-items-center h-100">
-            <div class="col-{% if not request.user_agent.is_mobile %}6{% else %}10{% endif %} mx-auto">
-                <div class="card">
+            <div class="col-{% if not request.user_agent.is_mobile %}6{% else %}10{% endif %} mx-auto login-card-col">
+                <div class="card login-card">
                     <div class="card-body" style="text-align: center">
                         <h5 class="card-title">Login</h5>
                             <form method="post">
@@ -51,14 +51,14 @@
             </div>
         </div>
     </div>
-</body>
-<div class="container text-center footer bg-light">
-    <div class="row justify-content-end">
-        <div class="col-md-6">
-            <img src="{% static 'core/icons/logo.png' %}" style="max-width: 400px; max-height: 80px;">
-        </div>
-        <div class="col-md-3">
+    <div class="container text-center footer bg-light">
+        <div class="row justify-content-end">
+            <div class="col-md-6">
+                <img src="{% static 'core/icons/logo.png' %}" style="max-width: 400px; max-height: 80px;">
+            </div>
+            <div class="col-md-3">
+            </div>
         </div>
     </div>
-</div>
+</body>
 </html>
