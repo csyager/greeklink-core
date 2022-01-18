@@ -16,10 +16,11 @@
     }
 </script>
 
-<link href="https://unpkg.com/bootstrap-table@1.19.1/dist/bootstrap-table.min.css" rel="stylesheet">
+
+<link rel="stylesheet" type="text/css" href="{% static 'core/css/boot_table.css' %}">
 
 <script src="https://unpkg.com/bootstrap-table@1.19.1/dist/bootstrap-table.min.js"></script>
-<script src="https://unpkg.com/bootstrap-table@1.19.1/dist/extensions/multiple-sort/bootstrap-table-multiple-sort.js"></script>
+<script src="{% static 'core/js/boot_table_sort.js' %}"></script>
 
 
 
@@ -66,7 +67,7 @@
     <script src="{% static 'core/js/filter_list.js' %}"></script>
 
     {% if perms.core.change_socialevent %}
-    <div class="custom-control custom-switch">
+    <div class="custom-control custom-switch" style="text-align:center;">
       <input type="checkbox" class="custom-control-input" id="party_mode_switch" {% if event.party_mode %}checked{% endif %} onclick="window.location = 'toggle_party_mode' + {{ event.id }}">
       <label class="custom-control-label" for="party_mode_switch"><b>Party mode {% if event.party_mode %}on{% else %}off{% endif %}</b>:  turning on disables adding to the list and enables checking attendance</label>
     </div><br>
@@ -117,7 +118,7 @@
             <th scope="col" class="col-4" data-sortable="true">Name</th>
             <th scope="col" class="col-4" data-sortable="true">User</th>
             {% if event.party_mode %}
-            <th scope="col" class="col-4" style="text-align: center">Attended</th>
+            <th scope="col" class="col-4" style="text-align: center" data-align="center">Attended</th>
             {% else %}
             <th scope="col" class="col-4"></th>
             {% endif %}
