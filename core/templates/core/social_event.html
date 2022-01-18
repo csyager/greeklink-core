@@ -132,7 +132,7 @@
 
             <tr class="d-flex {% if attendee.attended %}table-danger{% endif %}" id="list_row_{{ attendee.id }}">
                 <td class="col-4">{{ attendee.name }}</td>
-                <td class="col-4">{{ user }}</td>
+                <td class="col-4">{{ attendee.user }}</td>
                 {% if event.party_mode %}
                 <td class="col-4" style="text-align: center"><input type="checkbox" id="attendance_checkbox_{{ attendee.id }}" onclick="cross_off_list({{ attendee.id }})" {% if attendee.attended %}checked{% endif %}></td>
                 {% elif perms.core.change_socialevent %}
