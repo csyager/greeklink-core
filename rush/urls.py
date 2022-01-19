@@ -27,6 +27,7 @@ urlpatterns = [
     path('events/<int:event_id>', views.event, name="event"),
     path('createEvent', views.create_event, name="create_event"),
     path('removeEvent<int:event_id>', views.remove_event, name="remove_event"),
+    path('editEvent<int:event_id>', views.edit_event, name="edit_event"),
     path('filter_rushees', views.filter_rushees, name="filter_rushees"),
     path('clear_rushees_filter', views.clear_rushees_filter, name="clear_rushees_filter"),
     path('toggle_rush_signin', views.toggle_rush_signin, name='toggle_rush_signin'),

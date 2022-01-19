@@ -268,6 +268,27 @@ def create_event(request):
     else:
         raise Http404
 
+@permission_required('rush.edit_rushevent')
+def edit_event(request, event_id):
+    if request.method == 'POST':
+        obj = RushEvent.objects.get(id=event_id)
+        obj.name = request.POST.get('name')
+        obj.date = request.POST.get('date')
+        obj.time = request.POST.get('time')
+        obj.round = request.POST.get('round')
+        obj.location = request.POST.get('location')
+        if len(request.POST.getlist('new_rushees')) != 0:
+            obj.new_rushees_allowed = True
+        else:
+            obj.new_rushees_allowed = False
+        
+        obj.save()
+        messages.success(request, "Rush event " + obj.name + " has been successfully edited.")
+
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    else:
+        raise Http404
+
 @permission_required('rush.delete_rushevent')
 def remove_event(request, event_id):
     """ deletes a RushEvent object
