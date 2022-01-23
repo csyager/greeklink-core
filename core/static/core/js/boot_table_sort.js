@@ -12,8 +12,9 @@
   with id = sortIconId.  If reverse=true sorts in reverse order.  All icons
   for other columns that should be reset when sorting on column number
   colNum are passed as additional arguments */
-  var table, rows, switching, i, x, y, shouldSwitch, sortIcon;
+  var table, rows, switching, i, x, y, shouldSwitch, sortIcon, colHeader;
   table = document.getElementById("list_table");
+  colHeader = table.rows[0].getElementsByTagName("TH")[colNum];
   sortIcon = document.getElementById(sortIconId);
   var nextArgs = '';
   for (var i = 0; i<args.length; i++) {
@@ -27,7 +28,7 @@
   } else {
     sortIcon.className = "fa fa-sort-alpha-desc";
   }
-  sortIcon.setAttribute("onclick", `sortTable(${colNum}, '${sortIconId}', ${!reverse}, ${nextArgs});`);
+  colHeader.setAttribute("onclick", `sortTable(${colNum}, '${sortIconId}', ${!reverse}, ${nextArgs});`);
   switching = true;
   /* Make a loop that will continue until
   no switching has been done: */
