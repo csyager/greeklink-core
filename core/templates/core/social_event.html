@@ -109,8 +109,8 @@
     <table class="table table-hover" id="list_table">
         <thead>
           <tr class="d-flex">
-            <th scope="col" class="col-4" data-sortable="true" onclick="sortTable(0, 'sort_name_icon', false, &quot;sort_user_icon&quot;);">Name <i class="fa fa-sort" id="sort_name_icon"></i></a></th>
-            <th scope="col" class="col-4" data-sortable="true" onclick="sortTable(1, 'sort_user_icon', false, 'sort_name_icon');">User <i class="fa fa-sort" id="sort_user_icon"></i></a></th>
+            <th scope="col" class="col-4" onclick="sortTable(0, 'sort_name_icon', false, &quot;sort_user_icon&quot;);">Name <i class="fa fa-sort" id="sort_name_icon"></i></a></th>
+            <th scope="col" class="col-4" onclick="sortTable(1, 'sort_user_icon', false, 'sort_name_icon');">User <i class="fa fa-sort" id="sort_user_icon"></i></a></th>
             {% if event.party_mode %}
             <th scope="col" class="col-4" style="text-align: center" data-align="center">Attended</th>
             {% else %}
