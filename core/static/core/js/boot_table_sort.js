@@ -7,7 +7,7 @@
   * @license MIT
   */
 
- function sortTable(colNum, sortIconId, reverse=false, ...args) {
+ function sortTable(colNum, sortIconId, ...args) {
   /* sorts column number colNum (0 indexed), with a fontawesome sort icon
   with id = sortIconId.  If reverse=true sorts in reverse order.  All icons
   for other columns that should be reset when sorting on column number
@@ -16,19 +16,9 @@
   table = document.getElementById("list_table");
   colHeader = table.rows[0].getElementsByTagName("TH")[colNum];
   sortIcon = document.getElementById(sortIconId);
-  var nextArgs = '';
-  for (var i = 0; i<args.length; i++) {
-    var otherSortIconId = args[i];
-    nextArgs += '"' + otherSortIconId + '", ';
-    var otherSortIcon = document.getElementById(otherSortIconId);
-    otherSortIcon.className = "fa fa-sort";
-  }
-  if (!reverse) {
-    sortIcon.className = "fa fa-sort-alpha-asc";
-  } else {
-    sortIcon.className = "fa fa-sort-alpha-desc";
-  }
-  colHeader.setAttribute("onclick", `sortTable(${colNum}, '${sortIconId}', ${!reverse}, ${nextArgs});`);
+  sortIcon.className = "fa fa-sort-alpha-asc";
+  var nextArgs = setAttributesOfRelatedNodesAndGetNextArgs(args);
+  colHeader.setAttribute("onclick", `reverseSort(${colNum}, '${sortIconId}', ${nextArgs});`);
   switching = true;
   /* Make a loop that will continue until
   no switching has been done: */
@@ -46,17 +36,10 @@
       x = rows[i].getElementsByTagName("TD")[colNum];
       y = rows[i + 1].getElementsByTagName("TD")[colNum];
       // Check if the two rows should switch place:
-      if (!reverse) {
-        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-          // If so, mark as a switch and break the loop:
-          shouldSwitch = true;
-          break;
-        }
-      } else {
-        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-          shouldSwitch = true;
-          break;
-        }
+      if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+        // If so, mark as a switch and break the loop:
+        shouldSwitch = true;
+        break;
       }
     }
     if (shouldSwitch) {
@@ -66,4 +49,31 @@
       switching = true;
     }
   }
+}
+
+function reverseSort(colNum, sortIconId, ...args) {
+  var table, rows, sortIcon, colHeader;
+  table = document.getElementById("list_table");
+  colHeader = table.rows[0].getElementsByTagName("TH")[colNum];
+  sortIcon = document.getElementById(sortIconId);
+  var nextArgs = setAttributesOfRelatedNodesAndGetNextArgs(args);
+  sortIcon.className = "fa fa-sort-alpha-desc";
+  colHeader.setAttribute("onclick", `sortTable(${colNum}, '${sortIconId}', ${nextArgs});`);
+  rows = table.rows;
+  for (var i = 2; i < (rows.length); i++) {
+    item = rows[i];
+    item.parentNode.insertBefore(item, rows[2]);
+  }
+}
+
+function setAttributesOfRelatedNodesAndGetNextArgs(relatedNodes) {
+  var nextArgs = '';
+  for (var i = 0; i<relatedNodes.length; i++) {
+    var otherSortIconId = relatedNodes[i];
+    nextArgs += '"' + otherSortIconId + '", ';
+    var otherSortIcon = document.getElementById(otherSortIconId);
+    otherSortIcon.className = "fa fa-sort";
+  }
+  
+  return nextArgs
 }
