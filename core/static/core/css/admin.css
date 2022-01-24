@@ -1,0 +1,30 @@
+div.invite-users-form-container {
+    max-width: 500px;
+}
+
+#header {
+    background: #209CEE;
+    color: white;
+}
+
+#branding h1, #branding h1 a:link, #branding h1 a:visited {
+    color: white;
+}
+#user-tools a:focus, #user-tools a:hover {
+    text-decoration: none !important;
+    border-bottom-color: white !important;
+    color: white !important;
+}
+.module h2, .module caption, .inline-group h2 {
+    background: #209CEE;
+}
+.button.default, input[type=submit].default, .submit-row input.default {
+    background: #209CEE;
+}
+
+h1.admin-title {
+    font-family: "Roboto","Lucida Grande","DejaVu Sans","Bitstream Vera Sans",Verdana,Arial,sans-serif;
+    font-size: 20px;
+    font-weight: 300;
+    margin: 0 0 20px;
+}

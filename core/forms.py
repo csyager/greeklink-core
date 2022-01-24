@@ -194,3 +194,7 @@ class SupportForm(forms.Form):
         widget=forms.TextInput(attrs={'class': 'form-control rounded'})) 
     message = forms.CharField(required=True, max_length=500, label='Message:',
         widget=forms.Textarea(attrs={'class': 'form-control rounded', 'id': 'text_char_count'}))
+
+class InviteUsersForm(forms.Form):
+    recipients = forms.CharField(required=True, max_length=500, label="Recipients.  Separate each address by a newline.",
+        widget=forms.Textarea(attrs={'class': 'form-control rounded', 'cols': '50', 'rows': '4'}))

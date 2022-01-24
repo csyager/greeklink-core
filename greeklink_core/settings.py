@@ -224,6 +224,7 @@ EMAIL_BACKEND = 'django_ses.SESBackend'
 AWS_SES_AUTOTHROTTLE = 0.75
 VERIFY_EMAIL_USER = os.environ['VERIFY_EMAIL']
 SUPPORT_EMAIL_USER = os.environ['SUPPORT_EMAIL']
+EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
 ANN_EMAIL = os.environ['ANN_EMAIL']
 
 if ENV == 'production':
