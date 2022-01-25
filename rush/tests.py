@@ -395,6 +395,22 @@ class EventsTestCase(TenantTestCase):
             self.fail("Rushee matching query should not exist")
         except RushEvent.DoesNotExist:
             pass
+    
+    def test_round_headers_for_events_list(self):
+        """ tests that proper round headers appear on events page"""
+        path = reverse('rush:events')
+        response = self.client.get(path)
+        self.assertContains(response, "<h4>Round 1</h4>")
+        self.assertNotContains(response, "<h4>Round 2</h4>")
+    
+    def test_round_headers_split_rounds(self):
+        """ tests that proper round headers appear even if they are separated by a round"""
+        RushEvent.objects.create(name='first_event', date='2001-01-01', time='00:00:00', round=3, new_rushees_allowed=True)
+        path = reverse('rush:events')
+        response = self.client.get(path)
+        self.assertContains(response, "<h4>Round 1</h4>")
+        self.assertNotContains(response, "<h4>Round 2</h4>")
+        self.assertContains(response, "<h4>Round 3</h4>")
         
 class CurrentRusheesTestCase(TenantTestCase):
     """ tests for the current rushees page """
