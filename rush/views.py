@@ -17,6 +17,54 @@ from .models import Rushee, RushEvent, Comment
 
 # Create your views here.
 @login_required
+def index(request):
+    """ landing page for recruitment module
+    """
+    template = loader.get_template('rush/index.html')
+    rushees = Rushee.objects.filter(cut=False).order_by('name')
+    settings = getSettings()
+    ROUND_CHOICES = [(0, "No filter")]
+    num_rounds = settings.num_rush_rounds
+    for i in range(1, num_rounds+1):
+        ROUND_CHOICES.append((i, i))
+    try:
+        if request.session['rushee_filter']:
+            if 'cut' in request.session['rushee_filter']:
+                filter_form = FilterForm(initial=request.session['rushee_filter'])
+                rushees = Rushee.objects.all().order_by('name')
+            for filter in request.session['rushee_filter']:
+                if filter != 'cut':
+                    variable_column = filter
+                    search_type = 'icontains'
+                    filter_string = variable_column + '__' + search_type
+                    rushees = rushees.filter(**{ filter_string: request.session['rushee_filter'][filter]})
+                    filter_form = FilterForm(initial=request.session['rushee_filter'])
+                    filter_form.fields['round'].choices = ROUND_CHOICES
+    except KeyError:
+        filter_form = FilterForm()
+        filter_form.fields['round'].choices = ROUND_CHOICES
+
+    all_events = RushEvent.objects.all().order_by('date')
+    settings = getSettings()
+    round_range = range(1, settings.num_rush_rounds + 1)
+    round_groups = []
+    for i in round_range:
+        round_group = all_events.filter(round=i)
+        round_groups.append(round_group)
+
+    context = {
+        "rush_page": "active",
+        "rushees": rushees,
+        "filter_form": filter_form,
+        "settings": settings,
+        "round_range": round_range,
+        "events": all_events,
+        "round_groups": round_groups,
+        "round_iterator": range(len(round_groups)),
+    }
+    return HttpResponse(template.render(context, request))
+
+@login_required
 def rushee(request, num):
     """ rushee profile page
         num -- primary key of the rushee being viewed

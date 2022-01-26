@@ -1,0 +1,273 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block content %}
+<br>
+<div class="container">
+
+    <script src="{% static 'rush/js/filter_list.js' %}"></script>
+	<h1>Recruitment</h1>
+	<div class="row">
+		<div class="col-lg-3">
+			<!-- events column -->
+			<h2>Rush Events</h2>
+			{% if messages %}
+				{% for message in messages %}
+				{% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+					<div class="alert alert-success">{{ message }}</div>
+				{% elif messages.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+					<div class="alert alert-danger">{{ mesage }}</div>
+				{% endif %}
+				{% endfor %}
+			{% endif %}
+		<div class="list-group">
+			{% if not events %}
+				<b><i>No rush events to display.  Rush events can be created by admins, and track attendance of invited rushees.</i></b>
+			{% else %}
+				<ul class="list-group">
+					{% for round_group in round_groups %}
+						{% if round_group|length != 0 %}
+						<br>
+						<h4>Round {{ forloop.counter }}</h4>
+						{% for event in round_group %}
+							<li class="list-group-item">
+								<a href="/rush/events/{{ event.id }}">{{ event.name }} -- {{ event.date }}, {{ event.time }} <span class="badge badge-info">{{ event.attendance.count }}</span></a>
+								{% if perms.rush.deleterushevent %}
+									<a href="removeEvent{{ event.id }}" class="btn btn-danger btn-sm float-right">Remove</a>
+								{% endif %}
+								{% if perms.rush.edit_rushevent %}
+								<button type="button" class="btn btn-secondary btn-sm float-right mr-1" data-toggle="modal" data-target="#editeventModal{{ event.id }}">Edit</button>
+
+								<!-- Modal -->
+								<div class="modal fade" id="editeventModal{{ event.id }}" tabindex="-1" role="dialog" aria-labelledby="editeventModal" aria-hidden="true">
+									<div class="modal-dialog" role="document">
+										<div class="modal-content">
+											<div class="modal-header">
+												<h4 class="modal-title" id="eventModalLabel"> Edit Event</h4>
+												<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+													<span aria-hidden="true">&times;</span>
+												</button>
+											</div>
+											<div class="modal-body">
+												<form method="post" action="editEvent{{ event.id }}">
+													{% csrf_token %}
+													<div class="form-group row">
+														<label for="new_name" class="col-sm-2 col-form-label">Name</label>
+														<div class="col-sm-10">
+															<input type="text" class="form-control" id="edit_name_{{ event.id }}" name="name" value="{{ event.name }}" required>
+														</div>
+													</div>
+													<div class="form-group row">
+														<label for="new_date" class="col-sm-2 col-form-label">Date</label>
+														<div class="col-sm-10">
+															<input type="date" class="form-control" id="edit_date_{{ event.id }}" placeholder="YYYY-mm-dd" name="date" value="{{ event.date|date:'Y-m-d' }}" required>
+														</div>
+													</div>
+													<div class="form-group row">
+														<label for="new_event_round" class="col-sm-2 col-form-label">Round</label>
+														<div class="col-sm-10">
+															<select class="form-control" id="edit_event_round {{ event.id}}" name="round" value="{{ event.round }}" required>
+																{% for num in round_range %}
+																<option>{{ num }}</option>
+																{% endfor %}
+															</select>
+														</div>
+													</div>
+													<div class="form-group row">
+														<label for="new_time" class="col-sm-2 col-form-label">Time</label>
+														<div class="col-sm-10">
+															<input type="time" class="form-control" id="edit_time_{{ event.id }}" name="time" placeholder="HH:mm:ss in 24-hour time" value="{{ event.time|date:'H:i' }}" required>
+														</div>
+													</div>
+													<div class="form-group row">
+														<label for="new_location" class="col-sm-2 col-form-label">Location</label>
+														<div class="col-sm-10">
+															<input type="text" class="form-control" id="edit_location_{{ event.id }}" name="location" value="{{ event.location }}">
+														</div>
+													</div>
+													<div class="form-check">
+														<input type="checkbox" class="form-check-input" id="edit_new_new_rushees" name="new_rushees" {% if event.new_rushees_allowed %} checked {% endif %}>
+														<label for="new_new_rushees" class="form-check-label">New Rushees Allowed?</label>
+													</div>
+											</div>
+											<div class="modal-footer">
+												<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+												<button type="submit" class="btn btn-primary">Save changes</button>
+												</form>
+											</div>
+										</div>
+									</div>
+								</div>
+								<br>
+								<br>
+								{% endif %}
+							</li>
+						{% endfor %}
+						{% endif %}
+					{% endfor %}
+				</ul>
+			{% endif %}
+		</div>
+		<br>
+		{% if perms.rush.add_rushevent %}
+		<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#eventModal">Add Event</button>
+		<!-- Modal -->
+		<div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModal" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title" id="eventModalLabel">Create Event</h4>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<form method="post" action="createEvent">
+							{% csrf_token %}
+							<div class="form-group row">
+								<label for="new_name" class="col-sm-2 col-form-label">Name</label>
+								<div class="col-sm-10">
+									<input type="text" class="form-control" id="new_name" name="name" required>
+								</div>
+							</div>
+							<div class="form-group row">
+								<label for="new_date" class="col-sm-2 col-form-label">Date</label>
+								<div class="col-sm-10">
+									<input type="date" class="form-control" placeholder="YYYY-mm-dd" id="new_date" name="date" required>
+								</div>
+							</div>
+							<div class="form-group row">
+								<label for="new_event_round" class="col-sm-2 col-form-label">Round</label>
+								<div class="col-sm-10">
+									<select class="form-control" id="new_event_round" name="round" required>
+										{% for num in round_range %}
+										<option>{{ num }}</option>
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+							<div class="form-group row">
+								<label for="new_time" class="col-sm-2 col-form-label">Time</label>
+								<div class="col-sm-10">
+									<input type="time" class="form-control" id="new_time" placeholder="HH:mm:ss in 24-hour time" name="time" required>
+								</div>
+							</div>
+							<div class="form-group row">
+								<label for="new_location" class="col-sm-2 col-form-label">Location</label>
+								<div class="col-sm-10">
+									<input type="text" class="form-control" id="new_location" name="location">
+								</div>
+							</div>
+							<div class="form-check">
+								<input type="checkbox" class="form-check-input" id="new_new_rushees" name="new_rushees" value="new_rushees">
+								<label for="new_new_rushees" class="form-check-label">New Rushees Allowed?</label>
+							</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						<button type="submit" class="btn btn-primary">Create Event</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+		<br>
+		<br>
+		{% endif %}
+		</div>
+		<div class="col-lg-1"></div>
+		<div class="col-lg-8">
+			<!-- current rushees column -->
+			<h2>Current Rushees ({{ rushees|length }})</h2>
+			<div class="row">
+				<div class="col-2" style="max-width: 100%">
+				<a class="btn btn-primary" data-toggle="collapse" href="#collapse-filter" role="button" aria-expanded="false" aria-controls="collapse-filter" style="width: 95px">
+				<i class="fa fa-filter" aria-hidden="true"></i> Filter {{ request.session.rushee_filter | length }}
+				</a>
+				</div>
+				<div class="col">
+				<input type="text" class="form-control rounded" onkeyup="filter_list()" id="rush_signin_search" placeholder="&#xF002; Search" style="font-family:Arial, FontAwesome; width: 100%"></input>
+				</div>
+			</div>
+			<div class="collapse" id="collapse-filter">
+				<br>
+				<div class="card card-body">
+				<form method="post" action="filter_rushees" method="post" class="form">
+				{% csrf_token %}
+					<div class="form-group row">
+						<div class="col-md-2">{{ filter_form.name.label }}</div>
+						<div class="col-md-8">{{ filter_form.name }}</div>
+					</div>
+					<div class="form-group row">
+						<div class="col-md-2">{{ filter_form.round.label }}</div>
+						<div class="col-md-2">{{ filter_form.round }}</div>
+					</div>
+					<div class="form-group row">
+						<div class="col-md-2">{{ filter_form.major.label }}</div>
+						<div class="col-md-8">{{ filter_form.major }}</div>
+					</div>
+					<div class="form-group row">
+						<div class="col-md-2">{{ filter_form.year.label }}</div>
+						<div class="col-md-2">{{ filter_form.year }}</div>
+					</div>
+					<div class="form-group row">
+						<div class="col-md-2">{{ filter_form.hometown.label }}</div>
+						<div class="col-md-8">{{ filter_form.hometown }}</div>
+					</div>
+					<div class="form-group row">
+						<div class="col-md-2"></div>
+						<div class="col-md-8">
+							{{ filter_form.cut.label }}
+							{{ filter_form.cut }}
+						</div>
+					</div>
+					<button type="submit" class="btn btn-success">Apply Filter</button>&nbsp;&nbsp;
+					<a href="/rush/clear_rushees_filter"><button type="button" class="btn btn-danger">Clear Filter</button></a>
+				</div>
+			</div>
+
+			
+			<br>
+			<table class="table table-hover" id="list_table">
+				<thead>
+				<tr>
+					<td>Name</td>
+					<td>Round</td>
+					{% if not request.user_agent.is_mobile %}
+					<td>Email</td>
+					<td>Year</td>
+					<td>Major</td>
+					<td>Hometown</td>
+					{% endif %}
+					<td></td>
+				</tr>
+				</thead>
+				<tbody>
+				{% for rushee in rushees %}
+
+					<tr onclick="window.location='rushee{{ rushee.id }}';" {% if rushee.cut %}class="table-danger"{% endif %}>
+						<td>{{ rushee.name }}</td>
+						<td>{{ rushee.round }}</td>
+						{% if not request.user_agent.is_mobile %}
+						<td>{{ rushee.email }}</td>
+						<td>{{ rushee.year }}</td>
+						<td>{{ rushee.major }}</td>
+						<td>{{ rushee.hometown }}</td>
+						{% endif %}
+						{% if user in rushee.endorsements.all %}
+						<td><i class="fa fa-thumbs-up fa-2x" aria-hidden="true" style="color: green"></i></td>
+						{% elif user in rushee.oppositions.all %}
+						<td><i class="fa fa-thumbs-down fa-2x" aria-hidden="true" style="color: red"></i></td>
+						{% else %}
+						<td></td>
+						{% endif %}
+					</tr>
+				{% endfor %}
+				</tbody>
+			</table>
+			{% if not rushees %}
+				<b><i>No rushees to display.  Rushees can sign into the site through the Rush Signin page under the Rush dropdown above.  When they sign in they will be listed here.</i></b>
+			{% endif %}
+		</div>
+	</div>
+</div>
+{% endblock %}
