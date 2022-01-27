@@ -224,10 +224,16 @@ def events(request):
     all_events = RushEvent.objects.all().order_by('date')
     settings = getSettings()
     round_range = range(1, settings.num_rush_rounds + 1)
+    round_groups = []
+    for i in round_range:
+        round_group = all_events.filter(round=i)
+        round_groups.append(round_group)
     context = {
         'settings': settings,
         'round_range': round_range,
         'events': all_events,
+        'round_groups': round_groups,
+        'round_iterator': range(len(round_groups)),
         'rush_page': "active",
     }
 
