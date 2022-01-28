@@ -97,14 +97,12 @@ class RushEvent(OrgEvent):
     """ OrgEvent (defined in core/models.py) representing a rush event
         round -- which voting round this event falls into
         attendance -- list of Rushees who attended the event
-        new_rushees_allowed -- boolean value, if true allows rushees to register as new
-                               rushees at signin, using the full form.  If false rushees
-                               just click their name from a list to signin without entering
-                               new information
+        intake_event -- boolean value, if true rushees will be presented with
+                        registration form by default at signin
     """
     round = models.IntegerField(default=1)
     attendance = models.ManyToManyField(Rushee, blank=True)
-    new_rushees_allowed = models.BooleanField(default=False, blank=True)
+    intake_event = models.BooleanField(default=False, blank=True)
 
     def __str__(self):
         return self.name

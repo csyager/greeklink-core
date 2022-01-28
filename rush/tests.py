@@ -215,7 +215,7 @@ class RusheeRegisterTestCase(TenantTestCase):
         self.client = TenantClient(self.tenant)
         self.user = User.objects.create(username="test_user")
         self.client.force_login(self.user)
-        self.event = RushEvent.objects.create(name='test_event', date='2001-01-01', time='00:00:00', round=1, new_rushees_allowed=True)
+        self.event = RushEvent.objects.create(name='test_event', date='2001-01-01', time='00:00:00', round=1, intake_event=True)
         self.form_data = {
             'name': 'test_name',
             'email': 'test@test.com',
@@ -260,8 +260,8 @@ class SigninTestCase(TenantTestCase):
         settings.rush_signin_active = True
         settings.save()
         self.rushee = Rushee.objects.create(name='test_rushee')
-        self.event1 = RushEvent.objects.create(name='first_event', date='2001-01-01', time='00:00:00', round=1, new_rushees_allowed=True)
-        self.event2 = RushEvent.objects.create(name='second_event', date='2001-01-02', time='00:00:00', round=1, new_rushees_allowed=False)
+        self.event1 = RushEvent.objects.create(name='first_event', date='2001-01-01', time='00:00:00', round=1, intake_event=True)
+        self.event2 = RushEvent.objects.create(name='second_event', date='2001-01-02', time='00:00:00', round=1, intake_event=False)
 
     def test_signin_page_first_event(self):
         """ tests that the signin view redirects to the first event by default """
@@ -275,7 +275,7 @@ class SigninTestCase(TenantTestCase):
         response = self.client.post(path)
         self.assertContains(response, 'second_event')
 
-    def test_signin_page_new_rushees_allowed(self):
+    def test_signin_page_intake_event(self):
         """ tests that when new rushees are allowed in an event, signin page appears differently """
         path = reverse('rush:signin')
         response = self.client.post(path)
@@ -320,8 +320,8 @@ class EventsTestCase(TenantTestCase):
         settings.save()
         self.rushee1 = Rushee.objects.create(name="first_rushee")
         self.rushee2 = Rushee.objects.create(name="second_rushee")
-        self.event1 = RushEvent.objects.create(name='first_event', date='2001-01-01', time='00:00:00', round=1, new_rushees_allowed=True)
-        self.event2 = RushEvent.objects.create(name='second_event', date='2001-01-02', time='00:00:00', round=1, new_rushees_allowed=False)
+        self.event1 = RushEvent.objects.create(name='first_event', date='2001-01-01', time='00:00:00', round=1, intake_event=True)
+        self.event2 = RushEvent.objects.create(name='second_event', date='2001-01-02', time='00:00:00', round=1, intake_event=False)
 
     def test_events_view(self):
         """ tests the view showing all rush events """
@@ -405,7 +405,7 @@ class EventsTestCase(TenantTestCase):
     
     def test_round_headers_split_rounds(self):
         """ tests that proper round headers appear even if they are separated by a round"""
-        RushEvent.objects.create(name='first_event', date='2001-01-01', time='00:00:00', round=3, new_rushees_allowed=True)
+        RushEvent.objects.create(name='first_event', date='2001-01-01', time='00:00:00', round=3, intake_event=True)
         path = reverse('rush:events')
         response = self.client.get(path)
         self.assertContains(response, "<h4>Round 1</h4>")

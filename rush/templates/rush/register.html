@@ -1,9 +1,128 @@
 {% extends 'core/base.html' %}
 {% block content %}
+{% load static %}
 <br>
-    <div class="container">
-        <h1>Thank you, {{ name }}.  You're good to go!</h1>
-        <a href="/rush/signin{{ event_id }}"><button class="btn btn-success">Return to Sign-in page</button></a>
-
+<div class="container">
+    <h1>{{ event.name }}&nbsp;&nbsp;&nbsp;<span class="badge badge-info">Round {{ event.round }}</span></h1>
+    <div class="alert alert-success" role="alert">
+        Please fill out this form to register.  Already filled this out?  Click <a href="/rush/signin{{ event.id }}?register=false"> here</a>.
     </div>
+    <form method="post" action="register{{ event.id }}">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form.name }}
+        </div>
+        <div class="form-group">
+            {{ form.email }}
+        </div>
+        <div class="form-group">
+            <div class="row">
+                <div class="col-sm-4">
+                    {{ form.year }}
+                </div>
+                <div class="col-sm-8 mt-3 mt-sm-0">
+                    {{ form.major }}
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            {{ form.hometown }}
+        </div>
+        <div class="form-group">
+            {{ form.address }}
+        </div>
+        <div class="form-group">
+            {{ form.phone_number }}
+        </div>
+        <div class="form-group">
+            <b>{{ form.in_person.label }}</b><br><br>
+            {{ form.in_person }}
+        </div>
+        <div class="form-group">
+            <b>{{ form.friends_rushing.label }}</b><br><br>
+            {{ form.friends_rushing }}
+        </div>
+        <input type="hidden" id="profile_picture_data" name="profile_picture_data">
+        <br>
+
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <div class="embed-responsive embed-responsive-4by3">
+                    <video class="embed-responsive-item rounded border" autoplay id="screenshotVideo"></video>
+                </div>
+            </div>
+            <div class="col">
+                <div class="embed-responsive embed-responsive-4by3">
+                    <img class="embed-responsive-item rounded" src="" style="background-color: grey; text-align: center" alt='Click "Take Photo"'  id="screenshotImg">
+                    <canvas class="embed-responsive-item"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <button type="button" class="btn btn-primary" id="screenshotButton"><i class="fa fa-camera"></i> Take Photo</button>
+            </div>
+        </div>
+    </div>
+        <br>
+
+        <button type="submit" class="btn btn-success">Sign In</button>
+    </form>
+    <br>
+    <br>
+
+
+
+        <script>
+            function hasGetUserMedia() {
+                return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+            }
+
+            if (hasGetUserMedia()) {
+            // Good to go!
+            } else {
+            alert('getUserMedia() is not supported by your browser');
+            }
+            console.log('hasGetUserMedia passed');
+
+            const constraints = {
+                video: {width: 400, height: 300}
+            };
+
+            const video = document.querySelector('#screenshotVideo');
+            const captureVideoButton = document.querySelector('#recordButton');
+            const screenShotButton = document.querySelector('#screenshotButton')
+            const img = document.querySelector('#screenshotImg');
+            const input = document.querySelector('#profile_picture_data');
+
+            const canvas = document.createElement('canvas');
+
+            console.log('video, captureVideoButton, screenShotButton, img set');
+
+            navigator.mediaDevices.getUserMedia(constraints).then(handleSuccess).catch(handleError);
+
+
+            screenshotButton.onclick = video.onclick = function() {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                img.src = canvas.toDataURL('image/png');
+                input.value = canvas.toDataURL('image/png');
+            };
+
+            function handleSuccess(stream) {
+                screenshotButton.disabled = false;
+                video.srcObject = stream;
+            }
+
+            function handleError(){
+                alert('Error: image could not be captured.  Have you allowed your browser to use your camera?');
+            }
+
+            console.log('End of script reached');
+
+        </script>
+    </div>
+</div>
 {% endblock %}

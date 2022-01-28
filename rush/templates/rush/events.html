@@ -78,8 +78,9 @@
                                                     </div>
                                                 </div>
                                                 <div class="form-check">
-                                                    <input type="checkbox" class="form-check-input" id="edit_new_new_rushees" name="new_rushees" {% if event.new_rushees_allowed %} checked {% endif %}>
-                                                    <label for="new_new_rushees" class="form-check-label">New Rushees Allowed?</label>
+                                                    <input type="checkbox" class="form-check-input" id="edit_new_new_rushees" name="new_rushees" {% if event.intake_event %} checked {% endif %}>
+                                                    <label for="new_new_rushees" class="form-check-label">Intake event?</label>
+                                                    <small class="form-text text-muted">If checked, rushees will be presented with the registration form by default.  This is useful for events where most rushees will be signing into rush for the first time.</small>
                                                 </div>
                                         </div>
                                         <div class="modal-footer">
@@ -152,7 +153,8 @@
                         </div>
                         <div class="form-check">
                             <input type="checkbox" class="form-check-input" id="new_new_rushees" name="new_rushees" value="new_rushees">
-                            <label for="new_new_rushees" class="form-check-label">New Rushees Allowed?</label>
+                            <label for="new_new_rushees" class="form-check-label">Intake event?</label>
+                            <small class="form-text text-muted">If checked, rushees will be presented with the registration form by default.  This is useful for events where most rushees will be signing into rush for the first time.</small>
                         </div>
                 </div>
                 <div class="modal-footer">

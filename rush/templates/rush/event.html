@@ -7,6 +7,10 @@
     <h3>{{ event.date }}, {{ event.time }}</h3>
     <h3>{{ event.location }}</h3>
     <br>
+    {% if settings.rush_signin_active %}
+    <a class="btn btn-primary" href="/rush/signin{{ event.id }}">Start signin session</a>
+    <br><br>
+    {% endif %}
     <h2>Attendance ({{ event.attendance.count }})</h2>
     <table class="table table-hover">
         <thead>

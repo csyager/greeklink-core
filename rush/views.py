@@ -201,7 +201,7 @@ def register(request, event_id):
         this_event.attendance.add(obj)
         this_event.save()
 
-        template = loader.get_template('rush/register.html')
+        template = loader.get_template('rush/signin_success.html')
         context = {
             "name": obj.name,
             "event_id": event_id,
@@ -219,7 +219,6 @@ def signin(request, event_id=-1):
         event_id -- if passed in URL represents the event being signed into
                     if not passed, defaults to -1 meaning first event
     """
-    template = loader.get_template('rush/signin.html')
     form = RusheeForm()
     objects = Rushee.objects.filter(cut=False).order_by('name')
     all_events = RushEvent.objects.all().order_by('date')
@@ -231,6 +230,16 @@ def signin(request, event_id=-1):
                    .exclude(rushevent=this_event).order_by('name'))
     else:
         this_event = all_events.first()
+
+    if this_event.intake_event and request.GET.get('register', 'true') == 'false':
+        template = loader.get_template('rush/signin.html')
+    elif this_event.intake_event:
+        template = loader.get_template('rush/register.html')
+    elif not this_event.intake_event and request.GET.get('register', 'false') == 'false':
+        template = loader.get_template('rush/signin.html')
+    else:
+        template = loader.get_template('rush/register.html')
+
     context = {
         "rush_page": "active",
         "form": form,
@@ -250,7 +259,7 @@ def attendance(request, rushee_id, event_id):
         rushee_id -- primary key of rushee
         event_id -- primary key of event rushee is attending
     """
-    template = loader.get_template('rush/register.html')
+    template = loader.get_template('rush/signin_success.html')
     obj = Rushee.objects.get(id=rushee_id)
     this_event = RushEvent.objects.get(id=event_id)
     this_event.attendance.add(obj)
@@ -313,9 +322,9 @@ def create_event(request):
         obj.round = request.POST.get('round')
         obj.location = request.POST.get('location')
         if len(request.POST.getlist('new_rushees')) != 0:
-            obj.new_rushees_allowed = True
+            obj.intake_event = True
         else:
-            obj.new_rushees_allowed = False
+            obj.intake_event = False
         obj.save()
 
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
@@ -332,9 +341,9 @@ def edit_event(request, event_id):
         obj.round = request.POST.get('round')
         obj.location = request.POST.get('location')
         if len(request.POST.getlist('new_rushees')) != 0:
-            obj.new_rushees_allowed = True
+            obj.intake_event = True
         else:
-            obj.new_rushees_allowed = False
+            obj.intake_event = False
         
         obj.save()
         messages.success(request, "Rush event " + obj.name + " has been successfully edited.")
