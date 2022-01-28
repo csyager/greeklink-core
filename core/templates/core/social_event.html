@@ -16,6 +16,8 @@
     }
 </script>
 
+<script src="{% static 'core/js/boot_table_sort.js' %}"></script>
+
 <div class="container">
     <h1 style="display: inline">{{ event.name }}</h1>
     <h3>{{ event.date }}, {{ event.time }}</h3>
@@ -107,10 +109,10 @@
     <table class="table table-hover" id="list_table">
         <thead>
           <tr class="d-flex">
-            <th scope="col" class="col-4">Name</th>
-            <th scope="col" class="col-4">User</th>
+            <th scope="col" class="col-4" onclick="sortTable(0, 'sort_name_icon', &quot;sort_user_icon&quot;);">Name <i class="fa fa-sort" id="sort_name_icon"></i></a></th>
+            <th scope="col" class="col-4" onclick="sortTable(1, 'sort_user_icon', &quot;sort_name_icon&quot;);">User <i class="fa fa-sort" id="sort_user_icon"></i></a></th>
             {% if event.party_mode %}
-            <th scope="col" class="col-4" style="text-align: center">Attended</th>
+            <th scope="col" class="col-4" style="text-align: center" data-align="center">Attended</th>
             {% else %}
             <th scope="col" class="col-4"></th>
             {% endif %}
@@ -124,8 +126,8 @@
         {% for attendee in event.list.all %}
 
             <tr class="d-flex {% if attendee.attended %}table-danger{% endif %}" id="list_row_{{ attendee.id }}">
-                <td class="col-4">{{ attendee.name }}</td>
-                <td class="col-4">{{ attendee.user }}</td>
+                <td class="col-4" id="list_table_attendee_name">{{ attendee.name }}</td>
+                <td class="col-4" id="list_table_attendee_user">{{ attendee.user }}</td>
                 {% if event.party_mode %}
                 <td class="col-4" style="text-align: center"><input type="checkbox" id="attendance_checkbox_{{ attendee.id }}" onclick="cross_off_list({{ attendee.id }})" {% if attendee.attended %}checked{% endif %}></td>
                 {% elif perms.core.change_socialevent %}
@@ -137,7 +139,6 @@
         {% endfor %}
         </tbody>
     </table>
-
 </div>
 
 <div class="modal fade" id="clear_modal" tabindex="-1" role="dialog" aria-labelledby="clear_modal_label" aria-hidden="true">
