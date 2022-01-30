@@ -1,24 +1,5 @@
 {% extends "admin/base.html" %}
 {% block extrastyle %}
-<style>
-    #header {
-        background: #209CEE;
-        color: white;
-    }
-
-    #branding h1, #branding h1 a:link, #branding h1 a:visited {
-        color: white;
-    }
-    #user-tools a:focus, #user-tools a:hover {
-        text-decoration: none !important;
-        border-bottom-color: white !important;
-        color: white !important;
-    }
-    .module h2, .module caption, .inline-group h2 {
-        background: #209CEE;
-    }
-    .button.default, input[type=submit].default, .submit-row input.default {
-        background: #209CEE;
-    }
-</style>
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'core/css/admin.css' %}">
 {% endblock %}

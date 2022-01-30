@@ -1,6 +1,5 @@
 # ignore coverage app and related directories
 .coverage
-.coveragerc
 htmlcov
 
 # ignore VSCode files
