@@ -26,6 +26,8 @@ addons:
       secure:
         "PR50eGYJWZlcjIUL6Ja9MDakPOircYIzwU9DOeofSKRjpBU8e6GKwrZYGHmb7pfoRc1EDR5RZrwGyYM16APX36hYvAMbJqiEThnfL/4bN8mEtwj8/M552zqbvMHSacz3XHzqYd8pyWwW9yzwD38yarutr78rDeAP6Yxp4R0V/rM1Vt6II3BxIjX/9OVM287eKosljdJ7mXiUXJ/dtpvsq2ZTfZNchOlZBCkoLi4sHepZid3DpJ4rW/xzmv+mL1mpE90IJz+l+nQdWsDF3Ma6vT1CLcN3p2S1gu1Eg02jpSC4F1Sz36MjJZIKGX6DwkyAujD+j5OnMrfei+BkaiFYJJkgrT+fZ4L5NCfuFe/w1CGZ+Aat+5XrthIM04tr0e00noSVT91fn5dLwsl8LFkQC+Xp16VVjcm/tRpuP7ROzLl5TDcIkuMmGEetp+ZX1Ice074+xVzznj830GiuHagBAckFRYRthuvXf3Vivk86dRha0fitKr2gecDY8seOkSNiFVGI/BFRoEYisNPTPJ+laVug22mlbdiovNM7/H7EKP2Yv9G+Cx3zklLUbYSPeJIacqEyOr6fg2CqBQ+ubYu170NVOzvuIWdxueFhLzMk632cgAcKpJEA4g2fD0TLzPC8IPdcSGvVtvIhY9R4H3O9YHUceQfYnstVaALQ0Mz1NWI="
 script:
+- node --version
+- npm --version
 - python manage.py makemigrations core
 - python manage.py makemigrations organizations
 - python manage.py makemigrations rush
@@ -33,4 +35,4 @@ script:
 - python manage.py migrate_schemas
 - python manage.py collectstatic
 - ./scripts/ci-coverage.sh
-- sonar-scanner
+- sonar-scanner -X
