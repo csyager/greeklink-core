@@ -32,5 +32,5 @@ script:
 - python manage.py makemigrations cal
 - python manage.py migrate_schemas
 - python manage.py collectstatic
-- ./scripts/coverage.sh
+- ./scripts/ci-coverage.sh
 - sonar-scanner
