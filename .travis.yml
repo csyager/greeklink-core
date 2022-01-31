@@ -30,7 +30,6 @@ before_install:
   - nvm install $NODE_VERSION
 script:
 - node --version
-- npm --version
 - python manage.py makemigrations core
 - python manage.py makemigrations organizations
 - python manage.py makemigrations rush
