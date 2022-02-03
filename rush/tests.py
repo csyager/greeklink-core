@@ -86,6 +86,26 @@ class RusheeTestCase(TenantTestCase):
         self.assertNotContains(response, "You have <b>endorsed</b> this rushee")
 
 
+class IndexTestCase(TenantTestCase):
+    """ tests the index page of the recruitment tab """
+    def setUp(self):
+        self.client = TenantClient(self.tenant)
+        self.u = User.objects.create(username="test_user")
+        self.client.force_login(self.u)
+        self.event1 = RushEvent.objects.create(name='test_event1', date='2001-01-01', time='00:00:00', round=1, new_rushees_allowed=True)
+        self.event2 = RushEvent.objects.create(name='test_event2', date='2001-01-01', time='00:00:00', round=3, new_rushees_allowed=True)
+
+    def test_index_health(self):
+        path = reverse('rush:index')
+        response = self.client.get(path)
+        self.assertEqual(response.status_code, 200)
+
+    def test_index_round_groups(self):
+        path = reverse('rush:index')
+        response = self.client.get(path)
+        self.assertContains(response, "<h4>Round 1</h4>")
+        self.assertContains(response, "<h4>Round 3</h4>")
+
 class RusheeFilterTestCase(TenantTestCase):
     """ tests the filter function for the rushee template """
     def setUp(self):
