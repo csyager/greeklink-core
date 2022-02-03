@@ -186,3 +186,7 @@ div.rush-index-border-container {
     margin-bottom: 30px;
     padding: 15px;
 }
+
+input.rush-signin-search {
+    width: 100%
+}

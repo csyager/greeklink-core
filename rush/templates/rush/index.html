@@ -16,7 +16,7 @@
 			<div class="rush-index-admin-container">
 				<div class="custom-control custom-switch">
 					<input type="checkbox" class="custom-control-input" id="rush_signin_switch" {% if settings.rush_signin_active %}checked{% endif %} onclick="window.location= '/rush/toggle_rush_signin'">
-					<label class="custom-control-label" for="rush_signin_switch">Rush signin is <b>{% if settings.rush_signin_active %} active {% else %} inactive{% endif %}</b></label>
+					<label class="custom-control-label" for="rush_signin_switch">Rush signin is <strong>{% if settings.rush_signin_active %} active {% else %} inactive{% endif %}</strong></label>
 				</div>
 			</div>
 		</div>
@@ -38,7 +38,7 @@
 			{% endif %}
 		<div class="list-group">
 			{% if not events %}
-				<b><i>No rush events to display.  Rush events can be created by admins, and track attendance of invited rushees.</i></b>
+				<strong><em>No rush events to display.  Rush events can be created by admins, and track attendance of invited rushees.</em></strong>
 			{% else %}
 				<ul class="list-group">
 					{% for round_group in round_groups %}
@@ -203,7 +203,7 @@
 					</a>
 					</div>
 					<div class="col">
-					<input type="text" class="form-control rounded" onkeyup="filter_list()" id="rush_signin_search" placeholder="&#xF002; Search" style="font-family:Arial, FontAwesome; width: 100%"></input>
+					<input type="text" class="form-control rounded" onkeyup="filter_list()" id="rush_signin_search" placeholder="&#xF002; Search" class="rush-signin-search" style="font-family: Arial, FontAwesome, Sans-serif; "></input>
 					</div>
 				</div>
 				<div class="collapse" id="collapse-filter">
@@ -245,18 +245,18 @@
 
 				
 				<br>
-				<table class="table table-hover" id="list_table">
+				<table class="table table-hover" id="list_table" aria-describedby="List of rushees who have not been cut">
 					<thead>
 					<tr>
-						<td>Name</td>
-						<td>Round</td>
+						<th>Name</th>
+						<th>Round</th>
 						{% if not request.user_agent.is_mobile %}
-						<td>Email</td>
-						<td>Year</td>
-						<td>Major</td>
-						<td>Hometown</td>
+						<th>Email</th>
+						<th>Year</th>
+						<th>Major</th>
+						<th>Hometown</th>
 						{% endif %}
-						<td></td>
+						<th></th>
 					</tr>
 					</thead>
 					<tbody>
@@ -283,7 +283,7 @@
 					</tbody>
 				</table>
 				{% if not rushees %}
-					<b><i>No rushees to display.  Rushees can sign into the site through the Rush Signin page under the Rush dropdown above.  When they sign in they will be listed here.</i></b>
+					<strong><em>No rushees to display.  Rushees can sign into the site through the Rush Signin page under the Rush dropdown above.  When they sign in they will be listed here.</em></strong>
 				{% endif %}
 			</div>
 		</div>
