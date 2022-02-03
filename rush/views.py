@@ -10,6 +10,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
 from django.http import Http404
+from django.views.decorators.http import require_GET
 from core.views import getSettings
 from core.models import SiteSettings
 from .forms import CommentForm, RusheeForm, FilterForm
@@ -17,6 +18,7 @@ from .models import Rushee, RushEvent, Comment
 
 # Create your views here.
 @login_required
+@require_GET
 def index(request):
     """ landing page for recruitment module
     """
