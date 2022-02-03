@@ -4,6 +4,7 @@ from .models import *
 from django.forms import ModelForm
 from django.forms.widgets import TextInput
 from django.apps import apps
+from django.conf import settings
 
 
 # form for leaving comments
@@ -51,7 +52,7 @@ class RusheeForm(ModelForm):
         return rushee
 
 year_choices = [
-    (0, 'No filter'),
+    (0, settings.NO_FILTER_PLACEHOLDER),
     (1, 'Freshman'),
     (2, 'Sophomore'),
     (3, 'Junior'),

@@ -6,6 +6,7 @@ import base64
 from django.core.files import File
 from django.template import loader
 from django.contrib.admin.views.decorators import staff_member_required
+from django.conf import settings
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
@@ -17,16 +18,12 @@ from .forms import CommentForm, RusheeForm, FilterForm
 from .models import Rushee, RushEvent, Comment
 
 # Create your views here.
-@login_required
-@require_GET
-def index(request):
-    """ landing page for recruitment module
-    """
-    template = loader.get_template('rush/index.html')
+
+def get_filtered_rushees(request):
     rushees = Rushee.objects.filter(cut=False).order_by('name')
-    settings = getSettings()
-    ROUND_CHOICES = [(0, "No filter")]
-    num_rounds = settings.num_rush_rounds
+    site_settings = getSettings()
+    ROUND_CHOICES = [(0, settings.NO_FILTER_PLACEHOLDER)]
+    num_rounds = site_settings.num_rush_rounds
     for i in range(1, num_rounds+1):
         ROUND_CHOICES.append((i, i))
     try:
@@ -45,6 +42,16 @@ def index(request):
     except KeyError:
         filter_form = FilterForm()
         filter_form.fields['round'].choices = ROUND_CHOICES
+
+    return filter_form, rushees
+
+@login_required
+@require_GET
+def index(request):
+    """ landing page for recruitment module
+    """
+    template = loader.get_template('rush/index.html')
+    filter_form, rushees = get_filtered_rushees(request)
 
     all_events = RushEvent.objects.all().order_by('date')
     settings = getSettings()
@@ -358,28 +365,8 @@ def remove_event(request, event_id):
 def current_rushees(request):
     """ page containing list of rushees who haven't been cut """
     template = loader.get_template('rush/current-rushees.html')
-    rushees = Rushee.objects.filter(cut=False).order_by('name')
+    filter_form, rushees = get_filtered_rushees(request)
     settings = getSettings()
-    ROUND_CHOICES = [(0, "No filter")]
-    num_rounds = settings.num_rush_rounds
-    for i in range(1, num_rounds+1):
-        ROUND_CHOICES.append((i, i))
-    try:
-        if request.session['rushee_filter']:
-            if 'cut' in request.session['rushee_filter']:
-                filter_form = FilterForm(initial=request.session['rushee_filter'])
-                rushees = Rushee.objects.all().order_by('name')
-            for filter in request.session['rushee_filter']:
-                if filter != 'cut':
-                    variable_column = filter
-                    search_type = 'icontains'
-                    filter_string = variable_column + '__' + search_type
-                    rushees = rushees.filter(**{ filter_string: request.session['rushee_filter'][filter]})
-                    filter_form = FilterForm(initial=request.session['rushee_filter'])
-                    filter_form.fields['round'].choices = ROUND_CHOICES
-    except KeyError:
-        filter_form = FilterForm()
-        filter_form.fields['round'].choices = ROUND_CHOICES
     context = {
         "rush_page": "active",
         "rushees": rushees,
@@ -604,9 +591,9 @@ def filter_rushees(request):
 
     if request.method == 'POST':
         form = FilterForm(request.POST)
-        settings = getSettings()
-        ROUND_CHOICES = [(0, "No filter")]
-        num_rounds = settings.num_rush_rounds
+        site_settings = getSettings()
+        ROUND_CHOICES = [(0, settings.NO_FILTER_PLACEHOLDER)]
+        num_rounds = site_settings.num_rush_rounds
         for i in range(1, num_rounds+1):
             ROUND_CHOICES.append((i, i))
         form.fields['round'].choices = ROUND_CHOICES
