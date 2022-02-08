@@ -249,3 +249,8 @@ else:
     AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
     AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
     DEFAULT_FILE_STORAGE = 'core.storage.S3TenantStorage'
+
+
+
+# GLOBAL CONSTANTS
+NO_FILTER_PLACEHOLDER = "No filter"

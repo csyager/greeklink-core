@@ -6,6 +6,7 @@ from . import views
 app_name = 'rush'
 
 urlpatterns = [
+    path('', views.index, name="index"),
     path('rushee<int:num>/', views.rushee, name="rushee"),
     path('signin', views.signin, name="signin"),
     path('signin<int:event_id>', views.signin, name='signin'),
