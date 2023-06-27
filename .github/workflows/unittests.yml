@@ -7,7 +7,7 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    service:
+    services:
       postgres:
         image: postgres:latest
         env:
