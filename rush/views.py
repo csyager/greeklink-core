@@ -58,7 +58,7 @@ def index(request):
     round_range = range(1, settings.num_rush_rounds + 1)
     round_groups = []
     for i in round_range:
-        round_group = all_events.filter(round=i)
+        round_group = all_events.filter(round=i).order_by('date').reverse()
         round_groups.append(round_group)
 
     context = {
@@ -511,7 +511,7 @@ def push_rushee(request, rushee_id):
 
 @permission_required('rush.change_rushee')
 def cut_rushee(request, rushee_id):
-    """ cut a rushee, setting cut equal to the round they were cut in
+    """ cut a rushee, setting cut equal to the True
         rushee_id -- primary key of rushee being cut
     """
     this_rushee = Rushee.objects.get(id=rushee_id)
@@ -532,6 +532,16 @@ def cut_rushee(request, rushee_id):
         next_url = '/rush/current_rushees'
 
     return HttpResponseRedirect(next_url)
+
+@permission_required('rush.change_rushee')
+def uncut_rushee(request, rushee_id):
+    """ uncut a rushee, setting cut equal to False
+        rushee_id -- primary key of rushee being uncut
+    """
+    this_rushee = Rushee.objects.get(id=rushee_id)
+    this_rushee.cut = False
+    this_rushee.save()
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @permission_required('rush.change_rushee')
 def votepage(request, rushee_id):

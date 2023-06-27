@@ -18,7 +18,7 @@
                     {% endif %}
                 </div>
                 <div class="col" style="text-align: center">
-                    <a href="/rush/current_rushees"><button class="btn btn-secondary" style="width: 110px">Back to list</button></a>
+                    <a href="/rush"><button class="btn btn-secondary" style="width: 110px">Back to list</button></a>
                 </div>
                 <div class="col" style="text-align: right">
                     {% if next_url != "" %}
@@ -38,11 +38,26 @@
         <div class="col-md-4">
             <h1 class="display-4">{{ rushee.name }}</h1>
             <br>
+            <h2 class="display-6">Round: {{ rushee.round }}</h2>
             <br>
             {% if perms.rush.change_rushee %}
-            <a href="/rush/votepage{{ rushee.id }}"><button class="btn btn-primary" style="width: 183">Open Voting</button></a><br><br>
-            <a href="/rush/rushee{{ rushee.id }}/push"><button class="btn btn-success">Send Through</button></a>
-            <a href="/rush/rushee{{ rushee.id }}/cut"><button class="btn btn-danger">Cut</button></a><br><br>
+            <div class="row" style="width: 70%">
+                <div class="col-12">
+                    <a href="/rush/votepage{{ rushee.id }}"><button class="btn btn-primary" style="width: 100%">Open Voting</button></a><br><br>
+                </div>
+            </div>
+            <div class="row" style="width: 70%">
+                <div class="col-8">
+                    <a href="/rush/rushee{{ rushee.id }}/push"><button class="btn btn-success" style="width: 100%">Send to Next Round</button></a>
+                </div>
+                <div class="col-4">
+                    {% if rushee.cut != 0 %}
+                        <a href="/rush/rushee{{ rushee.id }}/uncut"><button class="btn btn-danger" style="width: 100%">Uncut</button></a><br><br>
+                    {% else %}
+                        <a href="/rush/rushee{{ rushee.id }}/cut"><button class="btn btn-danger" style="width: 100%">Cut</button></a><br><br>
+                    {% endif %}
+                </div>
+            </div>
             {% endif %}
         </div>
         <div class="col-md-4">
