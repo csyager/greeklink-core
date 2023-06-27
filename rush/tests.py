@@ -537,6 +537,16 @@ class VotingTestCase(TenantTestCase):
         response = self.client.post(path, follow=True)
         self.assertContains(response, '<h1 class="display-4">test_rushee_2</h1>')
 
+    def test_uncut_rushee(self):
+        """ tests uncutting rushee """
+        path = reverse('rush:cut', kwargs=dict(rushee_id=self.rushee.pk))
+        self.client.post(path, follow=True)
+        self.rushee.refresh_from_db()
+        uncut_path = reverse('rush:uncut', kwargs=dict(rushee_id=self.rushee.pk))
+        self.client.post(uncut_path, follow=True)
+        self.rushee.refresh_from_db()
+        self.assertFalse(self.rushee.cut)
+
     def test_votepage(self):
         self.rushee.voting_open = False
         self.rushee.save()
