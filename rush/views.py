@@ -11,7 +11,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
 from django.http import Http404
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_POST
 from core.views import getSettings
 from core.models import SiteSettings
 from .forms import CommentForm, RusheeForm, FilterForm
@@ -534,6 +534,7 @@ def cut_rushee(request, rushee_id):
     return HttpResponseRedirect(next_url)
 
 @permission_required('rush.change_rushee')
+@require_POST
 def uncut_rushee(request, rushee_id):
     """ uncut a rushee, setting cut equal to False
         rushee_id -- primary key of rushee being uncut
