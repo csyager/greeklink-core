@@ -147,15 +147,15 @@ if 'RDS_DB_NAME' in os.environ:
             'PORT': os.environ['RDS_PORT'],
         }
     }
-# running in Travis CI
-elif os.environ.get('TRAVIS'):
+# running in Github Actions
+elif os.environ.get('GITHUB_WORKFLOW'):
     DATABASES = {
         'default': {
             'ENGINE': 'tenant_schemas.postgresql_backend',
-            'NAME': 'greeklinkdb',
-            'USER': 'greeklinkuser',
-            'PASSWORD': 'greeklink1',
-            'HOST': 'localhost',
+            'NAME': 'github_actions',
+            'USER': 'postgres',
+            'PASSWORD': 'postgres',
+            'HOST': '127.0.0.1',
             'PORT': '5432',
         }
     }
