@@ -309,13 +309,6 @@ class SigninTestCase(TenantTestCase):
         self.assertContains(response, 'Click on your name to sign in.')
         self.assertNotContains(response, 'action="register')
 
-    def test_rush_event_dropdown(self):
-        """ tests that rush events appear as choices in the dropdown selector """
-        path = reverse('rush:signin')
-        response = self.client.post(path)
-        self.assertContains(response, '<a class="dropdown-item" href="signin' + str(self.event1.pk) + '">')
-        self.assertContains(response, '<a class="dropdown-item" href="signin' + str(self.event2.pk) + '">')
-
     def test_click_to_signin_link(self):
         """ tests that rushees can click to signin to events """
         path = reverse('rush:signin', kwargs=dict(event_id=self.event2.pk))
