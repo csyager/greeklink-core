@@ -1,0 +1,48 @@
+name: Django unit tests
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    service:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: github_actions
+        ports:
+          - 5432: 5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.6
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.6
+    - name: psycopg2 prerequisites
+      run: sudo apt-get install libpq-dev
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - uses: harmon758/postgresql-action@v1
+      with:
+        postgresql version: '15'
+    - name: Run migrations
+      run: |
+        python manage.py makemigrations core
+        python manage.py makemigrations organizations
+        python manage.py makemigrations rush
+        python manage.py makemigrations cal
+        python manage.py migrate_schemas
+        python manage.py collectstatic
+        
+    - name: Run tests
+      run: |
+        ./scripts/ci-coverage.sh
+        sonar-scanner
