@@ -137,6 +137,7 @@ WSGI_APPLICATION = 'greeklink_core.wsgi.application'
 
 # aws postgres database in production with multitenant support
 if 'RDS_DB_NAME' in os.environ:
+    print("RDS_DB_NAME in os.environ, using RDS")
     DATABASES = {
         'default': {
             'ENGINE': 'tenant_schemas.postgresql_backend',
@@ -161,6 +162,7 @@ elif os.environ.get('GITHUB_WORKFLOW'):
     }
 # locally  
 else:
+    print("RDS_DB_NAME not in os.environ, using local postgres")
     DATABASES = {
         'default': {
             'ENGINE': 'tenant_schemas.postgresql_backend',
