@@ -3,13 +3,13 @@
 {% load static %}
 {% if perms.core.activate_rushsignin %}
 <div class="container">
-    <br><br>
+    <br>
     <div class="custom-control custom-switch">
         <input type="checkbox" class="custom-control-input" id="rush_signin_switch" {% if settings.rush_signin_active %}checked{% endif %} onclick="window.location = '/rush/toggle_rush_signin'">
         <label class="custom-control-label" for="rush_signin_switch">Rush signin is <b>{% if settings.rush_signin_active %} active {% else %} inactive{% endif %}</b></label>
+    <br><br>
     </div>
 </div>
-<br>
 {% endif %}
 {% if not settings.rush_signin_active %}
 <br>
@@ -88,21 +88,9 @@
     </div>
     {% endif %}
 {% else %}
-<br>
-<div class="dropdown" style="margin-left: 5%">
-    <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        Change event
-    </button>
-    <div class="dropdown-menu" aria-labelledby="dropdownMenu">
-        {% for dropdown_event in events %}
-            <a class="dropdown-item" href="signin{{ dropdown_event.id }}">{{ dropdown_event.name }}</a>
-        {% endfor %}
-    </div>
-</div>
-<br>
 
-
-<h1 style="margin-left: 5%">{{ event.name }}&nbsp;&nbsp;&nbsp;<span class="badge badge-info">Round {{ event.round }}</span></h1>
+<h1 style="margin-left: 5%">Event Signin</h1>
+<h2 style="margin-left: 5%">{{ event.name }}&nbsp;&nbsp;&nbsp;<span class="badge badge-info">Round {{ event.round }}</span></h2>
 {% if event.new_rushees_allowed %}
 <form style="margin-left: 10%; margin-right:10%" method="post" action="register{{ event.id }}">
     {% csrf_token %}
@@ -232,7 +220,6 @@
     <div class="alert alert-success" role="alert">
         Click on your name to sign in.
     </div>
-    <h2>Current Rushees</h2>
     <input type="text" class="form-control rounded" onkeyup="filter_list()" id="rush_signin_search" placeholder="&#xF002; Search" style="font-family:Arial, FontAwesome" ></input><br>
     <table class="table table-hover" id="list_table">
         <thead>

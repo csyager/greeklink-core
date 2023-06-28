@@ -53,7 +53,10 @@ python manage.py collectstatic --noinput
 
 # load fixtures
 echo "from organizations.models import Client; Client.objects.create(domain_url='test.localhost', schema_name='test', name='Test Tenant'); Client.objects.create(domain_url='localhost', schema_name='public', name='public'); exit();" | python manage.py shell
-python manage.py tenant_command loaddata --schema=test auth.json
-python manage.py tenant_command loaddata --schema=test settings.json 
+
+# python manage.py tenant_command loaddata --schema=test auth.json
+echo "from django.core.management import call_command; call_command('loaddata', 'auth.json');" | python manage.py tenant_command --schema=test shell
+# python manage.py tenant_command loaddata --schema=test settings.json 
+echo "from django.core.management import call_command; call_command('loaddata', 'settings.json');" | python manage.py tenant_command --schema=test shell
 
 echo "Done!"
