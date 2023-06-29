@@ -63,8 +63,7 @@ def getSettings():
 def health(request):
     """ for aws health checks, returns the instance id
     """
-    response = requests.get("http://169.254.169.254/latest/meta-data/instance-id")
-    return HttpResponse(response.content)
+    return HttpResponse("OK")
 
 # extends built in Django LoginView
 class CustomLoginView(LoginView):

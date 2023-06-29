@@ -23,7 +23,6 @@ env/
 db.sqlite3
 */migrations
 media
-/static
 db.sqlite3
 # Elastic Beanstalk Files
 .elasticbeanstalk/*

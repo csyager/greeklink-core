@@ -39,7 +39,7 @@ jobs:
         python manage.py makemigrations rush
         python manage.py makemigrations cal
         python manage.py migrate_schemas
-        python manage.py collectstatic
+        python manage.py collectstatic --no-input
         
     - name: Run tests
       run: |
