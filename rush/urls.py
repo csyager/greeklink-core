@@ -14,6 +14,7 @@ urlpatterns = [
     path('register<int:event_id>', views.register, name='register'),
     path('rushee<int:rushee_id>/push', views.push_rushee, name="push"),
     path('rushee<int:rushee_id>/cut', views.cut_rushee, name="cut"),
+    path('rushee<int:rushee_id>/uncut', views.uncut_rushee, name="uncut"),
     path('votepage<int:rushee_id>', views.votepage, name="votepage"),
     path('results<int:rushee_id>', views.results, name="results"),
     path('vote<int:rushee_id>/<str:value>', views.vote, name="vote"),

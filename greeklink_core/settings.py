@@ -41,18 +41,21 @@ if ENV == 'testing':
 else:
     DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.localhost', '.elasticbeanstalk.com', 'greeklink-prod-env.us-east-1.elasticbeanstalk.com', '.greeklink-prod-env.us-east-1.elasticbeanstalk.com', 'greek-rho.com', '.greek-rho.com', '172.31.88.161', 'awseb-awseb-1xs69vwf6dk11-1836811465.us-east-1.elb.amazonaws.com']
+# for health checks:  Application Load Balancer DNS needs to be allowed here
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.localhost', '.elasticbeanstalk.com', 'greeklink-prod-env.us-east-1.elasticbeanstalk.com', '.greeklink-prod-env.us-east-1.elasticbeanstalk.com', 'greek-rho.com', '.greek-rho.com', '172.31.88.161', 'awseb-awseb-1xs69vwf6dk11-1836811465.us-east-1.elb.amazonaws.com', 'awseb-AWSEB-18Y3IQZOB8OVQ-1983300930.us-east-1.elb.amazonaws.com']
 
 # gets health check IP address on elastic beanstalk and allows it
-import requests
-EC2_PRIVATE_IP = None
-try:
-    EC2_PRIVATE_IP = requests.get('http://169.254.169.254/latest/meta-data/local-ipv4', timeout=0.1).text
-except requests.exceptions.RequestException:
-    pass
+if ENV == 'production':
+    import requests
+    EC2_PRIVATE_IP = None
+    try:
+        TOKEN = requests.put('http://169.254.169.254/latest/api/token', headers={'X-aws-ec2-metadata-token-ttl-seconds': '21600'}).text
+        EC2_PRIVATE_IP = requests.get('http://169.254.169.254/latest/meta-data/local-ipv4', timeout=0.1, headers={'X-aws-ec2-metadata-token': TOKEN}).text
+    except requests.exceptions.RequestException:
+        pass
 
-if EC2_PRIVATE_IP:
-    ALLOWED_HOSTS.append(EC2_PRIVATE_IP)
+    if EC2_PRIVATE_IP:
+        ALLOWED_HOSTS.append(EC2_PRIVATE_IP)
 
 # Application definition
 SHARED_APPS = (
@@ -147,15 +150,15 @@ if 'RDS_DB_NAME' in os.environ:
             'PORT': os.environ['RDS_PORT'],
         }
     }
-# running in Travis CI
-elif os.environ.get('TRAVIS'):
+# running in Github Actions
+elif os.environ.get('GITHUB_WORKFLOW'):
     DATABASES = {
         'default': {
             'ENGINE': 'tenant_schemas.postgresql_backend',
-            'NAME': 'greeklinkdb',
-            'USER': 'greeklinkuser',
-            'PASSWORD': 'greeklink1',
-            'HOST': 'localhost',
+            'NAME': 'github_actions',
+            'USER': 'postgres',
+            'PASSWORD': 'postgres',
+            'HOST': '127.0.0.1',
             'PORT': '5432',
         }
     }
