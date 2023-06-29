@@ -47,7 +47,8 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.localhost', '.elasticbeanstalk.com'
 import requests
 EC2_PRIVATE_IP = None
 try:
-    EC2_PRIVATE_IP = requests.get('http://169.254.169.254/latest/meta-data/local-ipv4', timeout=0.1).text
+    TOKEN = requests.put('http://169.254.169.254/latest/api/token', headers={'X-aws-ec2-metadata-token-ttl-seconds': '21600'}).text
+    EC2_PRIVATE_IP = requests.get('http://169.254.169.254/latest/meta-data/local-ipv4', timeout=0.1, headers={'X-aws-ec2-metadata-token': TOKEN}).text
 except requests.exceptions.RequestException:
     pass
 
