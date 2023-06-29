@@ -1,0 +1,192 @@
+.container {
+    width: 90%;
+    max-width: 100%;
+}
+
+.resource-card {
+    width: 200px;
+}
+
+.footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    /* height: 10%; */
+}
+
+.footer img {
+    padding: 10px;
+}
+
+body {
+    margin-bottom: 10%;
+}
+
+/*
+ * Login page styles
+*/
+
+div.login-card-col {
+    max-width: 600px;
+}
+
+div.login-card {
+    opacity: .98;
+}
+
+body.login-body {
+    background: url("/static/core/images/lawn_compressed.jpg") no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+/* -------------------------------------------------------------------------------------------------
+   ----------------------------------- ERROR PAGE STYLES -------------------------------------------
+   -----------------------------------------------------------------------------------------------*/
+
+.error404-URL {
+    position: relative;
+
+    font-size: 24px;
+    line-height: 33px;
+    /* identical to box height */
+
+    display: flex;
+    align-items: center;
+
+    color: #000000;
+}
+.error404-message {
+    position: relative;
+
+    font-size: 24px;
+    line-height: 33px;
+    /* identical to box height */
+
+    display: flex;
+    align-items: center;
+
+    color: #4f4f4f;
+}
+.error-logo {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    left: 0px;
+}
+
+/*
+*  overrides default bootstrap behavior for pagination buttons to prevent 
+*  active button from scrolling over footer
+*/
+.page-item.active 
+.page-link {
+    z-index: 0;
+}
+
+
+/*
+* font-awesome tags from resources page
+*/
+.fa-file-text,
+.fa-file-word-o,
+.fa-file-pdf-o,
+.fa-file,
+.fa-link {
+    text-align: center;
+}
+
+.anchor {
+    display: block;
+    position: relative;
+    padding-top: 100px;
+    margin-top: -100px;
+    z-index: -1;
+}
+
+table.calendar {
+    width: 100%;
+    height: 70vh;
+    table-layout: fixed;
+}
+
+.month {
+    height: 30px;
+}
+
+th.mon, 
+th.tue, 
+th.wed, 
+th.thu, 
+th.fri, 
+th.sat, 
+th.sun {
+    width: 14.28%;
+    height: 30px;
+}
+
+.date {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+div.alert-calendar {
+    padding: 5px;
+    margin-bottom: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+div.scrollable {
+    width: 100%;
+    height: 80%;
+    margin: 0;
+    padding: 0;
+    overflow: auto;    
+}
+
+.calendar-key {
+    padding-top: 0px;
+    padding-bottom: 0px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.row:before, .row:after {
+    width:0px; height: 0px;
+}
+
+#char_count, #char_count_2 {
+    margin-top: -30px;
+    margin-right: 5px;
+    position: relative;
+}
+
+/*------------ Rush Styles ------------ */
+
+div.rush-index-admin-container {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+div.rush-signin-inactive-alert {
+    margin-left: 15px;
+    margin-right: 15px;
+    margin-top: 15px;
+}
+
+div.rush-index-border-container {
+    margin-bottom: 30px;
+    padding: 15px;
+}
+
+input.rush-signin-search {
+    width: 100%
+}
