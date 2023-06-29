@@ -45,16 +45,17 @@ else:
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.localhost', '.elasticbeanstalk.com', 'greeklink-prod-env.us-east-1.elasticbeanstalk.com', '.greeklink-prod-env.us-east-1.elasticbeanstalk.com', 'greek-rho.com', '.greek-rho.com', '172.31.88.161', 'awseb-awseb-1xs69vwf6dk11-1836811465.us-east-1.elb.amazonaws.com', 'awseb-AWSEB-18Y3IQZOB8OVQ-1983300930.us-east-1.elb.amazonaws.com']
 
 # gets health check IP address on elastic beanstalk and allows it
-import requests
-EC2_PRIVATE_IP = None
-try:
-    TOKEN = requests.put('http://169.254.169.254/latest/api/token', headers={'X-aws-ec2-metadata-token-ttl-seconds': '21600'}).text
-    EC2_PRIVATE_IP = requests.get('http://169.254.169.254/latest/meta-data/local-ipv4', timeout=0.1, headers={'X-aws-ec2-metadata-token': TOKEN}).text
-except requests.exceptions.RequestException:
-    pass
+if ENV == 'production':
+    import requests
+    EC2_PRIVATE_IP = None
+    try:
+        TOKEN = requests.put('http://169.254.169.254/latest/api/token', headers={'X-aws-ec2-metadata-token-ttl-seconds': '21600'}).text
+        EC2_PRIVATE_IP = requests.get('http://169.254.169.254/latest/meta-data/local-ipv4', timeout=0.1, headers={'X-aws-ec2-metadata-token': TOKEN}).text
+    except requests.exceptions.RequestException:
+        pass
 
-if EC2_PRIVATE_IP:
-    ALLOWED_HOSTS.append(EC2_PRIVATE_IP)
+    if EC2_PRIVATE_IP:
+        ALLOWED_HOSTS.append(EC2_PRIVATE_IP)
 
 # Application definition
 SHARED_APPS = (
@@ -139,7 +140,6 @@ WSGI_APPLICATION = 'greeklink_core.wsgi.application'
 
 # aws postgres database in production with multitenant support
 if 'RDS_DB_NAME' in os.environ:
-    print("RDS_DB_NAME in os.environ, using RDS")
     DATABASES = {
         'default': {
             'ENGINE': 'tenant_schemas.postgresql_backend',
@@ -164,7 +164,6 @@ elif os.environ.get('GITHUB_WORKFLOW'):
     }
 # locally  
 else:
-    print("RDS_DB_NAME not in os.environ, using local postgres")
     DATABASES = {
         'default': {
             'ENGINE': 'tenant_schemas.postgresql_backend',
