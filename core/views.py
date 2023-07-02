@@ -83,11 +83,18 @@ class CustomLoginView(LoginView):
             return super(CustomLoginView, self).post(request, *args, **kwargs)
         else:
             try:
+                protocol = request.build_absolute_uri('/').split(':')[0]
                 port = ':' + request.build_absolute_uri('/').split(':')[2]
             except IndexError:
+                protocol = 'https'
                 port = ''
-            redirect_tenant_url = request.POST.get('organization')
-            return HttpResponseRedirect("http://" + redirect_tenant_url + port)
+            form = OrganizationSelectForm(request.POST)
+            if form.is_valid():
+                redirect_tenant_url = form.cleaned_data['organization']
+                return HttpResponseRedirect(protocol + "://" + redirect_tenant_url + port)
+            else:
+                print(form.errors)
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 # index page
 @login_required

@@ -45,12 +45,19 @@ class CustomSelect(Select):
         return option
 
 class OrganizationSelectForm(forms.Form):
+    
     def __init__(self, *args, **kwargs):
         super(OrganizationSelectForm, self).__init__(*args, **kwargs)
         self.ORG_CHOICES = [('', 'Click to select organization')]
         for org in Client.objects.all().exclude(name='public').exclude(name='health'):
-            self.ORG_CHOICES.append((org.domain_url, org.name))
+                self.ORG_CHOICES.append((org.domain_url, org.name))
         self.fields['organization'].choices = self.ORG_CHOICES
+    
+    def is_valid(self):
+        if self.data['organization'] not in [i[0] for i in self.ORG_CHOICES]:
+            print(f'{self.data["organization"]} not in {[i[0] for i in self.ORG_CHOICES]}')
+            return False
+        return super(OrganizationSelectForm, self).is_valid()
 
     organization = forms.ChoiceField(label="Select your organization",
         widget=CustomSelect(attrs={'placeholder': 'Select your organization', 'class': 'form-control rounded'}))

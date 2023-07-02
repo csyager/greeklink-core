@@ -42,7 +42,19 @@ else:
     DEBUG = False
 
 # for health checks:  Application Load Balancer DNS needs to be allowed here
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.localhost', '.elasticbeanstalk.com', 'greeklink-prod-env.us-east-1.elasticbeanstalk.com', '.greeklink-prod-env.us-east-1.elasticbeanstalk.com', 'greek-rho.com', '.greek-rho.com', '172.31.88.161', 'awseb-awseb-1xs69vwf6dk11-1836811465.us-east-1.elb.amazonaws.com', 'awseb-AWSEB-18Y3IQZOB8OVQ-1983300930.us-east-1.elb.amazonaws.com']
+ALLOWED_HOSTS = [
+    'localhost', 
+    '127.0.0.1', 
+    '.localhost', 
+    '.elasticbeanstalk.com', 
+    'greeklink-prod-env.us-east-1.elasticbeanstalk.com', 
+    '.greeklink-prod-env.us-east-1.elasticbeanstalk.com', 
+    'greek-rho.com', 
+    '.greek-rho.com', 
+    '172.31.88.161', 
+    'awseb-awseb-1xs69vwf6dk11-1836811465.us-east-1.elb.amazonaws.com', 
+    'awseb-AWSEB-18Y3IQZOB8OVQ-1983300930.us-east-1.elb.amazonaws.com'
+]
 
 # gets health check IP address on elastic beanstalk and allows it
 if ENV == 'production':
