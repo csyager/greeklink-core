@@ -51,7 +51,6 @@ ALLOWED_HOSTS = [
     '.greeklink-prod-env.us-east-1.elasticbeanstalk.com', 
     'greek-rho.com', 
     '.greek-rho.com', 
-    '172.31.88.161', 
     'awseb-awseb-1xs69vwf6dk11-1836811465.us-east-1.elb.amazonaws.com', 
     'awseb-AWSEB-18Y3IQZOB8OVQ-1983300930.us-east-1.elb.amazonaws.com'
 ]
