@@ -36,7 +36,7 @@ class AuthenticationTestCase(TenantTestCase):
 
     # gets template with signup form
     def test_signup_get_template(self):
-        path = reverse('signup')
+        path = reverse('signup_page')
         response = self.client.get(path)
         self.assertContains(response, "Register")
 
@@ -161,7 +161,7 @@ class SignupTestCase(TenantTestCase):
 
     # tests forgot_credentials view under a get method
     def test_forgot_credentials_get(self):
-        path = reverse('forgot_credentials')
+        path = reverse('forgot_credentials_page')
         response = self.client.get(path)
         self.assertContains(response, "Forgot Credentials?")
 
@@ -193,7 +193,7 @@ class SignupTestCase(TenantTestCase):
     def test_reset_password_view_get(self):
         user = User.objects.create(username="test", email="test@test.com")
         token = account_activation_token.make_token(user)
-        path = reverse('reset_password', kwargs=dict(user_id=user.pk, token=token))
+        path = reverse('reset_password_page', kwargs=dict(user_id=user.pk, token=token))
         response = self.client.get(path)
         self.assertContains(response, "Reset Password")
 
@@ -215,7 +215,7 @@ class SignupTestCase(TenantTestCase):
     def test_reset_password_invalid_token(self):
         user = User.objects.create(username="test", email="test@test.com")
         token = '999-99999999999999999999'
-        path = reverse('reset_password', kwargs=dict(user_id=user.pk, token=token))
+        path = reverse('reset_password_page', kwargs=dict(user_id=user.pk, token=token))
         response = self.client.get(path)
         self.assertContains(response, "Invalid token!")
 

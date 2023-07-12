@@ -72,7 +72,7 @@ class UserAdmin(admin.ModelAdmin):
             truemessage = render_to_string('admin/invitation_email.html', {
                 'user': request.user.first_name + ' ' + request.user.last_name,
                 'organization': tenant_name,
-                'target': "https://" + request.tenant.domain_url + "/signup"
+                'target': "https://" + request.tenant.domain_url + "/signup_page"
             })
             recipient_count = 0
             for recipient in recipients.splitlines():

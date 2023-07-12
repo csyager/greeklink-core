@@ -143,39 +143,47 @@ def get_tenant_domain(request, domain_url):
         port = ''
     return domain_url + port
 
-# users signing up for site
-@require_http_methods(['GET', 'POST'])
-def signup(request):
+@require_GET
+def signup_page(request):
+    """ returns signup form in template """
     template = loader.get_template('core/signup.html')
     site_settings = getSettings()
     verification_key = site_settings.verification_key
-    if request.method == 'POST':
-        form = SignupForm(request.POST)
-        if form.is_valid() and request.POST.get('verification_key') == verification_key:
-            user = form.save(commit=False)
-            user.is_active = False
-            user.save()
-            current_site = request.tenant
-            mail_subject = 'Activate your Greek-Rho account.'
-            template2 = loader.get_template('core/verificationWait.html')
-            context = {
-                'settings': site_settings,
-                'user': user,
-            }
-
-            message = render_to_string('core/acc_active_email.html', {
-                'user': user,
-                'domain': get_tenant_domain(request, current_site.domain_url),
-                'uid': user.pk,
-                'token': account_activation_token.make_token(user),
-            })
-            to_email = form.cleaned_data.get('email')
-            send_mail('Activate your account', message, settings.VERIFY_EMAIL_USER, [to_email], fail_silently=False, auth_user=settings.VERIFY_EMAIL_USER)
-
-            return HttpResponse(template2.render(context, request))
-    else:
-        form = SignupForm()
+    form = SignupForm()
     return HttpResponse(template.render({'form': form}, request))
+
+
+@require_POST
+def signup(request):
+    """ signs a user up for the site """
+    template = loader.get_template('core/signup.html')
+    site_settings = getSettings()
+    verification_key = site_settings.verification_key
+    form = SignupForm(request.POST)
+    if form.is_valid() and request.POST.get('verification_key') == verification_key:
+        user = form.save(commit=False)
+        user.is_active = False
+        user.save()
+        current_site = request.tenant
+        mail_subject = 'Activate your Greek-Rho account.'
+        template2 = loader.get_template('core/verificationWait.html')
+        context = {
+            'settings': site_settings,
+            'user': user,
+        }
+
+        message = render_to_string('core/acc_active_email.html', {
+            'user': user,
+            'domain': get_tenant_domain(request, current_site.domain_url),
+            'uid': user.pk,
+            'token': account_activation_token.make_token(user),
+        })
+        to_email = form.cleaned_data.get('email')
+        send_mail('Activate your account', message, settings.VERIFY_EMAIL_USER, [to_email], fail_silently=False, auth_user=settings.VERIFY_EMAIL_USER)
+
+        return HttpResponse(template2.render(context, request))
+    else:
+        return HttpResponse(template.render({'form': form}, request))
 
 @require_GET
 def resend_verification_email(request, user_id):
@@ -222,72 +230,74 @@ def activate(request, user_id, token):
     else:
         return HttpResponse('Activation link is invalid!')
 
+@require_GET
+def forgot_credentials_page(request):
+    template = loader.get_template('core/forgot_credentials.html')
+    context = {
+        'settings': getSettings(),
+        'form': ForgotCredentialsForm(),
+    }
+    return HttpResponse(template.render(context, request))
+
 # forgot credentials page
-@require_http_methods(['GET', 'POST'])
+@require_POST
 def forgot_credentials(request):
-    if request.method == 'POST':
-        form = ForgotCredentialsForm(request.POST)
-        if form.is_valid():
-            email = form.cleaned_data.get('email')
-            try:
-                user = User.objects.get(email=email)
-            except User.MultipleObjectsReturned:
-                messages.error(request, "Multiple accounts exist with the same email address.  Contact your site administrator for assistance.")
-                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-            except User.DoesNotExist:
-                messages.error(request, "User with this email does not exist.")
-                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-            mail_subject = "Reset your password"
-            message = render_to_string('core/reset_credentials_email.html', {
-                'user': user,
-                'domain': get_tenant_domain(request, request.tenant.domain_url),
-                'uid': user.pk,
-                'token': account_activation_token.make_token(user),
-            })
-            send_mail(mail_subject, message, settings.VERIFY_EMAIL_USER, [email], fail_silently=False, auth_user=settings.VERIFY_EMAIL_USER)
-            messages.success(request, "Email with password reset link has been sent.")
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    form = ForgotCredentialsForm(request.POST)
+    if form.is_valid():
+        email = form.cleaned_data.get('email')
+        try:
+            user = User.objects.get(email=email)
+        except User.MultipleObjectsReturned:
+            messages.error(request, "Multiple accounts exist with the same email address.  Contact your site administrator for assistance.")
+            return HttpResponseRedirect(reverse('forgot_credentials_page'))
+        except User.DoesNotExist:
+            messages.error(request, "User with this email does not exist.")
+            return HttpResponseRedirect(reverse('forgot_credentials_page'))
+        mail_subject = "Reset your password"
+        message = render_to_string('core/reset_credentials_email.html', {
+            'user': user,
+            'domain': get_tenant_domain(request, request.tenant.domain_url),
+            'uid': user.pk,
+            'token': account_activation_token.make_token(user),
+        })
+        send_mail(mail_subject, message, settings.VERIFY_EMAIL_USER, [email], fail_silently=False, auth_user=settings.VERIFY_EMAIL_USER)
+        messages.success(request, "Email with password reset link has been sent.")
 
-    else:    
-        template = loader.get_template('core/forgot_credentials.html')
-        context = {
-            'settings': getSettings(),
-            'form': ForgotCredentialsForm(),
-        }
-        return HttpResponse(template.render(context, request))
+    return HttpResponseRedirect(reverse('forgot_credentials_page'))
 
-
-@require_http_methods(['GET', 'POST'])
-def reset_password(request, user_id, token):
+@require_GET
+def reset_password_page(request, user_id, token):
     user = User.objects.get(pk=user_id)
-    if request.method == 'POST':
-        form = SetPasswordForm(request.POST)
-        if form.is_valid():
-            password1 = form.cleaned_data.get('new_password1')
-            password2 = form.cleaned_data.get('new_password2')
-            if password1 == password2:
-                user.set_password(password1)
-                user.save()
-                template = loader.get_template('core/reset_password_success.html')
-                context = {
-                    'settings': getSettings()
-                }
-                return HttpResponse(template.render(context, request))
-        else:   # fields did not match
-            for field in form:
-                for error in field.errors:
-                    messages.error(request, error)
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-    elif account_activation_token.check_token(user, token):
+    if account_activation_token.check_token(user, token):
         template = loader.get_template('core/reset_password.html')
         context = {
             'settings': getSettings(),
             'form': SetPasswordForm()   # pylint: disable=no-value-for-parameter
         }
         return HttpResponse(template.render(context, request))
-    
     else:
         return HttpResponse("Invalid token!")
+
+@require_POST
+def reset_password(request, user_id, token):
+    user = User.objects.get(pk=user_id)
+    form = SetPasswordForm(request.POST)
+    if form.is_valid():
+        password1 = form.cleaned_data.get('new_password1')
+        password2 = form.cleaned_data.get('new_password2')
+        if password1 == password2:
+            user.set_password(password1)
+            user.save()
+            template = loader.get_template('core/reset_password_success.html')
+            context = {
+                'settings': getSettings()
+            }
+            return HttpResponse(template.render(context, request))
+    else:   # fields did not match
+        for field in form:
+            for error in field.errors:
+                messages.error(request, error)
+        return HttpResponseRedirect(reverse('reset_password_page', kwargs={'user_id': user.pk, 'token': token}))
 
 # logs users out of the system
 @require_GET
@@ -861,42 +871,43 @@ def add_announcement(request):
         messages.error(request, error_string)
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-@require_http_methods(['GET', 'POST'])
-def support_request(request):
+@require_GET
+def support_request_page(request):
     context = {
-            'settings': getSettings(),
-            'supportform': SupportForm(),
-        }
-    if request.method == 'GET':
-        template = loader.get_template('core/support.html')
-        
-        return HttpResponse(template.render(context, request))
-    else:
-        supportform = SupportForm(request.POST)
-        if supportform.is_valid():
-            subject = supportform.cleaned_data['subject']
-            from_email = supportform.cleaned_data['from_email']
-            message = supportform.cleaned_data['message']
-
-            truemessage = render_to_string('core/support_email.html', {
-                'from_email': from_email,
-                'message': message,
-            })
-
-            template2 = loader.get_template('core/supportConfirmation.html')
-            
-            try:
-                send_mail(subject, truemessage, settings.SUPPORT_EMAIL_USER, ['Greeklink@virginia.edu'], auth_user=settings.SUPPORT_EMAIL_USER)
-            except BadHeaderError:
-                return HttpResponse('Invalid header found.')
-            return HttpResponse(template2.render(context, request))
-        else:
-            template = loader.get_template('core/support.html')
-            context = {
-                'settings': getSettings(),
-                'supportform': supportform
-            }
+        'settings': getSettings(),
+        'supportform': SupportForm(),
+    }
+    template = loader.get_template('core/support.html')
     return HttpResponse(template.render(context, request))
+
+
+@require_POST
+def support_request(request):
+    supportform = SupportForm(request.POST)
+    if supportform.is_valid():
+        subject = supportform.cleaned_data['subject']
+        from_email = supportform.cleaned_data['from_email']
+        message = supportform.cleaned_data['message']
+
+        truemessage = render_to_string('core/support_email.html', {
+            'from_email': from_email,
+            'message': message,
+        })
+
+        template2 = loader.get_template('core/supportConfirmation.html')
+        
+        try:
+            send_mail(subject, truemessage, settings.SUPPORT_EMAIL_USER, ['Greeklink@virginia.edu'], auth_user=settings.SUPPORT_EMAIL_USER)
+        except BadHeaderError:
+            return HttpResponse('Invalid header found.')
+        return HttpResponse(template2.render(context, request))
+    else:
+        template = loader.get_template('core/support.html')
+        context = {
+            'settings': getSettings(),
+            'supportform': supportform
+        }
+        return HttpResponse(template.render(context, request))
 
 #announcements page
 @require_GET
