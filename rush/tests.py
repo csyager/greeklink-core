@@ -23,7 +23,7 @@ class RusheeTestCase(TenantTestCase):
         self.rushee.email = "test@test.com"
         self.rushee.save()
         path = reverse('rush:rushee', kwargs=dict(num=self.rushee.pk))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, '<td>test</td>')
         self.assertContains(response, '<td>test@test.com</td>')
 
@@ -31,7 +31,7 @@ class RusheeTestCase(TenantTestCase):
         """ tests that comments appear in template """
         Comment.objects.create(name="first last", body="test comment", rushee=self.rushee)
         path = reverse('rush:rushee', kwargs=dict(num=self.rushee.pk))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, 'first last')
         self.assertContains(response, 'test comment')
 
@@ -60,21 +60,21 @@ class RusheeTestCase(TenantTestCase):
         comment = Comment.objects.create(name="first last", body="test comment", rushee=self.rushee)
         path = reverse('rush:remove_comment', kwargs=dict(comment_id=comment.pk))
         referer = reverse('rush:rushee', kwargs=dict(num=self.rushee.pk))
-        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        response = self.client.get(path, HTTP_REFERER=referer, follow=True)
         self.assertNotContains(response, 'test comment')
 
     def test_endorse(self):
         """ tests endorse function """
         path = reverse('rush:endorse', kwargs=dict(rushee_id=self.rushee.pk))
         referer = reverse('rush:rushee', kwargs=dict(num=self.rushee.pk))
-        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        response = self.client.get(path, HTTP_REFERER=referer, follow=True)
         self.assertContains(response, "You have <b>endorsed</b> this rushee")
 
     def test_oppose(self):
         """ tests oppose function """
         path = reverse('rush:oppose', kwargs=dict(rushee_id=self.rushee.pk))
         referer = reverse('rush:rushee', kwargs=dict(num=self.rushee.pk))
-        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        response = self.client.get(path, HTTP_REFERER=referer, follow=True)
         self.assertContains(response, "You have <b>opposed</b> this rushee")
 
     def test_clear_endorsements(self):
@@ -82,7 +82,7 @@ class RusheeTestCase(TenantTestCase):
         self.rushee.endorsements.add(self.u)
         path = reverse('rush:clear_endorsement', kwargs=dict(rushee_id=self.rushee.pk))
         referer = reverse('rush:rushee', kwargs=dict(num=self.rushee.pk))
-        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        response = self.client.get(path, HTTP_REFERER=referer, follow=True)
         self.assertNotContains(response, "You have <b>endorsed</b> this rushee")
 
 
@@ -118,7 +118,7 @@ class RusheeFilterTestCase(TenantTestCase):
     def test_next_rushee_button_no_filter(self):
         """ tests next button when the filter is not set """
         path = reverse('rush:rushee', kwargs=dict(num=self.r1.pk))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, '<a href="/rush/rushee' + str(self.r2.pk) + '" id="next-rushee"')
     
     def test_next_rushee_filter(self):
@@ -127,13 +127,13 @@ class RusheeFilterTestCase(TenantTestCase):
         session['rushee_filter'] = dict(name='test1')
         session.save()
         path = reverse('rush:rushee', kwargs=dict(num=self.r1.pk))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertNotContains(response, '<a href="/rush/rushee' + str(self.r2.pk) + '" id="next-rushee"')
 
     def test_prev_rushee_button_no_filter(self):
         """ tests previous button when filter is not set """
         path = reverse('rush:rushee', kwargs=dict(num=self.r2.pk))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, '<a href="/rush/rushee' + str(self.r1.pk) + '" id="prev-rushee"')
 
     def test_prev_rushee_filter(self):
@@ -142,7 +142,7 @@ class RusheeFilterTestCase(TenantTestCase):
         session['rushee_filter'] = dict(name='test2')
         session.save()
         path = reverse('rush:rushee', kwargs=dict(num=self.r2.pk))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertNotContains(response, '<a href="/rush/rushee' + str(self.r1.pk) + '" id="prev-rushee"')
 
     def test_cut_filter_on_next(self):
@@ -153,7 +153,7 @@ class RusheeFilterTestCase(TenantTestCase):
         session['rushee_filter'] = dict(cut=True)
         session.save()
         path = reverse('rush:rushee', kwargs=dict(num=self.r1.pk))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, '<a href="/rush/rushee' + str(self.r2.pk) + '" id="next-rushee"')
 
     def test_cut_filter_on_prev(self):
@@ -164,7 +164,7 @@ class RusheeFilterTestCase(TenantTestCase):
         session['rushee_filter'] = dict(cut=True)
         session.save()
         path = reverse('rush:rushee', kwargs=dict(num=self.r2.pk))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, '<a href="/rush/rushee' + str(self.r1.pk) + '" id="prev-rushee"')
 
     def test_cut_filter_off_next(self):
@@ -172,7 +172,7 @@ class RusheeFilterTestCase(TenantTestCase):
         self.r2.cut = True
         self.r2.save()
         path = reverse('rush:rushee', kwargs=dict(num=self.r1.pk))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertNotContains(response, '<a href="/rush/rushee' + str(self.r2.pk) + '" id="next-rushee"')
 
     def test_cut_filter_off_prev(self):
@@ -180,7 +180,7 @@ class RusheeFilterTestCase(TenantTestCase):
         self.r1.cut = True
         self.r1.save()
         path = reverse('rush:rushee', kwargs=dict(num=self.r2.pk))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertNotContains(response, '<a href="/rush/rushee' + str(self.r1.pk) + '" id="prev-rushee"')
 
     def test_set_filter(self):
@@ -192,10 +192,11 @@ class RusheeFilterTestCase(TenantTestCase):
         session = self.client.session
         self.assertEqual(session['rushee_filter'], dict(name='test'))
 
-    def test_set_filter_get(self):
+    def test_set_filter_get_not_allowed(self):
+        """ tests that setting the filter with the get method is disallowed"""
         path = reverse('rush:filter_rushees')
         request = self.client.get(path)
-        self.assertEqual(request.status_code, 404)
+        self.assertEqual(request.status_code, 405)
 
     def test_set_filter_empty(self):
         """ tests setting filter with empty post """
@@ -221,7 +222,7 @@ class RusheeFilterTestCase(TenantTestCase):
         self.client.session['rushee_filter'] = dict(name='test')
         self.client.session.save()
         path = reverse('rush:clear_rushees_filter')
-        self.client.post(path)
+        self.client.get(path)
         try:
             filter = self.client.session['rushee_filter']
             self.fail("session['rushee_filter'] object should not exist")
@@ -286,33 +287,33 @@ class SigninTestCase(TenantTestCase):
     def test_signin_page_first_event(self):
         """ tests that the signin view redirects to the first event by default """
         path = reverse('rush:signin')
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, 'first_event')
 
     def test_signin_page_not_default_event(self):
         """ tests that the signin view directs to the correct event when parameter provided """
         path = reverse('rush:signin', kwargs=dict(event_id=self.event2.pk))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, 'second_event')
 
     def test_signin_page_new_rushees_allowed(self):
         """ tests that when new rushees are allowed in an event, signin page appears differently """
         path = reverse('rush:signin')
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, 'action="register')
         self.assertNotContains(response, 'Click on your name to sign in.')
 
     def test_signin_page_new_rushees_not_allowed(self):
         """ tests that when new rushees are not allowed in an event, signin page appears differently """
         path = reverse('rush:signin', kwargs=dict(event_id=self.event2.pk))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, 'Click on your name to sign in.')
         self.assertNotContains(response, 'action="register')
 
     def test_click_to_signin_link(self):
         """ tests that rushees can click to signin to events """
         path = reverse('rush:signin', kwargs=dict(event_id=self.event2.pk))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, "<tr onclick=\"window.location='/rush/attendance" + str(self.rushee.pk) + "/" + str(self.event2.pk) + "';")
 
     def test_attendance_view(self):
@@ -339,14 +340,14 @@ class EventsTestCase(TenantTestCase):
     def test_events_view(self):
         """ tests the view showing all rush events """
         path = reverse('rush:events')
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, '<a href="/rush/events/' + str(self.event1.pk))
         self.assertContains(response, '<a href="/rush/events/' + str(self.event2.pk))
 
     def test_single_event_view(self):
         """ tests the view showing a single event """
         path = reverse('rush:event', kwargs=dict(event_id=self.event1.pk))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, 'first_event')
 
     def test_event_attendance(self):
@@ -354,7 +355,7 @@ class EventsTestCase(TenantTestCase):
         self.event1.attendance.add(self.rushee1)
         self.event1.save()
         path = reverse('rush:event', kwargs=dict(event_id=self.event1.pk))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, "<tr onclick=\"window.location='/rush/rushee" + str(self.rushee1.pk))
 
     def test_create_event_new_rushees(self):
@@ -372,7 +373,7 @@ class EventsTestCase(TenantTestCase):
         event = RushEvent.objects.get(name='third_event')
         self.assertTrue(event)
         path = reverse('rush:signin', kwargs=dict(event_id=event.pk))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, 'action="register')
 
     def test_create_event_no_new_rushees(self):
@@ -390,19 +391,19 @@ class EventsTestCase(TenantTestCase):
         event = RushEvent.objects.get(name='third_event')
         self.assertTrue(event)
         path = reverse('rush:signin', kwargs=dict(event_id=event.pk))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, 'Click on your name to sign in.')
 
-    def test_create_event_get(self):
-        """ tests for 404 error when request method is not post """
+    def test_create_event_get_not_allowed(self):
+        """ tests for 405 error when request method is not post """
         path = reverse('rush:create_event')
         request = self.client.get(path)
-        self.assertEqual(request.status_code, 404)
+        self.assertEqual(request.status_code, 405)
 
     def test_remove_event(self):
         """ tests remove event view function """
         path = reverse('rush:remove_event', kwargs=dict(event_id=2))
-        request = self.client.post(path)
+        request = self.client.get(path)
         try:
             rushee = RushEvent.objects.get(pk=2)
             self.fail("Rushee matching query should not exist")
@@ -438,7 +439,7 @@ class CurrentRusheesTestCase(TenantTestCase):
     def test_current_rushees_template(self):
         """ tests that current rushees page displays with all rushees """
         path = reverse('rush:current_rushees')
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, "<tr onclick=\"window.location='rushee" + str(self.rushee1.pk))
         self.assertNotContains(response, "<tr onclick=\"window.location='rushee" + str(self.rushee2.pk))
         self.assertContains(response, "<tr onclick=\"window.location='rushee" + str(self.rushee3.pk))
@@ -449,7 +450,7 @@ class CurrentRusheesTestCase(TenantTestCase):
         session['rushee_filter'] = dict(name='first')
         session.save()
         path = reverse('rush:current_rushees')
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, "<tr onclick=\"window.location='rushee" + str(self.rushee1.pk))
         self.assertNotContains(response, "<tr onclick=\"window.location='rushee" + str(self.rushee2.pk))
         self.assertNotContains(response, "<tr onclick=\"window.location='rushee" + str(self.rushee3.pk))
@@ -460,7 +461,7 @@ class CurrentRusheesTestCase(TenantTestCase):
         session['rushee_filter'] = dict(cut=True)
         session.save()
         path = reverse('rush:current_rushees')
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, "<tr onclick=\"window.location='rushee" + str(self.rushee1.pk))
         self.assertContains(response, "<tr onclick=\"window.location='rushee" + str(self.rushee2.pk))
         self.assertContains(response, "<tr onclick=\"window.location='rushee" + str(self.rushee3.pk))
@@ -477,28 +478,28 @@ class VotingTestCase(TenantTestCase):
     def test_vote_function_y(self):
         referer = reverse('rush:rushee', kwargs=dict(num=self.rushee.pk))
         path = reverse('rush:vote', kwargs=dict(rushee_id=self.rushee.pk, value='y'))
-        self.client.post(path, HTTP_REFERER=referer, follow=True)
+        self.client.get(path, HTTP_REFERER=referer, follow=True)
         self.rushee.refresh_from_db()
         self.assertEqual(self.rushee.y, 1)
         
     def test_vote_function_n(self):
         referer = reverse('rush:rushee', kwargs=dict(num=self.rushee.pk))
         path = reverse('rush:vote', kwargs=dict(rushee_id=self.rushee.pk, value='n'))
-        self.client.post(path, HTTP_REFERER=referer, follow=True)
+        self.client.get(path, HTTP_REFERER=referer, follow=True)
         self.rushee.refresh_from_db()
         self.assertEqual(self.rushee.n, 1)
     
     def test_vote_function_a(self):
         referer = reverse('rush:rushee', kwargs=dict(num=self.rushee.pk))
         path = reverse('rush:vote', kwargs=dict(rushee_id=self.rushee.pk, value='a'))
-        self.client.post(path, HTTP_REFERER=referer, follow=True)
+        self.client.get(path, HTTP_REFERER=referer, follow=True)
         self.rushee.refresh_from_db()
         self.assertEqual(self.rushee.a, 1)
     
     def test_vote_function_b(self):
         referer = reverse('rush:rushee', kwargs=dict(num=self.rushee.pk))
         path = reverse('rush:vote', kwargs=dict(rushee_id=self.rushee.pk, value='b'))
-        self.client.post(path, HTTP_REFERER=referer, follow=True)
+        self.client.get(path, HTTP_REFERER=referer, follow=True)
         self.rushee.refresh_from_db()
         self.assertEqual(self.rushee.b, 1)
         self.assertTrue(self.rushee.blackball_list.get(username='test_user'))
@@ -508,12 +509,12 @@ class VotingTestCase(TenantTestCase):
         self.rushee.save()
         referer = reverse('rush:rushee', kwargs=dict(num=self.rushee.pk))
         path = reverse('rush:vote', kwargs=dict(rushee_id=self.rushee.pk, value='y'))
-        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        response = self.client.get(path, HTTP_REFERER=referer, follow=True)
         self.assertContains(response, "Vote was not cast, because voting is not open.  Voting must be opened by an admin before votes will be recorded.")
 
     def test_push_rushee(self):
         path = reverse('rush:push', kwargs=dict(rushee_id=self.rushee.pk))
-        self.client.post(path, follow=True)
+        self.client.get(path, follow=True)
         self.rushee.refresh_from_db()
         self.assertEqual(self.rushee.round, 2)
 
@@ -521,12 +522,12 @@ class VotingTestCase(TenantTestCase):
         """ tests pushing rushee when next rushee exists """
         Rushee.objects.create(name="test_rushee_2")
         path = reverse('rush:push', kwargs=dict(rushee_id=self.rushee.pk))
-        response = self.client.post(path, follow=True)
+        response = self.client.get(path, follow=True)
         self.assertContains(response, '<h1 class="display-4">test_rushee_2</h1>')
         
     def test_cut_rushee(self):
         path = reverse('rush:cut', kwargs=dict(rushee_id=self.rushee.pk))
-        self.client.post(path, follow=True)
+        self.client.get(path, follow=True)
         self.rushee.refresh_from_db()
         self.assertTrue(self.rushee.cut)
         
@@ -534,16 +535,16 @@ class VotingTestCase(TenantTestCase):
         """ tests cutting rushee when next rushee exists """
         Rushee.objects.create(name="test_rushee_2")
         path = reverse('rush:cut', kwargs=dict(rushee_id=self.rushee.pk))
-        response = self.client.post(path, follow=True)
+        response = self.client.get(path, follow=True)
         self.assertContains(response, '<h1 class="display-4">test_rushee_2</h1>')
 
     def test_uncut_rushee(self):
         """ tests uncutting rushee """
         path = reverse('rush:cut', kwargs=dict(rushee_id=self.rushee.pk))
-        self.client.post(path, follow=True)
+        self.client.get(path, follow=True)
         self.rushee.refresh_from_db()
         uncut_path = reverse('rush:uncut', kwargs=dict(rushee_id=self.rushee.pk))
-        self.client.post(uncut_path, follow=True)
+        self.client.get(uncut_path, follow=True)
         self.rushee.refresh_from_db()
         self.assertFalse(self.rushee.cut)
 
@@ -551,13 +552,13 @@ class VotingTestCase(TenantTestCase):
         self.rushee.voting_open = False
         self.rushee.save()
         path = reverse('rush:votepage', kwargs=dict(rushee_id=self.rushee.pk))
-        self.client.post(path, follow=True)
+        self.client.get(path, follow=True)
         self.rushee.refresh_from_db()
         self.assertTrue(self.rushee.voting_open)
         
     def test_results(self):
         path = reverse('rush:results', kwargs=dict(rushee_id=self.rushee.pk))
-        self.client.post(path)
+        self.client.get(path)
         self.rushee.refresh_from_db()
         self.assertFalse(self.rushee.voting_open)
         
@@ -566,7 +567,7 @@ class VotingTestCase(TenantTestCase):
         self.rushee.n = 1
         self.rushee.save()
         path = reverse('rush:reset', kwargs=dict(rushee_id=self.rushee.pk))
-        self.client.post(path)
+        self.client.get(path)
         self.rushee.refresh_from_db()
         self.assertEqual(self.rushee.y, 0)
         self.assertEqual(self.rushee.n, 0)

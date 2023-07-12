@@ -24,32 +24,32 @@ class CalendarTestCase(TenantTestCase):
         """ tests that the current month appears by default """
         today = datetime.today()
         path = reverse('cal:index')
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, today.month)
 
     def test_rush_event_appears(self):
         """ tests that rush events are appearing on calendar """
         path = "%s?month=7&year=2020" % reverse('cal:index')
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, '<a href="/rush/events/' + str(self.rush_event.pk))
 
     def test_social_event_appears(self):
         """ tests that social events are appearing on calendar """
         path = "%s?month=7&year=2020" % reverse('cal:index')
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, '<a href="/social_event' + str(self.social_event.pk))
 
     def test_chapter_event_appears(self):
         """ tests that chapter events are appearing on calendar """
         path = "%s?month=7&year=2020" % reverse('cal:index')
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, 'chapter_test')
 
     def test_chapter_event_recurrence(self):
         """ tests that chapter events are recurring properly """
         event = ChapterEvent.objects.create_chapter_event(name="recurrence_test", date=datetime.strptime("2020-07-20", "%Y-%m-%d").date(), time=datetime.now(), is_public=False, location="test", recurring='Daily', end_date=datetime.strptime("2020-07-21", "%Y-%m-%d").date())
         path = "%s?month=7&year=2020" % reverse('cal:index')
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, 'recurrence_test', count=6)   # 2 events on calendar, 2 modal titles, 2 in modal details
 
     def test_month_overlap(self):
@@ -126,7 +126,7 @@ class CalendarTestCase(TenantTestCase):
         path = reverse('cal:create_chapter_event')
         referer = "%s?month=7&year=2020" % reverse('cal:index')
         response = self.client.get(path, HTTP_REFERER=referer, follow=True)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 405)
 
 
 class DeleteChapterEventsTestCase(TenantTestCase):
@@ -144,7 +144,7 @@ class DeleteChapterEventsTestCase(TenantTestCase):
         """ tests deleting single event """
         path = reverse('cal:delete_chapter_event', kwargs=dict(event_id=self.singular.pk))
         referer = "%s?month=7&year=2020" % reverse('cal:index')
-        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        response = self.client.get(path, HTTP_REFERER=referer, follow=True)
         self.assertNotContains(response, 'singular event')
         try:
             ChapterEvent.objects.get(id=self.singular.pk)
@@ -156,7 +156,7 @@ class DeleteChapterEventsTestCase(TenantTestCase):
         """ tests deleting multiple events recursively by deleting first """
         path = reverse('cal:delete_chapter_event_recursive', kwargs=dict(event_id=self.recurring.pk))
         referer = "%s?month=7&year=2020" % reverse('cal:index')
-        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        response = self.client.get(path, HTTP_REFERER=referer, follow=True)
         self.assertNotContains(response, 'recurring event')
         try:
             ChapterEvent.objects.get(name='recurring event')
@@ -169,7 +169,7 @@ class DeleteChapterEventsTestCase(TenantTestCase):
         event = ChapterEvent.objects.filter(name="recurring event")[1]
         path = reverse('cal:delete_chapter_event_recursive', kwargs=dict(event_id=event.pk))
         referer = "%s?month=7&year=2020" % reverse('cal:index')
-        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        response = self.client.get(path, HTTP_REFERER=referer, follow=True)
         self.assertNotContains(response, 'recurring event')
         try:
             ChapterEvent.objects.get(name='recurring event')
@@ -182,10 +182,10 @@ class DeleteChapterEventsTestCase(TenantTestCase):
         event = ChapterEvent.objects.filter(name="recurring event")[0]
         path = reverse('cal:delete_chapter_event', kwargs=dict(event_id=event.pk))
         referer = "%s?month=7&year=2020" % reverse('cal:index')
-        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        response = self.client.get(path, HTTP_REFERER=referer, follow=True)
         new_first = ChapterEvent.objects.filter(name="recurring event")[0]
         path = reverse('cal:delete_chapter_event_recursive', kwargs=dict(event_id=new_first.pk))
-        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        response = self.client.get(path, HTTP_REFERER=referer, follow=True)
         self.assertNotContains(response, 'recurring event')
         try:
             ChapterEvent.objects.get(name='recurring event')
@@ -286,4 +286,4 @@ class EditChapterEventTestCase(TenantTestCase):
         path = reverse('cal:edit_chapter_event', kwargs=dict(event_id=self.singular.pk))
         referer = "%s?month=7&year=2020" % reverse('cal:index')
         response = self.client.get(path, HTTP_REFERER=referer, follow=True)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 405)

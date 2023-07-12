@@ -74,6 +74,7 @@ def index(request):
     return HttpResponse(template.render(context, request))
 
 @login_required
+@require_GET
 def rushee(request, num):
     """ rushee profile page
         num -- primary key of the rushee being viewed
@@ -168,7 +169,8 @@ def rushee(request, num):
     return HttpResponse(template.render(context, request))
 
 
-# adds a rushee to the database when they first sign in
+@login_required
+@require_POST
 def register(request, event_id):
     """ adds a rushee to the database when they first sign in
         event_id -- primary key of event that rushee is registering in
@@ -222,7 +224,8 @@ def register(request, event_id):
         return HttpResponse(form.errors.as_data())
 
 
-# for rushees signing into events
+@login_required
+@require_GET
 def signin(request, event_id=-1):
     """ page for rushees signing into events when they are already registered
         event_id -- if passed in URL represents the event being signed into
@@ -252,8 +255,8 @@ def signin(request, event_id=-1):
     return HttpResponse(template.render(context, request))
 
 
-# is submitted when a rushee signs into an event
 @login_required
+@require_POST
 def attendance(request, rushee_id, event_id):
     """ update database with attendance when a rushee signs into an event
         rushee_id -- primary key of rushee
@@ -275,6 +278,7 @@ def attendance(request, rushee_id, event_id):
 
 
 @login_required
+@require_GET
 def events(request):
     """ page showing all Rush Events """
     template = loader.get_template('rush/events.html')
@@ -297,6 +301,7 @@ def events(request):
     return HttpResponse(template.render(context, request))
 
 @login_required
+@require_GET
 def event(request, event_id):
     """ page showing single rush event details
         event_id -- primary key of event
@@ -312,47 +317,44 @@ def event(request, event_id):
 
 
 @permission_required('rush.add_rushevent')
+@require_POST
 def create_event(request):
     """ creates a new RushEvent object """
-    if request.method == 'POST':
-        obj = RushEvent()
-        obj.name = request.POST.get('name')
-        obj.date = request.POST.get('date')
-        obj.time = request.POST.get('time')
-        obj.round = request.POST.get('round')
-        obj.location = request.POST.get('location')
-        if len(request.POST.getlist('new_rushees')) != 0:
-            obj.new_rushees_allowed = True
-        else:
-            obj.new_rushees_allowed = False
-        obj.save()
-
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    obj = RushEvent()
+    obj.name = request.POST.get('name')
+    obj.date = request.POST.get('date')
+    obj.time = request.POST.get('time')
+    obj.round = request.POST.get('round')
+    obj.location = request.POST.get('location')
+    if len(request.POST.getlist('new_rushees')) != 0:
+        obj.new_rushees_allowed = True
     else:
-        raise Http404
+        obj.new_rushees_allowed = False
+    obj.save()
+
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @permission_required('rush.edit_rushevent')
+@require_POST
 def edit_event(request, event_id):
-    if request.method == 'POST':
-        obj = RushEvent.objects.get(id=event_id)
-        obj.name = request.POST.get('name')
-        obj.date = request.POST.get('date')
-        obj.time = request.POST.get('time')
-        obj.round = request.POST.get('round')
-        obj.location = request.POST.get('location')
-        if len(request.POST.getlist('new_rushees')) != 0:
-            obj.new_rushees_allowed = True
-        else:
-            obj.new_rushees_allowed = False
-        
-        obj.save()
-        messages.success(request, "Rush event " + obj.name + " has been successfully edited.")
-
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    obj = RushEvent.objects.get(id=event_id)
+    obj.name = request.POST.get('name')
+    obj.date = request.POST.get('date')
+    obj.time = request.POST.get('time')
+    obj.round = request.POST.get('round')
+    obj.location = request.POST.get('location')
+    if len(request.POST.getlist('new_rushees')) != 0:
+        obj.new_rushees_allowed = True
     else:
-        raise Http404
+        obj.new_rushees_allowed = False
+    
+    obj.save()
+    messages.success(request, "Rush event " + obj.name + " has been successfully edited.")
+
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @permission_required('rush.delete_rushevent')
+@require_GET
 def remove_event(request, event_id):
     """ deletes a RushEvent object
         event_id -- primary key of event being deleted
@@ -362,6 +364,7 @@ def remove_event(request, event_id):
 
 
 @login_required
+@require_GET
 def current_rushees(request):
     """ page containing list of rushees who haven't been cut """
     template = loader.get_template('rush/current-rushees.html')
@@ -376,7 +379,7 @@ def current_rushees(request):
     return HttpResponse(template.render(context, request))
 
 @login_required
-# handles comment posting
+@require_POST
 def post_comment(request, rushee_id):
     """ creates a comment object attached to a rushee
         rushee_id -- primary key of rushee being commented on
@@ -395,6 +398,7 @@ def post_comment(request, rushee_id):
 
 
 @permission_required('rush.delete_comment')
+@require_GET
 def remove_comment(request, comment_id):
     """ deletes a comment, removing it from the rushee's page
         comment_id -- primary key of comment being delete
@@ -405,6 +409,7 @@ def remove_comment(request, comment_id):
 
 # endorsements
 @login_required
+@require_GET
 def endorse(request, rushee_id):
     """ adds a user to the rushee's list of endorsements and removes from opposition
         rushee_id -- primary key of rushee being endorsed
@@ -417,6 +422,7 @@ def endorse(request, rushee_id):
 
 # opposition
 @login_required
+@require_GET
 def oppose(request, rushee_id):
     """ adds a user to the rushee's list of opposition and removes from endorsements
         rushee_id -- primary key of rushee being opposed
@@ -429,6 +435,7 @@ def oppose(request, rushee_id):
 
 
 @login_required
+@require_GET
 def clear_endorsement(request, rushee_id):
     """ removes a user from both a rushee's endorsements and oppositions
         rushee_id -- primary key of rushee who's endorsements are being reset
@@ -448,6 +455,7 @@ def clear_endorsement(request, rushee_id):
 # vote_list = []
 
 @login_required
+@require_GET
 def vote(request, rushee_id, value):
     """ casts a vote for a rushee
         rushee_id -- primary key of rushee being voted on
@@ -484,6 +492,7 @@ def vote(request, rushee_id, value):
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @permission_required('rush.change_rushee')
+@require_GET
 def push_rushee(request, rushee_id):
     """ push a rushee from the current voting round to the next one
         rushee_id -- primary key of rushee being pushed
@@ -510,6 +519,7 @@ def push_rushee(request, rushee_id):
 
 
 @permission_required('rush.change_rushee')
+@require_GET
 def cut_rushee(request, rushee_id):
     """ cut a rushee, setting cut equal to the True
         rushee_id -- primary key of rushee being cut
@@ -534,7 +544,7 @@ def cut_rushee(request, rushee_id):
     return HttpResponseRedirect(next_url)
 
 @permission_required('rush.change_rushee')
-@require_POST
+@require_GET
 def uncut_rushee(request, rushee_id):
     """ uncut a rushee, setting cut equal to False
         rushee_id -- primary key of rushee being uncut
@@ -545,6 +555,7 @@ def uncut_rushee(request, rushee_id):
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @permission_required('rush.change_rushee')
+@require_GET
 def votepage(request, rushee_id):
     """ opens voting, displays a timer to show that voting is open, then redirects to results
         rushee_id -- primary key of rushee being voted on
@@ -563,6 +574,7 @@ def votepage(request, rushee_id):
     return HttpResponse(template.render(context, request))
 
 @permission_required('rush.view_rushee')
+@require_GET
 def results(request, rushee_id):
     """ shows results of voting on a rushee
         rushee_id -- primary key of rushee whose results are being viewed
@@ -579,6 +591,7 @@ def results(request, rushee_id):
     return HttpResponse(template.render(context, request))
 
 @permission_required('rush.change_rushee')
+@require_GET
 def reset(request, rushee_id):
     """ resets votes cast on a rushee
         rushee_id -- primary key of rushee whose votes are being reset
@@ -595,35 +608,34 @@ def reset(request, rushee_id):
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @login_required
+@require_POST
 def filter_rushees(request):
     """ filters the current rushees page and saves filter choices
         in session
     """
 
-    if request.method == 'POST':
-        form = FilterForm(request.POST)
-        site_settings = getSettings()
-        ROUND_CHOICES = [(0, settings.NO_FILTER_PLACEHOLDER)]
-        num_rounds = site_settings.num_rush_rounds
-        for i in range(1, num_rounds+1):
-            ROUND_CHOICES.append((i, i))
-        form.fields['round'].choices = ROUND_CHOICES
-        if form.is_valid():
-            filters = {}
-            for field in form.fields:
-                if form.cleaned_data[field] != '' and form.cleaned_data[field] != '0' and form.cleaned_data[field] != False:
-                    filters[field] = form.cleaned_data[field]
-            request.session['rushee_filter'] = filters
-            # if session variable is empty, just delete it
-            if not bool(request.session['rushee_filter']):
-                del request.session['rushee_filter']
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-        else:
-            return HttpResponse(form.errors)
+    form = FilterForm(request.POST)
+    site_settings = getSettings()
+    ROUND_CHOICES = [(0, settings.NO_FILTER_PLACEHOLDER)]
+    num_rounds = site_settings.num_rush_rounds
+    for i in range(1, num_rounds+1):
+        ROUND_CHOICES.append((i, i))
+    form.fields['round'].choices = ROUND_CHOICES
+    if form.is_valid():
+        filters = {}
+        for field in form.fields:
+            if form.cleaned_data[field] != '' and form.cleaned_data[field] != '0' and form.cleaned_data[field] != False:
+                filters[field] = form.cleaned_data[field]
+        request.session['rushee_filter'] = filters
+        # if session variable is empty, just delete it
+        if not bool(request.session['rushee_filter']):
+            del request.session['rushee_filter']
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
     else:
-        raise Http404
+        return HttpResponse(form.errors)
 
 @login_required
+@require_GET
 def clear_rushees_filter(request):
     """ clears the filter session variable """
     try:
@@ -633,6 +645,7 @@ def clear_rushees_filter(request):
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @permission_required('core.activate_rushsignin')
+@require_GET
 def toggle_rush_signin(request):
     """ activates rush signin """
     settings = getSettings()
