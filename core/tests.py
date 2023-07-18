@@ -31,12 +31,12 @@ class AuthenticationTestCase(TenantTestCase):
     # tests that logged in user can logout
     def test_logout_redirects_to_login(self):
         path = reverse('logout')
-        response = self.client.post(path, follow=True)
+        response = self.client.get(path, follow=True)
         self.assertContains(response, 'Login')
 
     # gets template with signup form
     def test_signup_get_template(self):
-        path = reverse('signup')
+        path = reverse('signup_page')
         response = self.client.get(path)
         self.assertContains(response, "Register")
 
@@ -45,7 +45,7 @@ class AuthenticationTestCase(TenantTestCase):
         user = User.objects.create(username="test", is_active="False")
         token = account_activation_token.make_token(user)
         path = reverse('activate', kwargs=dict(user_id=user.pk, token=token))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, "Your account has been verified!")
 
     # tests user that does not exist
@@ -54,7 +54,7 @@ class AuthenticationTestCase(TenantTestCase):
         token = account_activation_token.make_token(user)
         path = reverse('activate', kwargs=dict(user_id=user.pk, token=token))
         user.delete()
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, "Activation link is invalid")
 
     # tests invalid activation token
@@ -62,7 +62,7 @@ class AuthenticationTestCase(TenantTestCase):
         user = User.objects.create(username="test", is_active="False")
         token = "999-99999999999999999999"
         path = reverse('activate', kwargs=dict(user_id=user.pk, token=token))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, "Activation link is invalid")
 
     # tests logout
@@ -70,7 +70,7 @@ class AuthenticationTestCase(TenantTestCase):
         user = User.objects.create(username="test")
         self.client.force_login(user)
         path = reverse('logout')
-        response = self.client.post(path, follow=True)
+        response = self.client.get(path, follow=True)
         self.assertContains(response, "Login")
 
 
@@ -131,7 +131,7 @@ class SignupTestCase(TenantTestCase):
         user = User.objects.create(username="test", is_active="False")
         token = account_activation_token.make_token(user)
         path = reverse('activate', kwargs=dict(user_id=user.pk, token=token))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, "Your account has been verified!")
 
     # tests user that does not exist
@@ -140,7 +140,7 @@ class SignupTestCase(TenantTestCase):
         token = account_activation_token.make_token(user)
         path = reverse('activate', kwargs=dict(user_id=user.pk, token=token))
         user.delete()
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, "Activation link is invalid")
 
     # tests invalid activation token
@@ -148,7 +148,7 @@ class SignupTestCase(TenantTestCase):
         user = User.objects.create(username="test", is_active="False")
         token = "999-99999999999999999999"
         path = reverse('activate', kwargs=dict(user_id=user.pk, token=token))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, "Activation link is invalid")
 
     # tests logout
@@ -156,12 +156,12 @@ class SignupTestCase(TenantTestCase):
         user = User.objects.create(username="test")
         self.client.force_login(user)
         path = reverse('logout')
-        response = self.client.post(path, follow=True)
+        response = self.client.get(path, follow=True)
         self.assertContains(response, "Login")
 
     # tests forgot_credentials view under a get method
     def test_forgot_credentials_get(self):
-        path = reverse('forgot_credentials')
+        path = reverse('forgot_credentials_page')
         response = self.client.get(path)
         self.assertContains(response, "Forgot Credentials?")
 
@@ -193,7 +193,7 @@ class SignupTestCase(TenantTestCase):
     def test_reset_password_view_get(self):
         user = User.objects.create(username="test", email="test@test.com")
         token = account_activation_token.make_token(user)
-        path = reverse('reset_password', kwargs=dict(user_id=user.pk, token=token))
+        path = reverse('reset_password_page', kwargs=dict(user_id=user.pk, token=token))
         response = self.client.get(path)
         self.assertContains(response, "Reset Password")
 
@@ -215,7 +215,7 @@ class SignupTestCase(TenantTestCase):
     def test_reset_password_invalid_token(self):
         user = User.objects.create(username="test", email="test@test.com")
         token = '999-99999999999999999999'
-        path = reverse('reset_password', kwargs=dict(user_id=user.pk, token=token))
+        path = reverse('reset_password_page', kwargs=dict(user_id=user.pk, token=token))
         response = self.client.get(path)
         self.assertContains(response, "Invalid token!")
 
@@ -272,7 +272,7 @@ class ResourcesAdminTestCase(TenantTestCase):
         settings.calendar_embed = 'cal_link_here'
         settings.save()
         path = reverse('resources')
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, "Upload File")
         self.assertContains(response, "Add Link")
         self.assertContains(response, "modal")
@@ -312,7 +312,7 @@ class ResourcesAdminTestCase(TenantTestCase):
         self.assertContains(response, 'filename')
         file_object = ResourceFile.objects.get(name='filename')
         path = reverse('remove_file', kwargs=dict(file_id=file_object.pk))
-        response = self.client.post(path, follow=True)
+        response = self.client.get(path, follow=True)
         self.assertContains(response, 'filename', count=1)
 
     # tests the add calendar function
@@ -329,7 +329,7 @@ class ResourcesAdminTestCase(TenantTestCase):
         settings.calendar_embed = 'hyperlink'
         settings.save()
         path = reverse('removeCal')
-        response = self.client.post(path)
+        response = self.client.get(path)
         settings.refresh_from_db()
         self.assertEqual(settings.calendar_embed, '')
 
@@ -366,7 +366,7 @@ class ResourcesAdminTestCase(TenantTestCase):
         link_object = ResourceLink.objects.get(name='test')
         path = reverse('remove_link', kwargs=dict(link_id=link_object.pk))
         referer = reverse('resources')
-        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        response = self.client.get(path, HTTP_REFERER=referer, follow=True)
         self.assertFalse(ResourceLink.objects.all())
         self.assertFalse(re.findall("<h4.*test</h4", str(response.content)))
 
@@ -377,7 +377,7 @@ class ResourcesTestCaseRegular(TenantTestCase):
         self.regular = User.objects.create(username="regular")
         self.client.force_login(self.regular)
         self.path = reverse('resources')
-        self.response = self.client.post(self.path)
+        self.response = self.client.get(self.path)
         
     # tests that resources page exists with proper header
     def test_resources_page_exists(self):
@@ -402,13 +402,13 @@ class AnnouncementsTestCase(TenantTestCase):
     # tests that announcement is displayed on index
     def test_announcement_appears(self):
         path = reverse('index')
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, '<li class="list-group-item">')
 
     # tests that add announcement button appears
     def test_add_announcement_button_appears(self):
         path = reverse('index')
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, "Add Announcement")
 
     # tests that announcement form takes valid input
@@ -450,14 +450,14 @@ class SocialTestCase(TenantTestCase):
     # tests that the social page exists with the proper header
     def test_social_home_template(self):
         path = reverse('social')
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "<h1>Social</h1>")
 
     # tests that events in the database appear on the social page
     def test_event_on_home_page(self):
         path = reverse('social')
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertContains(response, '<a href="social_event' + str(self.event.pk))
     
     # tests the create event function
@@ -472,13 +472,13 @@ class SocialTestCase(TenantTestCase):
     # tests that the page for an individual social event exists
     def test_social_event_page_exists(self):
         path = reverse('social_event', kwargs=dict(event_id=self.event.pk))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertEqual(response.status_code, 200)
     
     # tests that the social event page populates with relevant data
     def test_social_event_page_populates(self):
         path = reverse('social_event', kwargs=dict(event_id=self.event.pk))
-        response = self.client.post(path)
+        response = self.client.get(path)
         content = str(response.content)
         self.assertTrue(re.findall('<h1.*test</h1>', content))
         self.assertContains(response, "Jan. 1, 2000, noon")
@@ -486,7 +486,7 @@ class SocialTestCase(TenantTestCase):
     # tests the remove_social_event function
     def test_remove_social_event(self):
         path = reverse('remove_social_event', kwargs=dict(event_id=self.event.pk))
-        response = self.client.post(path, HTTP_REFERER=reverse('social'), follow=True)
+        response = self.client.get(path, HTTP_REFERER=reverse('social'), follow=True)
         self.assertNotContains(response, "test_name -- Jan. 1, 2001, noon")
         self.assertRaises(SocialEvent.DoesNotExist, SocialEvent.objects.get, id=1)
 
@@ -538,12 +538,12 @@ class SocialEventTestCase(TenantTestCase):
     def test_remove_from_list(self):
         path = reverse('remove_from_list', kwargs=dict(event_id=self.event.pk, attendee_id=self.attendees[0].pk))
         referer = reverse('social_event', kwargs=dict(event_id=self.event.pk))
-        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        response = self.client.get(path, HTTP_REFERER=referer, follow=True)
         self.assertFalse(Attendee.objects.filter(name="attendee1"))
         self.assertFalse(re.findall("<td.*>attendee1</td>", str(response.content)))
         self.assertTrue(re.findall("<td.*>attendee2</td>", str(response.content)))
         path = reverse('remove_from_list', kwargs=dict(event_id=self.event.pk, attendee_id=self.attendees[1].pk))
-        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        response = self.client.get(path, HTTP_REFERER=referer, follow=True)
         self.assertFalse(Attendee.objects.filter(name="attendee2"))
         self.assertFalse(re.findall("<td.*>attendee2</td>", str(response.content)))
         self.assertTrue(re.findall("<td.*>attendee3</td>", str(response.content)))
@@ -552,7 +552,7 @@ class SocialEventTestCase(TenantTestCase):
     def test_clear_list(self):
         path = reverse('clear_list', kwargs=dict(event_id=self.event.pk))
         referer = reverse('social_event', kwargs=dict(event_id=self.event.pk))
-        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        response = self.client.get(path, HTTP_REFERER=referer, follow=True)
         content = str(response.content)
         self.assertFalse(re.findall("<td>attendee[1-3]</td>", content))
         self.assertFalse(self.event.list.all())
@@ -560,7 +560,7 @@ class SocialEventTestCase(TenantTestCase):
     # tests exporting a spreadsheet of attendees
     def test_export_xls(self):
         path = reverse('export_xls', kwargs=dict(event_id=self.event.pk))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.assertEqual(response.get('Content-Type'), 'application/ms-excel')
         self.assertEqual(response.get('Content-Disposition'), 'attachment; filename=' + str(self.event.pk) + '_attendance.xls')
 
@@ -676,12 +676,12 @@ class SocialEventTestCase(TenantTestCase):
     def test_toggle_party_mode_view(self):
         # event.party_mode is initially false, request should make it true
         path = reverse('toggle_party_mode', kwargs=dict(event_id=self.event.pk))
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.event.refresh_from_db()
         self.assertTrue(self.event.party_mode)
 
         # sending request again should make event.party_mode false again
-        response = self.client.post(path)
+        response = self.client.get(path)
         self.event.refresh_from_db()
         self.assertFalse(self.event.party_mode)
 
@@ -689,7 +689,7 @@ class SocialEventTestCase(TenantTestCase):
     def test_toggle_party_mode_template(self):
         # party mode should initially be false
         referer = reverse('social_event', kwargs=dict(event_id=self.event.pk))
-        response = self.client.post(referer)
+        response = self.client.get(referer)
 
         # when party mode is off, the label by the button should say off
         self.assertContains(response, "Party mode off")
@@ -702,7 +702,7 @@ class SocialEventTestCase(TenantTestCase):
 
         # set party mode to true
         path = reverse('toggle_party_mode', kwargs=dict(event_id=self.event.pk))
-        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        response = self.client.get(path, HTTP_REFERER=referer, follow=True)
         
         # when party mode is on, the label by the button should say on
         self.assertContains(response, "Party mode on")
@@ -827,11 +827,11 @@ class RosterTestCase(TenantTestCase):
         self.assertContains(response, "The following name was not added to the roster, because it is a duplicate:</b> test1")
         self.assertEqual(self.roster.members.count(), 2)
 
-    # tests edit roster with get request, should return 404
-    def test_edit_roster_get(self):
+    def test_edit_roster_get_not_allowed(self):
+        """ tests edit roster with get request, should return 405 """
         path = reverse('edit_roster', kwargs=dict(roster_id=1))
         response = self.client.get(path)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 405)
         
     # tests remove_from_roster function
     def test_remove_from_roster(self):
@@ -875,11 +875,11 @@ class RosterTestCase(TenantTestCase):
         self.assertContains(response, "The members of this roster were successfully added to the following event:</b> test")
         self.assertEqual(s.list.count(), 1)
 
-    # test add_roster_to_events with get request, should return 404
-    def test_add_roster_to_events_get(self):
+    def test_add_roster_to_events_get_not_allowed(self):
+        """ test add_roster_to_events with get request, should return 405"""
         path = reverse('add_roster_to_events', kwargs=dict(roster_id=1))
         response = self.client.get(path)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 405)
 
     # test save_as_roster view
     def test_save_as_roster(self):
@@ -896,12 +896,12 @@ class RosterTestCase(TenantTestCase):
         self.assertEqual(Roster.objects.get(title="saved_roster").members.count(), 1)
         self.assertTrue(Roster.objects.get(title="saved_roster").members.get(name="test"))
 
-    # test save_as_roster view with get method, which should return 404
-    def test_save_as_roster_get(self):
+    def test_save_as_roster_get_not_allowed(self):
+        """ test save_as_roster view with get method, which should return 405 """
         s = SocialEvent.objects.create()
         path = reverse('save_as_roster', kwargs=dict(event_id=s.pk))
         response = self.client.get(path)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 405)
     
     # tests create_roster function
     def test_create_roster(self):
@@ -929,16 +929,16 @@ class RosterTestCase(TenantTestCase):
         self.assertTrue(Roster.objects.get(title="created_roster"))
         self.assertEqual(Roster.objects.get(title="created_roster").members.count(), 2)
 
-    # tests create_roster function under get request, should be 404
-    def test_create_roster_get(self):
+    def test_create_roster_get_not_allowed(self):
+        """ tests create_roster function under get request, should be 405"""
         path = reverse('create_roster')
         response = self.client.get(path)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 405)
 
     # tests remove_roster function
     def test_remove_roster(self):
         path = reverse('remove_roster', kwargs=dict(roster_id=self.roster.pk))
         referer = reverse('social')
-        response = self.client.post(path, HTTP_REFERER=referer, follow=True)
+        response = self.client.get(path, HTTP_REFERER=referer, follow=True)
         self.assertNotContains(response, "test_roster</a>")
         self.assertFalse(Roster.objects.filter(id=1))

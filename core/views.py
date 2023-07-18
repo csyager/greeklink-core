@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, HttpResponseNotFound
 from django.template import loader, RequestContext
+from django.views.decorators.http import require_GET, require_POST, require_http_methods
 
 from .models import *
 from .forms import *
@@ -60,6 +61,7 @@ def getSettings():
     settings = settings[0]
     return settings
 
+@require_GET
 def health(request):
     """ for aws health checks, returns the instance id
     """
@@ -93,11 +95,11 @@ class CustomLoginView(LoginView):
                 redirect_tenant_url = form.cleaned_data['organization']
                 return HttpResponseRedirect(protocol + "://" + redirect_tenant_url + port)
             else:
-                print(form.errors)
                 return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 # index page
 @login_required
+@require_GET
 def index(request):
     template = loader.get_template('core/index.html')
     date_in_two_weeks = timezone.now() + timedelta(days=14)
@@ -117,7 +119,8 @@ def index(request):
     announcement_form = AnnouncementForm()
 
     #for pagination
-    paginator = Paginator(announcements, 5)                                               #this number changes items per page
+    #this number changes items per page
+    paginator = Paginator(announcements, 5)                                               
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     announcementscount = len(announcements)
@@ -141,39 +144,52 @@ def get_tenant_domain(request, domain_url):
         port = ''
     return domain_url + port
 
-# users signing up for site
+@require_GET
+def signup_page(request):
+    """ returns signup form in template """
+    template = loader.get_template('core/signup.html')
+    site_settings = getSettings()
+    form = SignupForm()
+    context = {
+        'settings': site_settings,
+        'form': form
+    }
+    return HttpResponse(template.render(context, request))
+
+
+@require_POST
 def signup(request):
+    """ signs a user up for the site """
     template = loader.get_template('core/signup.html')
     site_settings = getSettings()
     verification_key = site_settings.verification_key
-    if request.method == 'POST':
-        form = SignupForm(request.POST)
-        if form.is_valid() and request.POST.get('verification_key') == verification_key:
-            user = form.save(commit=False)
-            user.is_active = False
-            user.save()
-            current_site = request.tenant
-            mail_subject = 'Activate your Greek-Rho account.'
-            template2 = loader.get_template('core/verificationWait.html')
-            context = {
-                'settings': site_settings,
-                'user': user,
-            }
+    form = SignupForm(request.POST)
+    if form.is_valid() and request.POST.get('verification_key') == verification_key:
+        user = form.save(commit=False)
+        user.is_active = False
+        user.save()
+        current_site = request.tenant
+        mail_subject = 'Activate your Greek-Rho account.'
+        template2 = loader.get_template('core/verificationWait.html')
+        context = {
+            'settings': site_settings,
+            'user': user,
+        }
 
-            message = render_to_string('core/acc_active_email.html', {
-                'user': user,
-                'domain': get_tenant_domain(request, current_site.domain_url),
-                'uid': user.pk,
-                'token': account_activation_token.make_token(user),
-            })
-            to_email = form.cleaned_data.get('email')
-            send_mail('Activate your account', message, settings.VERIFY_EMAIL_USER, [to_email], fail_silently=False, auth_user=settings.VERIFY_EMAIL_USER)
+        message = render_to_string('core/acc_active_email.html', {
+            'user': user,
+            'domain': get_tenant_domain(request, current_site.domain_url),
+            'uid': user.pk,
+            'token': account_activation_token.make_token(user),
+        })
+        to_email = form.cleaned_data.get('email')
+        send_mail('Activate your account', message, settings.VERIFY_EMAIL_USER, [to_email], fail_silently=False, auth_user=settings.VERIFY_EMAIL_USER)
 
-            return HttpResponse(template2.render(context, request))
+        return HttpResponse(template2.render(context, request))
     else:
-        form = SignupForm()
-    return HttpResponse(template.render({'form': form}, request))
+        return HttpResponse(template.render({'form': form}, request))
 
+@require_GET
 def resend_verification_email(request, user_id):
     template = loader.get_template('core/verificationWait.html')
     user = User.objects.get(id=user_id)
@@ -198,6 +214,7 @@ def resend_verification_email(request, user_id):
 
 # users activating accounts
 
+@require_GET
 def activate(request, user_id, token):
     try:
         uid = user_id
@@ -217,72 +234,77 @@ def activate(request, user_id, token):
     else:
         return HttpResponse('Activation link is invalid!')
 
+@require_GET
+def forgot_credentials_page(request):
+    template = loader.get_template('core/forgot_credentials.html')
+    context = {
+        'settings': getSettings(),
+        'form': ForgotCredentialsForm(),
+    }
+    return HttpResponse(template.render(context, request))
+
 # forgot credentials page
+@require_POST
 def forgot_credentials(request):
-    if request.method == 'POST':
-        form = ForgotCredentialsForm(request.POST)
-        if form.is_valid():
-            email = form.cleaned_data.get('email')
-            try:
-                user = User.objects.get(email=email)
-            except User.MultipleObjectsReturned:
-                messages.error(request, "Multiple accounts exist with the same email address.  Contact your site administrator for assistance.")
-                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-            except User.DoesNotExist:
-                messages.error(request, "User with this email does not exist.")
-                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-            mail_subject = "Reset your password"
-            message = render_to_string('core/reset_credentials_email.html', {
-                'user': user,
-                'domain': get_tenant_domain(request, request.tenant.domain_url),
-                'uid': user.pk,
-                'token': account_activation_token.make_token(user),
-            })
-            send_mail(mail_subject, message, settings.VERIFY_EMAIL_USER, [email], fail_silently=False, auth_user=settings.VERIFY_EMAIL_USER)
-            messages.success(request, "Email with password reset link has been sent.")
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    form = ForgotCredentialsForm(request.POST)
+    if form.is_valid():
+        email = form.cleaned_data.get('email')
+        try:
+            user = User.objects.get(email=email)
+        except User.MultipleObjectsReturned:
+            messages.error(request, "Multiple accounts exist with the same email address.  Contact your site administrator for assistance.")
+            return HttpResponseRedirect(reverse('forgot_credentials_page'))
+        except User.DoesNotExist:
+            messages.error(request, "User with this email does not exist.")
+            return HttpResponseRedirect(reverse('forgot_credentials_page'))
+        mail_subject = "Reset your password"
+        message = render_to_string('core/reset_credentials_email.html', {
+            'user': user,
+            'domain': get_tenant_domain(request, request.tenant.domain_url),
+            'uid': user.pk,
+            'token': account_activation_token.make_token(user),
+        })
+        send_mail(mail_subject, message, settings.VERIFY_EMAIL_USER, [email], fail_silently=False, auth_user=settings.VERIFY_EMAIL_USER)
+        messages.success(request, "Email with password reset link has been sent.")
 
-    else:    
-        template = loader.get_template('core/forgot_credentials.html')
-        context = {
-            'settings': getSettings(),
-            'form': ForgotCredentialsForm(),
-        }
-        return HttpResponse(template.render(context, request))
+    return HttpResponseRedirect(reverse('forgot_credentials_page'))
 
-
-def reset_password(request, user_id, token):
+@require_GET
+def reset_password_page(request, user_id, token):
     user = User.objects.get(pk=user_id)
-    if request.method == 'POST':
-        form = SetPasswordForm(request.POST)
-        if form.is_valid():
-            password1 = form.cleaned_data.get('new_password1')
-            password2 = form.cleaned_data.get('new_password2')
-            if password1 == password2:
-                user.set_password(password1)
-                user.save()
-                template = loader.get_template('core/reset_password_success.html')
-                context = {
-                    'settings': getSettings()
-                }
-                return HttpResponse(template.render(context, request))
-        else:   # fields did not match
-            for field in form:
-                for error in field.errors:
-                    messages.error(request, error)
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-    elif account_activation_token.check_token(user, token):
+    if account_activation_token.check_token(user, token):
         template = loader.get_template('core/reset_password.html')
         context = {
             'settings': getSettings(),
             'form': SetPasswordForm()   # pylint: disable=no-value-for-parameter
         }
         return HttpResponse(template.render(context, request))
-    
     else:
         return HttpResponse("Invalid token!")
 
-# logs brothers out of the system
+@require_POST
+def reset_password(request, user_id, token):
+    user = User.objects.get(pk=user_id)
+    form = SetPasswordForm(request.POST)
+    if form.is_valid():
+        password1 = form.cleaned_data.get('new_password1')
+        password2 = form.cleaned_data.get('new_password2')
+        if password1 == password2:
+            user.set_password(password1)
+            user.save()
+            template = loader.get_template('core/reset_password_success.html')
+            context = {
+                'settings': getSettings()
+            }
+            return HttpResponse(template.render(context, request))
+    else:   # fields did not match
+        for field in form:
+            for error in field.errors:
+                messages.error(request, error)
+        return HttpResponseRedirect(reverse('reset_password_page', kwargs={'user_id': user.pk, 'token': token}))
+
+# logs users out of the system
+@require_GET
 def logout_user(request):
     logout(request)
     return HttpResponseRedirect('/login')
@@ -348,6 +370,7 @@ class SearchView(ListView):
 #------------------------------------------------------------------------------------------
 
 @login_required
+@require_GET
 def resources(request):
     files = ResourceFile.objects.all().order_by('id')
     links = ResourceLink.objects.all()
@@ -368,23 +391,24 @@ def resources(request):
     return HttpResponse(template.render(context, request))
 
 @permission_required('core.add_resourcefile')
+@require_POST
 def upload_file(request):
-    if request.method == 'POST':
-        form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            obj = ResourceFile()
-            obj.name = form.cleaned_data['name']
-            obj.description = form.cleaned_data['description']
-            obj.file = form.cleaned_data['file']
-            obj.extension = str(obj.file).split('.')[-1]
-            obj.save()
-            messages.success(request, "File " + obj.name + " has been successfully uploaded.")
-            return HttpResponseRedirect('resources')
-        else:
-            return HttpResponse(form.errors)
+    form = UploadFileForm(request.POST, request.FILES)
+    if form.is_valid():
+        obj = ResourceFile()
+        obj.name = form.cleaned_data['name']
+        obj.description = form.cleaned_data['description']
+        obj.file = form.cleaned_data['file']
+        obj.extension = str(obj.file).split('.')[-1]
+        obj.save()
+        messages.success(request, "File " + obj.name + " has been successfully uploaded.")
+        return HttpResponseRedirect('resources')
+    else:
+        return HttpResponse(form.errors)
 
 
 @permission_required('core.delete_resourcefile')
+@require_GET
 def remove_file(request, file_id):
     obj = ResourceFile.objects.get(id=file_id)
     name = obj.name
@@ -395,6 +419,7 @@ def remove_file(request, file_id):
 
 
 @permission_required('core.add_calendar')
+@require_POST
 def addCal(request):
     settings = getSettings()
     settings.calendar_embed = request.POST['cal_embed_link']
@@ -403,6 +428,7 @@ def addCal(request):
 
 
 @permission_required('core.delete_calendar')
+@require_GET
 def removeCal(request):
     settings = getSettings()
     settings.calendar_embed = ""
@@ -411,6 +437,7 @@ def removeCal(request):
 
 
 @login_required
+@require_GET
 def social(request):
      
     template = loader.get_template('core/social.html')
@@ -460,65 +487,67 @@ def social(request):
 
 
 @login_required
+@require_GET
 def update_social_tab_session(request):
     request.session['social_tab'] = request.GET.get('social_tab')
     return HttpResponse()
 
 
 @permission_required('core.add_socialevent')
+@require_POST
 def create_social_event(request):
-    if request.method == 'POST':
-        form = SocialEventForm(request.POST)
-        event = SocialEvent()
-        if form.is_valid():
-            event.name = form.cleaned_data['name']
-            event.date = form.cleaned_data['date']
-            event.time = form.cleaned_data['time']
-            event.location = form.cleaned_data['location']
-            if form.cleaned_data['public']:
-                event.is_public = True
-            else:
-                event.is_public = False
-            if form.cleaned_data['list_limit'] != '' and form.cleaned_data['list_limit'] != None:
-                event.list_limit = form.cleaned_data['list_limit']
-            else:
-                event.list_limit = -1
-            event.save()
-            messages.success(request, "Social event " + event.name + " has been successfully created.")
+    form = SocialEventForm(request.POST)
+    event = SocialEvent()
+    if form.is_valid():
+        event.name = form.cleaned_data['name']
+        event.date = form.cleaned_data['date']
+        event.time = form.cleaned_data['time']
+        event.location = form.cleaned_data['location']
+        if form.cleaned_data['public']:
+            event.is_public = True
         else:
-            errors = ""
-            for field in form:
-                for error in field.errors:
-                    errors += error
-            messages.error(request, "Social event could not be created, because of the following errors: ")
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+            event.is_public = False
+        if form.cleaned_data['list_limit'] != '' and form.cleaned_data['list_limit'] != None:
+            event.list_limit = form.cleaned_data['list_limit']
+        else:
+            event.list_limit = -1
+        event.save()
+        messages.success(request, "Social event " + event.name + " has been successfully created.")
+    else:
+        errors = ""
+        for field in form:
+            for error in field.errors:
+                errors += error
+        messages.error(request, "Social event could not be created, because of the following errors: ")
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @permission_required('core.change_socialevent')
+@require_POST
 def edit_social_event(request, event_id):
-    if request.method == 'POST':
-        obj = SocialEvent.objects.get(id=event_id)
-        obj.name = request.POST.get('name')
-        obj.date = request.POST.get('date')
-        obj.time = request.POST.get('time')
-        obj.location = request.POST.get('location')
-        if request.POST.get('public') == 'on':
-            obj.is_public = True
-        else:
-            obj.is_public = False
-        if request.POST.get('limit') != None:
-            if request.POST.get('limit') != '':
-                obj.list_limit = request.POST.get('limit')
-            else:
-                obj.list_limit = -1
+    obj = SocialEvent.objects.get(id=event_id)
+    obj.name = request.POST.get('name')
+    obj.date = request.POST.get('date')
+    obj.time = request.POST.get('time')
+    obj.location = request.POST.get('location')
+    if request.POST.get('public') == 'on':
+        obj.is_public = True
+    else:
+        obj.is_public = False
+    if request.POST.get('limit') != None:
+        if request.POST.get('limit') != '':
+            obj.list_limit = request.POST.get('limit')
         else:
             obj.list_limit = -1
-        obj.save()
-        messages.success(request, "Social event " + obj.name + " has been successfully edited.")
+    else:
+        obj.list_limit = -1
+    obj.save()
+    messages.success(request, "Social event " + obj.name + " has been successfully edited.")
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
 @login_required
+@require_GET
 def social_event(request, event_id):
     event = SocialEvent.objects.get(id=event_id)
     context = {
@@ -531,6 +560,7 @@ def social_event(request, event_id):
 
 
 @permission_required('core.delete_socialevent')
+@require_GET
 def remove_social_event(request, event_id):
     name = SocialEvent.objects.get(id=event_id).name
     try:
@@ -542,6 +572,7 @@ def remove_social_event(request, event_id):
 
 
 @login_required
+@require_GET
 def roster(request, roster_id):
     roster = Roster.objects.get(id=roster_id)
     events = SocialEvent.objects.all()
@@ -555,27 +586,26 @@ def roster(request, roster_id):
     return HttpResponse(template.render(context, request))
 
 @permission_required('core.change_roster')
+@require_POST
 def edit_roster(request, roster_id):
-    if request.method == 'POST':
-        roster = Roster.objects.get(id=roster_id)
-        updated_members = request.POST.get('updated_members')
-        roster.members.all().delete()
-        for line in updated_members.splitlines():
-            if line != "":
-                member = RosterMember()
-                member.name = line
-                member.roster = roster
-                try:
-                    with transaction.atomic():
-                        member.save()
-                except IntegrityError:
-                        messages.error(request, line)
-        roster.save()
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-    else:
-        raise Http404
+    roster = Roster.objects.get(id=roster_id)
+    updated_members = request.POST.get('updated_members')
+    roster.members.all().delete()
+    for line in updated_members.splitlines():
+        if line != "":
+            member = RosterMember()
+            member.name = line
+            member.roster = roster
+            try:
+                with transaction.atomic():
+                    member.save()
+            except IntegrityError:
+                    messages.error(request, line)
+    roster.save()
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @permission_required('core.change_roster')
+@require_GET
 def remove_from_roster(request, roster_id, member_id):
     roster = Roster.objects.get(id=roster_id)
     member = roster.members.get(pk=member_id)
@@ -586,39 +616,37 @@ def remove_from_roster(request, roster_id, member_id):
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @permission_required('core.change_roster')
+@require_POST
 def add_roster_to_events(request, roster_id):
-    if request.method == 'POST':
-        roster = Roster.objects.get(id=roster_id)
-        user = request.user.get_full_name()
-        events = request.POST.getlist('event_checkboxes')
-        for event in events:
-            event_obj = SocialEvent.objects.get(name=event)
-            for member in roster.members.all():
-                attendee = Attendee()
-                attendee.name = member.name
-                attendee.user = user
-                attendee.event = event_obj
-                try:
-                    with transaction.atomic():
-                        attendee.save()
-                except(IntegrityError):
-                    continue
-            messages.success(request, event)
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-
-    else:
-        raise Http404
-    
+    roster = Roster.objects.get(id=roster_id)
+    user = request.user.get_full_name()
+    events = request.POST.getlist('event_checkboxes')
+    for event in events:
+        event_obj = SocialEvent.objects.get(name=event)
+        for member in roster.members.all():
+            attendee = Attendee()
+            attendee.name = member.name
+            attendee.user = user
+            attendee.event = event_obj
+            try:
+                with transaction.atomic():
+                    attendee.save()
+            except(IntegrityError):
+                continue
+        messages.success(request, event)
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER')) 
 
 @permission_required('core.delete_announcement')
+@require_GET
 def remove_announcement(request, announcement_id):
     Announcement.objects.filter(id=announcement_id).delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @login_required
+@require_POST
 def add_to_list(request, event_id):
     event = SocialEvent.objects.get(id=event_id)
-    if request.method == 'POST' and not event.party_mode:
+    if not event.party_mode:
         multiple_names_value = request.POST.get('multiple_names')
         user = request.user.get_full_name()
         user_count = len(event.list.filter(user = user))
@@ -657,6 +685,7 @@ def add_to_list(request, event_id):
 
 
 @login_required
+@require_GET
 def remove_from_list(request, event_id, attendee_id):
     event = SocialEvent.objects.get(id=event_id)
     if not event.party_mode:
@@ -665,6 +694,7 @@ def remove_from_list(request, event_id, attendee_id):
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @login_required
+@require_GET
 def check_attendee(request):
     attendee_id = request.GET.get('attendee_id', None)
     attendee = Attendee.objects.get(id=attendee_id)
@@ -679,6 +709,7 @@ def check_attendee(request):
     return JsonResponse(data)
 
 @login_required
+@require_GET
 def refresh_attendees(request):
     event_id = int(request.GET.get('event_id', None))
     event = SocialEvent.objects.get(id=event_id)
@@ -688,6 +719,7 @@ def refresh_attendees(request):
     return JsonResponse(data)
 
 @permission_required('core.change_socialevent')
+@require_GET
 def toggle_party_mode(request, event_id):
     event = SocialEvent.objects.get(id=event_id)
     if(event.party_mode):
@@ -699,6 +731,7 @@ def toggle_party_mode(request, event_id):
 
 
 @permission_required('core.change_socialevent')
+@require_GET
 def clear_list(request, event_id):
     event = SocialEvent.objects.get(id=event_id)
     for attendee in event.list.all():
@@ -706,8 +739,8 @@ def clear_list(request, event_id):
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-
 @login_required
+@require_GET
 def export_xls(request, event_id):
     event = SocialEvent.objects.get(id=event_id)
     response = HttpResponse(content_type='application/ms-excel')
@@ -732,43 +765,38 @@ def export_xls(request, event_id):
     return response
 
 @permission_required('core.add_roster')
+@require_POST
 def save_as_roster(request, event_id):
-    if request.method == 'POST':
-        event = SocialEvent.objects.get(id=event_id)
-        roster_name = request.POST.get('roster_name')
-        roster = Roster.objects.create(title=roster_name)
-        for attendee in event.list.all():
-            name = attendee.name
-            member = RosterMember.objects.create(name=name, roster=roster)
-            member.save()
-        roster.save()
-        messages.success(request, "List successfully saved as roster: " + roster_name)
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-    
-    else:
-        raise Http404
-
+    event = SocialEvent.objects.get(id=event_id)
+    roster_name = request.POST.get('roster_name')
+    roster = Roster.objects.create(title=roster_name)
+    for attendee in event.list.all():
+        name = attendee.name
+        member = RosterMember.objects.create(name=name, roster=roster)
+        member.save()
+    roster.save()
+    messages.success(request, "List successfully saved as roster: " + roster_name)
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @permission_required('core.add_roster')
+@require_POST
 def create_roster(request):
-    if request.method == 'POST':
-        title = request.POST.get('title')
-        members = request.POST.get('members').splitlines()
-        roster = Roster.objects.create(title=title)
-        for member in members:
-            try:
-                with transaction.atomic():
-                    RosterMember.objects.create(name=member, roster=roster)
-            except IntegrityError:
-                continue
-        roster.save()
-        messages.success(request, "Roster " + title + " has been successfully created.")
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    title = request.POST.get('title')
+    members = request.POST.get('members').splitlines()
+    roster = Roster.objects.create(title=title)
+    for member in members:
+        try:
+            with transaction.atomic():
+                RosterMember.objects.create(name=member, roster=roster)
+        except IntegrityError:
+            continue
+    roster.save()
+    messages.success(request, "Roster " + title + " has been successfully created.")
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-    else:
-        return HttpResponseNotFound(request)
 
 @permission_required('core.delete_roster')
+@require_GET
 def remove_roster(request, roster_id):
     r = Roster.objects.get(pk=roster_id)
     name = r.title
@@ -778,6 +806,7 @@ def remove_roster(request, roster_id):
 
 
 @permission_required('core.delete_resourcelink')
+@require_GET
 def remove_link(request, link_id):
     link = ResourceLink.objects.get(id=link_id)
     name = link.name
@@ -787,102 +816,105 @@ def remove_link(request, link_id):
 
 
 @permission_required('core.add_resourcelink')
+@require_POST
 def add_link(request):
-    if request.method == 'POST':
-        form = LinkForm(request.POST)
-        if form.is_valid():
-            obj = ResourceLink()
-            obj.name = form.cleaned_data['name']
-            obj.description = form.cleaned_data['description']
-            obj.url = form.cleaned_data['url']
-            obj.save()
-            messages.success(request, "Link " + obj.name + " has been successfully added.")
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-        else:
-            return HttpResponse(form.errors)
+    form = LinkForm(request.POST)
+    if form.is_valid():
+        obj = ResourceLink()
+        obj.name = form.cleaned_data['name']
+        obj.description = form.cleaned_data['description']
+        obj.url = form.cleaned_data['url']
+        obj.save()
+        messages.success(request, "Link " + obj.name + " has been successfully added.")
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    else:
+        return HttpResponse(form.errors)
 
 
 @permission_required('core.add_announcement')
+@require_POST
 def add_announcement(request):
-    if request.method == 'POST':
-        form = AnnouncementForm(request.POST)
-        if form.is_valid():
-            obj = Announcement()
-            obj.title = form.cleaned_data['title']
-            obj.target = form.cleaned_data['target']
-            obj.user = request.user
-            obj.body = form.cleaned_data['body']
-            obj.save()
-            
-            if 'send_emailBoolean' in request.POST:
-                send_emailBoolean = request.POST['send_emailBoolean']
-            else:
-                send_emailBoolean = False
-            if send_emailBoolean:
-                
-                truemessage = render_to_string('core/announcement_email.html', {
-                    'user': request.user.first_name + request.user.last_name,
-                    'body': form.cleaned_data['body'],
-                    'target': form.cleaned_data['target']
-                })
-                message_list = []
-                for user in User.objects.all():
-                    if user.email != '': 
-                        message_list.append((obj.title, truemessage, settings.ANN_EMAIL, [user.email]))
-
-                send_mass_mail(message_list, fail_silently=True, auth_user=settings.ANN_EMAIL)
-
-                messages.success(request, "Announcement has been successfully posted and users have been notified via email.")
-                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-                
-            else:
-                messages.success(request, "Announcement has been successfully posted.")
-                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-        else:
-            error_string = "Announcement was not successfully posted, because of the following errors:  "
-            for field in form:
-                for error in field.errors:
-                    error_string += error + '  '
-            messages.error(request, error_string)
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-
-def support_request(request):
-    context = {
-            'settings': getSettings(),
-            'supportform': SupportForm(),
-        }
-    if request.method == 'GET':
-        template = loader.get_template('core/support.html')
+    form = AnnouncementForm(request.POST)
+    if form.is_valid():
+        obj = Announcement()
+        obj.title = form.cleaned_data['title']
+        obj.target = form.cleaned_data['target']
+        obj.user = request.user
+        obj.body = form.cleaned_data['body']
+        obj.save()
         
-        return HttpResponse(template.render(context, request))
-    else:
-        supportform = SupportForm(request.POST)
-        if supportform.is_valid():
-            subject = supportform.cleaned_data['subject']
-            from_email = supportform.cleaned_data['from_email']
-            message = supportform.cleaned_data['message']
-
-            truemessage = render_to_string('core/support_email.html', {
-                'from_email': from_email,
-                'message': message,
-            })
-
-            template2 = loader.get_template('core/supportConfirmation.html')
-            
-            try:
-                send_mail(subject, truemessage, settings.SUPPORT_EMAIL_USER, ['Greeklink@virginia.edu'], auth_user=settings.SUPPORT_EMAIL_USER)
-            except BadHeaderError:
-                return HttpResponse('Invalid header found.')
-            return HttpResponse(template2.render(context, request))
+        if 'send_emailBoolean' in request.POST:
+            send_emailBoolean = request.POST['send_emailBoolean']
         else:
-            template = loader.get_template('core/support.html')
-            context = {
-                'settings': getSettings(),
-                'supportform': supportform
-            }
+            send_emailBoolean = False
+        if send_emailBoolean:
+            
+            truemessage = render_to_string('core/announcement_email.html', {
+                'user': request.user.first_name + request.user.last_name,
+                'body': form.cleaned_data['body'],
+                'target': form.cleaned_data['target']
+            })
+            message_list = []
+            for user in User.objects.all():
+                if user.email != '': 
+                    message_list.append((obj.title, truemessage, settings.ANN_EMAIL, [user.email]))
+
+            send_mass_mail(message_list, fail_silently=True, auth_user=settings.ANN_EMAIL)
+
+            messages.success(request, "Announcement has been successfully posted and users have been notified via email.")
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+            
+        else:
+            messages.success(request, "Announcement has been successfully posted.")
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    else:
+        error_string = "Announcement was not successfully posted, because of the following errors:  "
+        for field in form:
+            for error in field.errors:
+                error_string += error + '  '
+        messages.error(request, error_string)
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+@require_GET
+def support_request_page(request):
+    context = {
+        'settings': getSettings(),
+        'supportform': SupportForm(),
+    }
+    template = loader.get_template('core/support.html')
     return HttpResponse(template.render(context, request))
 
+
+@require_POST
+def support_request(request):
+    supportform = SupportForm(request.POST)
+    if supportform.is_valid():
+        subject = supportform.cleaned_data['subject']
+        from_email = supportform.cleaned_data['from_email']
+        message = supportform.cleaned_data['message']
+
+        truemessage = render_to_string('core/support_email.html', {
+            'from_email': from_email,
+            'message': message,
+        })
+
+        template2 = loader.get_template('core/supportConfirmation.html')
+        
+        try:
+            send_mail(subject, truemessage, settings.SUPPORT_EMAIL_USER, ['Greeklink@virginia.edu'], auth_user=settings.SUPPORT_EMAIL_USER)
+        except BadHeaderError:
+            return HttpResponse('Invalid header found.')
+        return HttpResponse(template2.render(context, request))
+    else:
+        template = loader.get_template('core/support.html')
+        context = {
+            'settings': getSettings(),
+            'supportform': supportform
+        }
+        return HttpResponse(template.render(context, request))
+
 #announcements page
+@require_GET
 def announcement(request, announcement_id):
     announcement = Announcement.objects.get(id=announcement_id)
     context = {

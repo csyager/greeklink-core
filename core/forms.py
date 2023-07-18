@@ -55,7 +55,6 @@ class OrganizationSelectForm(forms.Form):
     
     def is_valid(self):
         if self.data['organization'] not in [i[0] for i in self.ORG_CHOICES]:
-            print(f'{self.data["organization"]} not in {[i[0] for i in self.ORG_CHOICES]}')
             return False
         return super(OrganizationSelectForm, self).is_valid()
 

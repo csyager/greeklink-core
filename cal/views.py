@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import loader
+from django.views.decorators.http import require_GET, require_POST
 from core.views import getSettings
 from core.models import OrgEvent, SocialEvent
 from rush.models import RushEvent
@@ -84,6 +85,7 @@ class Calendar(HTMLCalendar):
         return cal
 
 @login_required
+@require_GET
 def index(request):
     template = loader.get_template('cal/index.html')
     d = datetime.today()
@@ -114,6 +116,7 @@ def index(request):
     return HttpResponse(template.render(context, request))
 
 @login_required
+@require_GET
 def date(request, year, month, day):
     template = loader.get_template('cal/date.html')
     this_date = datetime(year, month, day)
@@ -153,72 +156,70 @@ def date(request, year, month, day):
     return HttpResponse(template.render(context, request))
 
 @permission_required('cal.add_chapterevent')
+@require_POST
 def create_chapter_event(request):
-    if request.method == 'POST':
-        form = ChapterEventForm(request.POST)
-        if form.is_valid():
-            name = form.cleaned_data.get('name')
-            date = form.cleaned_data.get('date')
-            time = form.cleaned_data.get('time')
-            location = form.cleaned_data.get('location')
-            is_public = form.cleaned_data.get('public')
-            recurring = form.cleaned_data.get('recurring')
-            end_date = form.cleaned_data.get('end_date')
+    form = ChapterEventForm(request.POST)
+    if form.is_valid():
+        name = form.cleaned_data.get('name')
+        date = form.cleaned_data.get('date')
+        time = form.cleaned_data.get('time')
+        location = form.cleaned_data.get('location')
+        is_public = form.cleaned_data.get('public')
+        recurring = form.cleaned_data.get('recurring')
+        end_date = form.cleaned_data.get('end_date')
 
-            ChapterEvent.objects.create_chapter_event(name, date, time, is_public, location, recurring, end_date)
-            messages.success(request, "Chapter event " + name + " has been created successfully.")
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-        else:
-            return HttpResponse(form.errors)
+        ChapterEvent.objects.create_chapter_event(name, date, time, is_public, location, recurring, end_date)
+        messages.success(request, "Chapter event " + name + " has been created successfully.")
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
     else:
-        raise Http404
+        return HttpResponse(form.errors)
 
 @permission_required('cal.delete_chapterevent')
+@require_GET
 def delete_chapter_event(request, event_id):
     ChapterEvent.objects.get(pk=event_id).delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @permission_required('cal.delete_chapterevent')
+@require_GET
 def delete_chapter_event_recursive(request, event_id):
     ChapterEvent.objects.get(pk=event_id).delete_all()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @permission_required('cal.change_chapterevent')
+@require_POST
 def edit_chapter_event(request, event_id):
     """ edits a single chapter event by deleting it and recreating it with different parameters.
         any events that use this event as a base_event are updated to use the new event instead
         event_id -- primary key of event being edited
     """
-    if request.method == "POST":
-        if request.POST.get('action') == 'singular':
-            old_event = ChapterEvent.objects.get(pk=event_id)
-            child_events = old_event.children
-            old_event.delete()
-            name = request.POST.get('name')
-            date = datetime.strptime(request.POST.get('date'), "%Y-%m-%d").date()
-            time = request.POST.get('time')
-            location = request.POST.get('location')
-            if request.POST.get('public') == 'on':
-                is_public = True
-            else:
-                is_public = False
-            recurring = request.POST.get('recurring')
-            end_date = datetime.strptime(request.POST.get('end_date'), "%Y-%m-%d").date()
-            new_event = ChapterEvent.objects.create(name=name, date=date, time=time, is_public=is_public, location=location, recurring=recurring, end_date=end_date)
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    if request.POST.get('action') == 'singular':
+        old_event = ChapterEvent.objects.get(pk=event_id)
+        child_events = old_event.children
+        old_event.delete()
+        name = request.POST.get('name')
+        date = datetime.strptime(request.POST.get('date'), "%Y-%m-%d").date()
+        time = request.POST.get('time')
+        location = request.POST.get('location')
+        if request.POST.get('public') == 'on':
+            is_public = True
         else:
-            ChapterEvent.objects.get(pk=event_id).delete_all()
-            name = request.POST.get('name')
-            date = datetime.strptime(request.POST.get('date'), "%Y-%m-%d").date()
-            time = request.POST.get('time')
-            location = request.POST.get('location')
-            if request.POST.get('public') == 'on':
-                is_public = True
-            else:
-                is_public = False
-            recurring = request.POST.get('recurring')
-            end_date = datetime.strptime(request.POST.get('end_date'), "%Y-%m-%d").date()
-            ChapterEvent.objects.create_chapter_event(name=name, date=date, time=time, is_public=is_public, location=location, recurring=recurring, end_date=end_date)
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+            is_public = False
+        recurring = request.POST.get('recurring')
+        end_date = datetime.strptime(request.POST.get('end_date'), "%Y-%m-%d").date()
+        new_event = ChapterEvent.objects.create(name=name, date=date, time=time, is_public=is_public, location=location, recurring=recurring, end_date=end_date)
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
     else:
-        raise Http404
+        ChapterEvent.objects.get(pk=event_id).delete_all()
+        name = request.POST.get('name')
+        date = datetime.strptime(request.POST.get('date'), "%Y-%m-%d").date()
+        time = request.POST.get('time')
+        location = request.POST.get('location')
+        if request.POST.get('public') == 'on':
+            is_public = True
+        else:
+            is_public = False
+        recurring = request.POST.get('recurring')
+        end_date = datetime.strptime(request.POST.get('end_date'), "%Y-%m-%d").date()
+        ChapterEvent.objects.create_chapter_event(name=name, date=date, time=time, is_public=is_public, location=location, recurring=recurring, end_date=end_date)
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
