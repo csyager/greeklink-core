@@ -119,7 +119,8 @@ def index(request):
     announcement_form = AnnouncementForm()
 
     #for pagination
-    paginator = Paginator(announcements, 5)                                               #this number changes items per page
+    #this number changes items per page
+    paginator = Paginator(announcements, 5)                                               
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     announcementscount = len(announcements)
@@ -148,9 +149,12 @@ def signup_page(request):
     """ returns signup form in template """
     template = loader.get_template('core/signup.html')
     site_settings = getSettings()
-    verification_key = site_settings.verification_key
     form = SignupForm()
-    return HttpResponse(template.render({'form': form}, request))
+    context = {
+        'settings': site_settings,
+        'form': form
+    }
+    return HttpResponse(template.render(context, request))
 
 
 @require_POST
